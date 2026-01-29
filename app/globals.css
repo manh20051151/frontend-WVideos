@@ -2,14 +2,25 @@
 
 :root {
   /* Light Mode Colors */
-  --color-primary: #a8df8e;
-  --color-secondary: #f0ffdf;
-  --color-accent: #ffd8df;
-  --color-highlight: #ffaab8;
+  --color-primary: #ffffff;
+  --color-secondary: #f5f5f5;
+  --color-accent: #009688;
+  --color-highlight: #00796b;
   
   /* Background & Foreground */
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #009688;
+  
+  /* Button Colors - Light Mode */
+  --btn-primary-bg: #ffffff;
+  --btn-primary-text: #009688;
+  --btn-secondary-bg: #f5f5f5;
+  --btn-secondary-text: #009688;
+  --btn-accent-bg: #009688;
+  --btn-accent-text: #ffffff;
+  
+  /* Border Colors */
+  --border-light: #e0e0e0;
 }
 
 @theme inline {
@@ -18,10 +29,10 @@
   --color-foreground: var(--foreground);
   
   /* Custom Colors */
-  --color-primary: #a8df8e;
-  --color-secondary: #f0ffdf;
-  --color-accent: #ffd8df;
-  --color-highlight: #ffaab8;
+  --color-primary: #ffffff;
+  --color-secondary: #f5f5f5;
+  --color-accent: #009688;
+  --color-highlight: #00796b;
   
   /* Fonts */
   --font-sans: var(--font-geist-sans);
@@ -38,13 +49,24 @@
     
     /* Background & Foreground */
     --background: #222831;
-    --foreground: #eeeeee;
+    --foreground: #ffffff;
+    
+    /* Button Colors - Dark Mode */
+    --btn-primary-bg: #00adb5;
+    --btn-primary-text: #222831;
+    --btn-secondary-bg: #393e46;
+    --btn-secondary-text: #ffffff;
+    --btn-accent-bg: #00adb5;
+    --btn-accent-text: #222831;
+    
+    /* Border Colors */
+    --border-light: #00adb5;
   }
   
   @theme inline {
     /* Dark Mode Theme */
     --color-background: #222831;
-    --color-foreground: #eeeeee;
+    --color-foreground: #ffffff;
     
     /* Custom Colors */
     --color-primary: #222831;
@@ -54,10 +76,34 @@
   }
 }
 
+/* Manual dark mode with .dark class */
+.dark {
+  /* Dark Mode Colors */
+  --color-primary: #222831;
+  --color-secondary: #393e46;
+  --color-accent: #00adb5;
+  --color-highlight: #eeeeee;
+  
+  /* Background & Foreground */
+  --background: #222831;
+  --foreground: #ffffff;
+  
+  /* Button Colors - Dark Mode */
+  --btn-primary-bg: #00adb5;
+  --btn-primary-text: #222831;
+  --btn-secondary-bg: #393e46;
+  --btn-secondary-text: #ffffff;
+  --btn-accent-bg: #00adb5;
+  --btn-accent-text: #222831;
+  
+  /* Border Colors */
+  --border-light: #00adb5;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Utility classes cho custom colors */
@@ -93,6 +139,10 @@ body {
   color: var(--color-highlight);
 }
 
+.text-foreground {
+  color: var(--foreground);
+}
+
 .border-primary {
   border-color: var(--color-primary);
 }
@@ -107,4 +157,47 @@ body {
 
 .border-highlight {
   border-color: var(--color-highlight);
+}
+
+/* Button utility classes */
+.btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 2px solid var(--btn-primary-bg);
+}
+
+.btn-accent {
+  background-color: var(--btn-accent-bg);
+  color: var(--btn-accent-text);
+}
+
+/* Button base style - uses CSS variables */
+.btn {
+  padding: 4px 14px;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid var(--btn-secondary-text);
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-accent);
+}
+
+/* Dark mode button hover - better contrast */
+.dark .btn:hover {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+  border-color: var(--color-accent);
 }

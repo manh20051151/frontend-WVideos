@@ -14,6 +14,7 @@ Dự án sử dụng color palette tùy chỉnh với hỗ trợ light và dark 
 | Secondary | `#F0FFDF` | Background phụ, cards |
 | Accent | `#FFD8DF` | Highlights, badges |
 | Highlight | `#FFAAB8` | Call-to-action, warnings |
+| Foreground | `#000000` | **Màu chữ chính (đen)** |
 
 ### Dark Mode
 
@@ -22,7 +23,8 @@ Dự án sử dụng color palette tùy chỉnh với hỗ trợ light và dark 
 | Primary | `#222831` | Background chính |
 | Secondary | `#393E46` | Background phụ, cards |
 | Accent | `#00ADB5` | Màu nhấn, buttons, links |
-| Highlight | `#EEEEEE` | Text chính, icons |
+| Highlight | `#EEEEEE` | Text phụ, icons |
+| Foreground | `#FFFFFF` | **Màu chữ chính (trắng)** |
 
 ## Sử dụng
 
