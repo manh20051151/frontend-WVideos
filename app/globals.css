@@ -1,21 +1,56 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
+  /* Light Mode Colors */
+  --color-primary: #a8df8e;
+  --color-secondary: #f0ffdf;
+  --color-accent: #ffd8df;
+  --color-highlight: #ffaab8;
+  
+  /* Background & Foreground */
   --background: #ffffff;
   --foreground: #171717;
 }
 
 @theme inline {
+  /* Light Mode Theme */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  
+  /* Custom Colors */
+  --color-primary: #a8df8e;
+  --color-secondary: #f0ffdf;
+  --color-accent: #ffd8df;
+  --color-highlight: #ffaab8;
+  
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark Mode Colors */
+    --color-primary: #222831;
+    --color-secondary: #393e46;
+    --color-accent: #00adb5;
+    --color-highlight: #eeeeee;
+    
+    /* Background & Foreground */
+    --background: #222831;
+    --foreground: #eeeeee;
+  }
+  
+  @theme inline {
+    /* Dark Mode Theme */
+    --color-background: #222831;
+    --color-foreground: #eeeeee;
+    
+    /* Custom Colors */
+    --color-primary: #222831;
+    --color-secondary: #393e46;
+    --color-accent: #00adb5;
+    --color-highlight: #eeeeee;
   }
 }
 
@@ -23,4 +58,53 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Utility classes cho custom colors */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.bg-highlight {
+  background-color: var(--color-highlight);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.text-highlight {
+  color: var(--color-highlight);
+}
+
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-accent {
+  border-color: var(--color-accent);
+}
+
+.border-highlight {
+  border-color: var(--color-highlight);
 }
