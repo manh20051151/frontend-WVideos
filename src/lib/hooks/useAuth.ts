@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { authApi } from '@/lib/apis/auth.api';
+import { authApi, UserResponse } from '@/lib/apis/auth.api';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -15,8 +15,17 @@ export const useAuth = () => {
   useEffect(() => {
     if (!mounted) return;
     
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
     if (token) {
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error('Failed to parse saved user:', e);
+        }
+      }
       fetchProfile();
     } else {
       setLoading(false);
@@ -25,34 +34,69 @@ export const useAuth = () => {
 
   const fetchProfile = async () => {
     try {
-      const data = await authApi.getProfile();
-      setUser(data);
+      const response = await authApi.getMyInfo();
+      if (response.result) {
+        setUser(response.result);
+        localStorage.setItem('user', JSON.stringify(response.result));
+      }
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (username: string, password: string) => {
-    const data = await authApi.login({ username, password });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', data.token);
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await authApi.login({ email, password });
+      
+      if (response.result?.token) {
+        localStorage.setItem('token', response.result.token);
+        
+        const userResponse = await authApi.getMyInfo();
+        if (userResponse.result) {
+          setUser(userResponse.result);
+          localStorage.setItem('user', JSON.stringify(userResponse.result));
+        }
+        
+        return response;
+      }
+      
+      throw new Error('Login failed');
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-    setUser(data.user);
-    return data;
   };
 
-  const logout = () => {
-    if (typeof window !== 'undefined') {
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await authApi.logout(token);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+      setUser(null);
+      window.location.href = '/';
     }
-    setUser(null);
   };
 
-  return { user, loading, login, logout, mounted };
+  const isAuthenticated = mounted && !!user && !!localStorage.getItem('token');
+
+  return { 
+    user, 
+    loading, 
+    login, 
+    logout, 
+    mounted,
+    isAuthenticated,
+    refreshProfile: fetchProfile
+  };
 };
