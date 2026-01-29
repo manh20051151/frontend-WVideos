@@ -6,15 +6,22 @@ import { authApi } from '@/lib/apis/auth.api';
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       fetchProfile();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [mounted]);
 
   const fetchProfile = async () => {
     try {
@@ -22,7 +29,9 @@ export const useAuth = () => {
       setUser(data);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      localStorage.removeItem('token');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+      }
     } finally {
       setLoading(false);
     }
@@ -30,16 +39,20 @@ export const useAuth = () => {
 
   const login = async (username: string, password: string) => {
     const data = await authApi.login({ username, password });
-    localStorage.setItem('token', data.token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', data.token);
+    }
     setUser(data.user);
     return data;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
     setUser(null);
-    window.location.href = '/login';
   };
 
-  return { user, loading, login, logout };
+  return { user, loading, login, logout, mounted };
 };

@@ -4,7 +4,27 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, mounted } = useAuth();
+
+  // Prevent hydration mismatch by not rendering user-dependent content until mounted
+  if (!mounted) {
+    return (
+      <header className='bg-white shadow-md'>
+        <nav className='container mx-auto px-4 py-4 flex justify-between items-center'>
+          <Link href='/' className='text-2xl font-bold text-blue-600'>
+            WVideos
+          </Link>
+          <div className='flex items-center gap-6'>
+            <Link href='/' className='hover:text-blue-600'>
+              Trang chủ
+            </Link>
+            {/* Placeholder để tránh layout shift */}
+            <div className='w-32 h-10' />
+          </div>
+        </nav>
+      </header>
+    );
+  }
 
   return (
     <header className='bg-white shadow-md'>
