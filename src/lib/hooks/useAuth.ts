@@ -35,11 +35,12 @@ export const useAuth = () => {
   const fetchProfile = async () => {
     try {
       const response = await authApi.getMyInfo();
+      
       if (response.result) {
         setUser(response.result);
         localStorage.setItem('user', JSON.stringify(response.result));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch profile:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('user');

@@ -2,7 +2,7 @@
 # My Rules
 
 - Sử dụng model thiên về code.
-- Trả lời, commit code bằng Tiếng Việt.
+- Trả lời, commit code và comment ctrong code bằng Tiếng Việt.
 - Thay "" bằng '' khi commit code lên git.
 - Đọc file GIT_FLOW_GUIDE.md trước khi thực hiện các yêu cầu về git
 - **LUÔN dùng color từ globals.css** - KHÔNG hardcode màu trực tiếp trong components

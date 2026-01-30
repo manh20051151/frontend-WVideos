@@ -7,7 +7,7 @@ import { useDarkMode } from '@/lib/hooks/useDarkMode';
 import AuthModal from '@/components/auth/AuthModal';
 
 export default function Header() {
-  const { user, logout, mounted } = useAuth();
+  const { user, logout, mounted, refreshProfile } = useAuth();
   const { isDark, toggleDarkMode, mounted: darkModeReady } = useDarkMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,6 +15,11 @@ export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleLoginSuccess = () => {
+    // Refresh profile để cập nhật state
+    refreshProfile();
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,12 +248,6 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link href='/upload' className='btn'>
-                  📤 Tải lên
-                </Link>
-                <Link href='/nap-tien' className='btn'>
-                  💰 Nạp tiền
-                </Link>
                 <button
                   onClick={() => {
                     setAuthModalTab('register');
@@ -437,6 +436,7 @@ export default function Header() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         defaultTab={authModalTab}
+        onLoginSuccess={handleLoginSuccess}
       />
     </header>
   );

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,12 +25,14 @@ axiosClient.interceptors.request.use(
 // Response interceptor
 axiosClient.interceptors.response.use(
   (response) => {
+    // Return response.data để match với ApiResponse<T> format
     return response.data;
   },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+      window.location.href = '/';
     }
     return Promise.reject(error);
   }
