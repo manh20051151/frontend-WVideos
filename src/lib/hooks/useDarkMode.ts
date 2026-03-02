@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 export const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(true); // Mặc định là dark mode
+  const [isDark, setIsDark] = useState(false); // Khởi tạo với false để tránh hydration mismatch
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -6,6 +6,8 @@
   --color-secondary: #f5f5f5;
   --color-accent: #009688;
   --color-highlight: #00796b;
+  --color-black: #000000;
+  --color-white: #ffffff;
   
   /* Background & Foreground */
   --background: #ffffff;
@@ -46,6 +48,8 @@
     --color-secondary: #393e46;
     --color-accent: #00adb5;
     --color-highlight: #eeeeee;
+    --color-black: #000000;
+    --color-white: #ffffff;
     
     /* Background & Foreground */
     --background: #222831;
@@ -83,6 +87,8 @@
   --color-secondary: #393e46;
   --color-accent: #00adb5;
   --color-highlight: #eeeeee;
+  --color-black: #000000;
+  --color-white: #ffffff;
   
   /* Background & Foreground */
   --background: #222831;
@@ -141,6 +147,22 @@ body {
 
 .text-foreground {
   color: var(--foreground);
+}
+
+.text-black {
+  color: var(--color-black);
+}
+
+.text-white {
+  color: var(--color-white);
+}
+
+.bg-black {
+  background-color: var(--color-black);
+}
+
+.bg-white {
+  background-color: var(--color-white);
 }
 
 .border-primary {
