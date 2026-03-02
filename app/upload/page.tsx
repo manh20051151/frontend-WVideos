@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import videoApi, { VideoUploadData } from '@/lib/apis/video.api';
-import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
+import videoApi from '@/lib/apis/video.api';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { formatFileSize } from '@/lib/utils';
+import type { VideoUploadData } from '@/types';
 
 export default function UploadVideoPage() {
   const router = useRouter();
@@ -138,13 +140,7 @@ export default function UploadVideoPage() {
     }
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
+  // formatFileSize được import từ @/lib/utils
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
