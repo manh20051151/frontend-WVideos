@@ -9,6 +9,8 @@ import ThumbnailImage from '@/components/common/ThumbnailImage';
 import ClientOnly from '@/components/common/ClientOnly';
 import VideoPreview from '@/components/common/VideoPreview';
 import EditVideoModal from '@/components/video/EditVideoModal';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 export default function MyVideosPage() {
   const router = useRouter();
@@ -63,25 +65,29 @@ export default function MyVideosPage() {
   if (!user) {
     return (
       <ClientOnly fallback={
-        <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
-          <div className='max-w-7xl mx-auto'>
-            <div className='animate-pulse'>
-              <div className='h-8 bg-secondary rounded w-64 mb-4'></div>
-              <div className='h-4 bg-secondary rounded w-96 mb-8'></div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className='bg-secondary rounded-lg overflow-hidden shadow'>
-                    <div className='w-full h-48 bg-accent opacity-30' />
-                    <div className='p-4 space-y-3'>
-                      <div className='h-4 bg-accent opacity-30 rounded w-3/4' />
-                      <div className='h-3 bg-accent opacity-30 rounded w-1/2' />
+        <>
+          <Header />
+          <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
+            <div className='max-w-7xl mx-auto'>
+              <div className='animate-pulse'>
+                <div className='h-8 bg-secondary rounded w-64 mb-4'></div>
+                <div className='h-4 bg-secondary rounded w-96 mb-8'></div>
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className='bg-secondary rounded-lg overflow-hidden shadow'>
+                      <div className='w-full h-48 bg-accent opacity-30' />
+                      <div className='p-4 space-y-3'>
+                        <div className='h-4 bg-accent opacity-30 rounded w-3/4' />
+                        <div className='h-3 bg-accent opacity-30 rounded w-1/2' />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          <Footer />
+        </>
       }>
         {null}
       </ClientOnly>
@@ -160,7 +166,9 @@ export default function MyVideosPage() {
   };
 
   return (
-    <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
+    <>
+      <Header />
+      <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         {/* Header */}
         <div className='flex justify-between items-center mb-8'>
@@ -335,6 +343,8 @@ export default function MyVideosPage() {
         video={editingVideo}
         onSave={handleSaveVideo}
       />
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }
