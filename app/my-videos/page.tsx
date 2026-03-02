@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import videoApi, { VideoResponse } from '@/lib/apis/video.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
-import ThumbnailImage from '@/components/common/ThumbnailImage';
 import ClientOnly from '@/components/common/ClientOnly';
-import VideoPreview from '@/components/common/VideoPreview';
+import HoverThumbnail from '@/components/common/HoverThumbnail';
 import EditVideoModal from '@/components/video/EditVideoModal';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -238,41 +237,21 @@ export default function MyVideosPage() {
                   key={video.id}
                   className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
                 >
-                  {/* Thumbnail với Video Preview */}
+                  {/* Thumbnail với Hover Splash Image */}
                   <div className='relative'>
-                    <VideoPreview
-                      videoUrl={video.downloadUrl}
+                    <HoverThumbnail
                       thumbnailUrl={video.thumbnailUrl}
+                      splashImageUrl={video.splashImageUrl}
+                      alt={video.title}
                       title={video.title}
                       className='w-full h-48'
-                      hoverDelay={800} // 0.8 giây delay
-                    >
-                      <ThumbnailImage
-                        src={video.thumbnailUrl}
-                        fallbackSrc={video.splashImageUrl}
-                        alt={video.title}
-                        title={video.title}
-                        className='w-full h-48 bg-secondary'
-                        onError={() => console.log('❌ Thumbnail failed for:', video.id)}
-                        onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
-                      />
-                    </VideoPreview>
+                      onError={() => console.log('❌ Thumbnail failed for:', video.id)}
+                      onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
+                    />
                     
                     <div className='absolute top-2 right-2'>
                       {getStatusBadge(video.status)}
                     </div>
-                    {video.status === 'READY' && (
-                      <div className='absolute inset-0 bg-opacity-0 hover:bg-opacity-30 transition-all flex items-center justify-center group'>
-                        <Link
-                          href={`/videos/${video.id}`}
-                          className='opacity-0 group-hover:opacity-100 bg-primary text-foreground rounded-full p-3 transition-opacity shadow-lg'
-                        >
-                          <svg className='w-6 h-6' fill='currentColor' viewBox='0 0 20 20'>
-                            <path d='M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z' />
-                          </svg>
-                        </Link>
-                      </div>
-                    )}
                   </div>
 
                   {/* Info */}
