@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import ThumbnailImage from '@/components/common/ThumbnailImage';
 import ClientOnly from '@/components/common/ClientOnly';
+import VideoPreview from '@/components/common/VideoPreview';
+import EditVideoModal from '@/components/video/EditVideoModal';
 
 export default function MyVideosPage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function MyVideosPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [editingVideo, setEditingVideo] = useState<VideoResponse | null>(null);
 
   const fetchVideos = async () => {
     try {
@@ -97,24 +100,31 @@ export default function MyVideosPage() {
     }
   };
 
-  const handleSyncVideo = async (videoId: string) => {
+  const handleEditVideo = (video: VideoResponse) => {
+    setEditingVideo(video);
+  };
+
+  const handleSaveVideo = async (videoId: string, data: { title: string; description: string; isPublic: boolean }) => {
     try {
-      console.log('🔄 Đang sync video:', videoId);
-      const updatedVideo = await videoApi.syncVideoInfo(videoId);
-      console.log('✅ Sync thành công:', updatedVideo);
+      const updatedVideo = await videoApi.updateVideo(videoId, data);
       
-      // Cập nhật video trong list
+      // Cập nhật video trong danh sách
       setVideos(prevVideos => 
         prevVideos.map(video => 
           video.id === videoId ? updatedVideo : video
         )
       );
       
-      alert('Sync thành công! Thumbnail đã được cập nhật.');
+      setEditingVideo(null);
+      alert('Cập nhật video thành công!');
     } catch (error) {
-      console.error('❌ Sync video failed:', error);
-      alert('Sync thất bại: ' + (error as any)?.message || 'Unknown error');
+      console.error('Error updating video:', error);
+      throw error; // Re-throw để EditVideoModal xử lý
     }
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingVideo(null);
   };
 
   const getStatusBadge = (status: string) => {
@@ -220,17 +230,25 @@ export default function MyVideosPage() {
                   key={video.id}
                   className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
                 >
-                  {/* Thumbnail */}
+                  {/* Thumbnail với Video Preview */}
                   <div className='relative'>
-                    <ThumbnailImage
-                      src={video.thumbnailUrl}
-                      fallbackSrc={video.splashImageUrl}
-                      alt={video.title}
+                    <VideoPreview
+                      videoUrl={video.downloadUrl}
+                      thumbnailUrl={video.thumbnailUrl}
                       title={video.title}
-                      className='w-full h-48 bg-secondary'
-                      onError={() => console.log('❌ Thumbnail failed for:', video.id)}
-                      onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
-                    />
+                      className='w-full h-48'
+                      hoverDelay={800} // 0.8 giây delay
+                    >
+                      <ThumbnailImage
+                        src={video.thumbnailUrl}
+                        fallbackSrc={video.splashImageUrl}
+                        alt={video.title}
+                        title={video.title}
+                        className='w-full h-48 bg-secondary'
+                        onError={() => console.log('❌ Thumbnail failed for:', video.id)}
+                        onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
+                      />
+                    </VideoPreview>
                     
                     <div className='absolute top-2 right-2'>
                       {getStatusBadge(video.status)}
@@ -265,29 +283,18 @@ export default function MyVideosPage() {
 
                     {/* Actions */}
                     <div className='flex gap-2'>
-                      {video.status === 'READY' && (
-                        <Link
-                          href={`/videos/${video.id}`}
-                          className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors'
-                        >
-                          Xem
-                        </Link>
-                      )}
-                      
-                      {/* Sync button để debug thumbnail */}
                       <button
-                        onClick={() => handleSyncVideo(video.id)}
-                        className='bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded transition-colors'
-                        title='Sync thông tin từ DoodStream'
+                        className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors'
+                        onClick={() => handleEditVideo(video)}
                       >
-                        🔄
+                        ✏️ Chỉnh sửa
                       </button>
                       
                       <button
                         onClick={() => handleDelete(video.id)}
                         className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
                       >
-                        Xóa
+                        🗑️ Xóa
                       </button>
                     </div>
                   </div>
@@ -320,6 +327,14 @@ export default function MyVideosPage() {
           </>
         )}
       </div>
+
+      {/* Edit Video Modal */}
+      <EditVideoModal
+        isOpen={!!editingVideo}
+        onClose={handleCloseEditModal}
+        video={editingVideo}
+        onSave={handleSaveVideo}
+      />
     </div>
   );
 }
