@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface HoverThumbnailProps {
   thumbnailUrl?: string;
@@ -24,22 +24,24 @@ export default function HoverThumbnail({
   const [isHovered, setIsHovered] = useState(false);
   const [splashLoaded, setSplashLoaded] = useState(false);
   const [splashError, setSplashError] = useState(false);
+  const splashImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Preload splash image khi component mount
+  // Preload splash image ngay khi component mount
   useEffect(() => {
     if (splashImageUrl) {
+      // Tạo image element để preload
       const img = new Image();
       img.onload = () => {
         setSplashLoaded(true);
-        console.log('✅ Splash preloaded for:', title);
       };
       img.onerror = () => {
         setSplashError(true);
-        console.log('❌ Splash preload failed for:', title);
       };
+      // Bắt đầu load ngay
       img.src = splashImageUrl;
+      splashImgRef.current = img;
     }
-  }, [splashImageUrl, title]);
+  }, [splashImageUrl]);
 
   // Nếu không có URL nào
   if (!thumbnailUrl && !splashImageUrl) {
@@ -57,21 +59,17 @@ export default function HoverThumbnail({
   return (
     <div 
       className={`relative overflow-hidden cursor-pointer ${className}`}
-      onMouseEnter={() => {
-        console.log('🖱️ Mouse enter:', title);
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        console.log('🖱️ Mouse leave:', title);
-        setIsHovered(false);
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Thumbnail Image - luôn hiển thị làm background */}
       {thumbnailUrl && (
         <img
           src={thumbnailUrl}
           alt={alt}
-          className='w-full h-full object-cover'
+          className={`w-full h-full object-cover transition-opacity duration-200 ${
+            isHovered && splashImageUrl && splashLoaded && !splashError ? 'opacity-0' : 'opacity-100'
+          }`}
           onError={onError}
           onLoad={onLoad}
           loading='lazy'
@@ -79,41 +77,44 @@ export default function HoverThumbnail({
         />
       )}
       
-      {/* Splash Image Overlay - hiển thị khi hover và đã load */}
-      {isHovered && splashImageUrl && splashLoaded && !splashError && (
+      {/* Splash Image - được preload và ẩn sẵn */}
+      {splashImageUrl && (
         <img
           src={splashImageUrl}
           alt={`${alt} - Splash`}
-          className='absolute inset-0 w-full h-full object-cover transition-opacity duration-300 opacity-100'
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${
+            isHovered && splashLoaded && !splashError ? 'opacity-100' : 'opacity-0'
+          }`}
           loading='eager'
           decoding='async'
+          style={{ pointerEvents: 'none' }}
         />
       )}
       
       {/* Loading indicator khi hover nhưng splash chưa load */}
       {isHovered && splashImageUrl && !splashLoaded && !splashError && (
-        <div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-white'></div>
+        <div className='absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center'>
+          <div className='animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent'></div>
         </div>
       )}
       
-      {/* Hover indicator */}
+      {/* Hover indicator - chỉ hiện khi có splash và đã load */}
       {isHovered && splashImageUrl && splashLoaded && !splashError && (
-        <div className='absolute top-2 left-2 bg-accent text-foreground px-2 py-1 rounded text-xs font-medium z-10'>
+        <div className='absolute top-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs font-medium z-10'>
           🖼️ Splash
         </div>
       )}
       
-      {/* Error indicator khi splash lỗi */}
+      {/* Error indicator */}
       {isHovered && splashImageUrl && splashError && (
         <div className='absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium z-10'>
-          ❌ Splash lỗi
+          ❌ Lỗi splash
         </div>
       )}
       
       {/* No splash indicator */}
       {isHovered && !splashImageUrl && (
-        <div className='absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium z-10'>
+        <div className='absolute top-2 left-2 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium z-10'>
           ⚠️ Không có splash
         </div>
       )}
