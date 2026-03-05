@@ -168,160 +168,177 @@ export default function MyVideosPage() {
     <>
       <Header />
       <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
-      <div className='max-w-7xl mx-auto'>
-        {/* Header */}
-        <div className='flex justify-between items-center mb-8'>
-          <div>
-            <h1 className='text-3xl font-bold text-foreground'>📹 Video của tôi</h1>
-            <p className='mt-2 text-foreground opacity-70'>
-              Quản lý tất cả video bạn đã upload
-            </p>
-          </div>
-          <Link
-            href='/upload'
-            className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-          >
-            + Upload Video
-          </Link>
-        </div>
-
-        {/* Loading */}
-        {loading ? (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className='bg-secondary rounded-lg overflow-hidden shadow animate-pulse'>
-                <div className='w-full h-48 bg-accent opacity-30' />
-                <div className='p-4 space-y-3'>
-                  <div className='h-4 bg-accent opacity-30 rounded w-3/4' />
-                  <div className='h-3 bg-accent opacity-30 rounded w-1/2' />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : videos.length === 0 ? (
-          /* Empty State */
-          <div className='text-center py-12'>
-            <svg
-              className='mx-auto h-24 w-24 text-accent'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
-              />
-            </svg>
-            <h3 className='mt-4 text-lg font-medium text-foreground'>
-              Chưa có video nào
-            </h3>
-            <p className='mt-2 text-foreground opacity-70'>
-              Bắt đầu bằng cách upload video đầu tiên của bạn
-            </p>
+        <div className='max-w-7xl mx-auto'>
+          {/* Header */}
+          <div className='flex justify-between items-center mb-8'>
+            <div>
+              <h1 className='text-3xl font-bold text-foreground'>� Video của tôi</h1>
+              <p className='mt-2 text-foreground opacity-70'>
+                Quản lý tất cả video bạn đã upload
+              </p>
+            </div>
             <Link
               href='/upload'
-              className='mt-6 inline-block btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
+              className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
             >
-              Upload Video
+              + Upload Video
             </Link>
           </div>
-        ) : (
-          /* Video Grid */
-          <>
-          
+
+          {/* Loading */}
+          {loading ? (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {videos.map((video) => (
-                <div
-                  key={video.id}
-                  className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
-                >
-                  {/* Thumbnail với Hover Splash Image */}
-                  <div className='relative'>
-                    <HoverThumbnail
-                      thumbnailUrl={video.thumbnailUrl}
-                      splashImageUrl={video.splashImageUrl}
-                      alt={video.title}
-                      title={video.title}
-                      className='w-full h-48'
-                      onError={() => console.log('❌ Thumbnail failed for:', video.id)}
-                      onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
-                    />
-                    
-                    <div className='absolute top-2 right-2'>
-                      {getStatusBadge(video.status)}
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className='p-4'>
-                    <h3 className='font-semibold text-foreground line-clamp-2 mb-2'>
-                      {video.title}
-                    </h3>
-                    
-                    <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
-                      <span>👁️ {video.views} lượt xem</span>
-                      <span>{video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}</span>
-                    </div>
-                    <p className='text-xs text-foreground opacity-50 mb-4'>
-                      {formatDate(video.createdAt)}
-                    </p>
-
-                    {/* Actions */}
-                    <div className='flex gap-2'>
-                      <button
-                        className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors'
-                        onClick={() => handleEditVideo(video)}
-                      >
-                        ✏️ Chỉnh sửa
-                      </button>
-                      
-                      <button
-                        onClick={() => handleDelete(video.id)}
-                        className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
-                      >
-                        🗑️ Xóa
-                      </button>
-                    </div>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className='bg-secondary rounded-lg overflow-hidden shadow animate-pulse'>
+                  <div className='w-full h-48 bg-accent opacity-30' />
+                  <div className='p-4 space-y-3'>
+                    <div className='h-4 bg-accent opacity-30 rounded w-3/4' />
+                    <div className='h-3 bg-accent opacity-30 rounded w-1/2' />
                   </div>
                 </div>
               ))}
             </div>
+          ) : videos.length === 0 ? (
+            /* Empty State */
+            <div className='text-center py-12'>
+              <svg
+                className='mx-auto h-24 w-24 text-accent'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
+                />
+              </svg>
+              <h3 className='mt-4 text-lg font-medium text-foreground'>
+                Chưa có video nào
+              </h3>
+              <p className='mt-2 text-foreground opacity-70'>
+                Bắt đầu bằng cách upload video đầu tiên của bạn
+              </p>
+              <Link
+                href='/upload'
+                className='mt-6 inline-block btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
+              >
+                Upload Video
+              </Link>
+            </div>
+          ) : (
+            /* Video Grid */
+            <>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                {videos.map((video) => (
+                  <div
+                    key={video.id}
+                    className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
+                  >
+                    {/* Thumbnail với Hover Splash Image */}
+                    <Link href={`/watch/${video.id}`} className='block relative'>
+                      <HoverThumbnail
+                        thumbnailUrl={video.thumbnailUrl}
+                        splashImageUrl={video.splashImageUrl}
+                        alt={video.title}
+                        title={video.title}
+                        className='w-full h-48'
+                        onError={() => console.log('❌ Thumbnail failed for:', video.id)}
+                        onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
+                      />
+                      
+                      <div className='absolute top-2 right-2'>
+                        {getStatusBadge(video.status)}
+                      </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className='mt-8 flex justify-center gap-2'>
-                <button
-                  onClick={() => setPage(Math.max(0, page - 1))}
-                  disabled={page === 0}
-                  className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
-                >
-                  Trước
-                </button>
-                <span className='px-4 py-2 text-foreground'>
-                  Trang {page + 1} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-                  disabled={page >= totalPages - 1}
-                  className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
-                >
-                  Sau
-                </button>
+                      {/* Play button overlay */}
+                      <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black bg-opacity-30'>
+                        <div className='bg-white bg-opacity-90 rounded-full p-3'>
+                          <svg className='w-8 h-8 text-gray-800' fill='currentColor' viewBox='0 0 24 24'>
+                            <path d='M8 5v14l11-7z'/>
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Info */}
+                    <div className='p-4'>
+                      <Link href={`/watch/${video.id}`} className='block hover:text-accent transition-colors'>
+                        <h3 className='font-semibold text-foreground line-clamp-2 mb-2'>
+                          {video.title}
+                        </h3>
+                      </Link>
+                      
+                      <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
+                        <span>👁️ {video.views} lượt xem</span>
+                        <span>{video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}</span>
+                      </div>
+                      <p className='text-xs text-foreground opacity-50 mb-4'>
+                        {formatDate(video.createdAt)}
+                      </p>
+
+                      {/* Actions */}
+                      <div className='flex gap-2'>
+                        <Link
+                          href={`/watch/${video.id}`}
+                          className='flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
+                        >
+                          ▶️ Xem
+                        </Link>
+                        
+                        <button
+                          className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors'
+                          onClick={() => handleEditVideo(video)}
+                        >
+                          ✏️ Chỉnh sửa
+                        </button>
+                        
+                        <button
+                          onClick={() => handleDelete(video.id)}
+                          className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
+                        >
+                          🗑️ Xóa
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </>
-        )}
-      </div>
 
-      {/* Edit Video Modal */}
-      <EditVideoModal
-        isOpen={!!editingVideo}
-        onClose={handleCloseEditModal}
-        video={editingVideo}
-        onSave={handleSaveVideo}
-      />
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className='mt-8 flex justify-center gap-2'>
+                  <button
+                    onClick={() => setPage(Math.max(0, page - 1))}
+                    disabled={page === 0}
+                    className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
+                  >
+                    Trước
+                  </button>
+                  <span className='px-4 py-2 text-foreground'>
+                    Trang {page + 1} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                    disabled={page >= totalPages - 1}
+                    className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
+                  >
+                    Sau
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Edit Video Modal */}
+        <EditVideoModal
+          isOpen={!!editingVideo}
+          onClose={handleCloseEditModal}
+          video={editingVideo}
+          onSave={handleSaveVideo}
+        />
       </div>
       <Footer />
     </>
