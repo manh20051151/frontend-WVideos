@@ -237,30 +237,30 @@ export default function MyVideosPage() {
                     className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
                   >
                     {/* Thumbnail với Hover Splash Image */}
-                    <Link href={`/watch/${video.id}`} className='block relative'>
-                      <HoverThumbnail
-                        thumbnailUrl={video.thumbnailUrl}
-                        splashImageUrl={video.splashImageUrl}
-                        alt={video.title}
-                        title={video.title}
-                        className='w-full h-48'
-                        onError={() => console.log('❌ Thumbnail failed for:', video.id)}
-                        onLoad={() => console.log('✅ Thumbnail loaded for:', video.id)}
-                      />
-                      
-                      <div className='absolute top-2 right-2'>
-                        {getStatusBadge(video.status)}
-                      </div>
-
-                      {/* Play button overlay */}
-                      <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black bg-opacity-30'>
-                        <div className='bg-white bg-opacity-90 rounded-full p-3'>
-                          <svg className='w-8 h-8 text-gray-800' fill='currentColor' viewBox='0 0 24 24'>
-                            <path d='M8 5v14l11-7z'/>
-                          </svg>
+                    <div className='relative'>
+                      <Link href={`/watch/${video.id}`} className='block cursor-pointer'>
+                        <HoverThumbnail
+                          thumbnailUrl={video.thumbnailUrl}
+                          splashImageUrl={video.splashImageUrl}
+                          alt={video.title}
+                          title={video.title}
+                          className='w-full h-48'
+                        />
+                        
+                        <div className='absolute top-2 right-2 z-20'>
+                          {getStatusBadge(video.status)}
                         </div>
-                      </div>
-                    </Link>
+
+                        {/* Play button overlay - hiện khi hover */}
+                        <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity'>
+                          <div className='bg-black bg-opacity-50 rounded-full p-3'>
+                            <svg className='w-8 h-8 text-white' fill='currentColor' viewBox='0 0 24 24'>
+                              <path d='M8 5v14l11-7z'/>
+                            </svg>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
 
                     {/* Info */}
                     <div className='p-4'>
@@ -280,15 +280,8 @@ export default function MyVideosPage() {
 
                       {/* Actions */}
                       <div className='flex gap-2'>
-                        <Link
-                          href={`/watch/${video.id}`}
-                          className='flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
-                        >
-                          ▶️ Xem
-                        </Link>
-                        
                         <button
-                          className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors'
+                          className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
                           onClick={() => handleEditVideo(video)}
                         >
                           ✏️ Chỉnh sửa
@@ -296,7 +289,7 @@ export default function MyVideosPage() {
                         
                         <button
                           onClick={() => handleDelete(video.id)}
-                          className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors'
+                          className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
                         >
                           🗑️ Xóa
                         </button>

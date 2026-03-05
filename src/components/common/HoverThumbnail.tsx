@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface HoverThumbnailProps {
   thumbnailUrl?: string;
@@ -24,22 +24,14 @@ export default function HoverThumbnail({
   const [isHovered, setIsHovered] = useState(false);
   const [splashLoaded, setSplashLoaded] = useState(false);
   const [splashError, setSplashError] = useState(false);
-  const splashImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Preload splash image ngay khi component mount
+  // Preload splash image khi component mount
   useEffect(() => {
     if (splashImageUrl) {
-      // Tạo image element để preload
       const img = new Image();
-      img.onload = () => {
-        setSplashLoaded(true);
-      };
-      img.onerror = () => {
-        setSplashError(true);
-      };
-      // Bắt đầu load ngay
+      img.onload = () => setSplashLoaded(true);
+      img.onerror = () => setSplashError(true);
       img.src = splashImageUrl;
-      splashImgRef.current = img;
     }
   }, [splashImageUrl]);
 
@@ -58,65 +50,32 @@ export default function HoverThumbnail({
 
   return (
     <div 
-      className={`relative overflow-hidden cursor-pointer ${className}`}
+      className={`relative overflow-hidden z-10 ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Thumbnail Image - luôn hiển thị làm background */}
+      {/* Thumbnail Image */}
       {thumbnailUrl && (
         <img
           src={thumbnailUrl}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-200 ${
-            isHovered && splashImageUrl && splashLoaded && !splashError ? 'opacity-0' : 'opacity-100'
-          }`}
+          className='w-full h-full object-cover'
           onError={onError}
           onLoad={onLoad}
           loading='lazy'
-          decoding='async'
         />
       )}
       
-      {/* Splash Image - được preload và ẩn sẵn */}
-      {splashImageUrl && (
+      {/* Splash Image - hiện khi hover */}
+      {splashImageUrl && splashLoaded && !splashError && (
         <img
           src={splashImageUrl}
           alt={`${alt} - Splash`}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${
-            isHovered && splashLoaded && !splashError ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
           }`}
-          loading='eager'
-          decoding='async'
           style={{ pointerEvents: 'none' }}
         />
-      )}
-      
-      {/* Loading indicator khi hover nhưng splash chưa load */}
-      {isHovered && splashImageUrl && !splashLoaded && !splashError && (
-        <div className='absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center'>
-          <div className='animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent'></div>
-        </div>
-      )}
-      
-      {/* Hover indicator - chỉ hiện khi có splash và đã load */}
-      {isHovered && splashImageUrl && splashLoaded && !splashError && (
-        <div className='absolute top-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs font-medium z-10'>
-          🖼️ Splash
-        </div>
-      )}
-      
-      {/* Error indicator */}
-      {isHovered && splashImageUrl && splashError && (
-        <div className='absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium z-10'>
-          ❌ Lỗi splash
-        </div>
-      )}
-      
-      {/* No splash indicator */}
-      {isHovered && !splashImageUrl && (
-        <div className='absolute top-2 left-2 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium z-10'>
-          ⚠️ Không có splash
-        </div>
       )}
     </div>
   );
