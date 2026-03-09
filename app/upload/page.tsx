@@ -132,8 +132,13 @@ export default function UploadVideoPage() {
       return;
     }
 
-    if (formData.categoryIds.length < 3) {
-      setError('Vui lòng chọn ít nhất 3 thể loại');
+    if (formData.categoryIds.length < 1) {
+      setError('Vui lòng chọn ít nhất 1 thể loại');
+      return;
+    }
+
+    if (formData.categoryIds.length > 10) {
+      setError('Chỉ được chọn tối đa 10 thể loại');
       return;
     }
 
@@ -277,7 +282,7 @@ export default function UploadVideoPage() {
             {/* Category - Multi-select với checkboxes */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Thể loại * (chọn ít nhất 3)
+                Thể loại * (chọn từ 1-10 thể loại)
               </label>
               <div className="bg-secondary border border-accent rounded-lg p-4 max-h-60 overflow-y-auto">
                 {loadingCategories ? (
@@ -304,10 +309,16 @@ export default function UploadVideoPage() {
                           checked={formData.categoryIds.includes(category.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
+                              // Kiểm tra không vượt quá 10
+                              if (formData.categoryIds.length >= 10) {
+                                setError('Chỉ được chọn tối đa 10 thể loại');
+                                return;
+                              }
                               setFormData({
                                 ...formData,
                                 categoryIds: [...formData.categoryIds, category.id],
                               });
+                              setError('');
                             } else {
                               setFormData({
                                 ...formData,
@@ -327,7 +338,7 @@ export default function UploadVideoPage() {
                 )}
               </div>
               <div className="text-xs text-foreground opacity-70 mt-2">
-                Đã chọn: {formData.categoryIds.length}/3 (tối thiểu)
+                Đã chọn: {formData.categoryIds.length}/10 (tối thiểu 1, tối đa 10)
               </div>
             </div>
 
@@ -373,7 +384,7 @@ export default function UploadVideoPage() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={uploading || !file || formData.categoryIds.length < 3}
+                disabled={uploading || !file || formData.categoryIds.length < 1 || formData.categoryIds.length > 10}
                 className="flex-1 btn-accent font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? 'Đang upload...' : 'Upload Video'}
@@ -396,7 +407,7 @@ export default function UploadVideoPage() {
           <ul className="text-xs text-foreground opacity-70 space-y-0.5 list-disc list-inside">
             <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
             <li>Video sẽ được xử lý sau khi upload</li>
-            <li>Phải chọn ít nhất 3 thể loại cho video</li>
+            <li>Phải chọn từ 1 đến 10 thể loại cho video</li>
           </ul>
         </div>
       </div>

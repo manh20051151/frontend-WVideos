@@ -53,8 +53,13 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
     e.preventDefault();
     if (!video) return;
 
-    if (categoryIds.length < 3) {
-      alert('Vui lòng chọn ít nhất 3 thể loại');
+    if (categoryIds.length < 1) {
+      alert('Vui lòng chọn ít nhất 1 thể loại');
+      return;
+    }
+
+    if (categoryIds.length > 10) {
+      alert('Chỉ được chọn tối đa 10 thể loại');
       return;
     }
 
@@ -145,7 +150,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
           {/* Category - Multi-select với checkboxes */}
           <div>
             <label className='block text-sm font-medium text-foreground mb-2'>
-              Thể loại * (chọn ít nhất 3)
+              Thể loại * (chọn từ 1-10 thể loại)
             </label>
             <div className='bg-primary border border-accent rounded-lg p-3 max-h-48 overflow-y-auto'>
               {loadingCategories ? (
@@ -172,6 +177,11 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
                         checked={categoryIds.includes(category.id)}
                         onChange={(e) => {
                           if (e.target.checked) {
+                            // Kiểm tra không vượt quá 10
+                            if (categoryIds.length >= 10) {
+                              alert('Chỉ được chọn tối đa 10 thể loại');
+                              return;
+                            }
                             setCategoryIds([...categoryIds, category.id]);
                           } else {
                             setCategoryIds(categoryIds.filter((id) => id !== category.id));
@@ -188,7 +198,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
               )}
             </div>
             <div className='text-xs text-foreground opacity-60 mt-1'>
-              Đã chọn: {categoryIds.length}/3 (tối thiểu)
+              Đã chọn: {categoryIds.length}/10 (tối thiểu 1, tối đa 10)
             </div>
           </div>
 
@@ -234,7 +244,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
             <button
               type='submit'
               className='flex-1 btn-accent px-4 py-2 rounded-lg transition-colors disabled:opacity-50'
-              disabled={saving || !title.trim() || categoryIds.length < 3}
+              disabled={saving || !title.trim() || categoryIds.length < 1 || categoryIds.length > 10}
             >
               {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
