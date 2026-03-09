@@ -270,18 +270,21 @@ export default function MyVideosPage() {
                         </h3>
                       </Link>
                       
-                      {/* Category */}
-                      {video.category && (
-                        <div className='mb-2'>
-                          <span 
-                            className='inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border border-accent text-foreground'
-                            style={{ 
-                              backgroundColor: video.category.color ? `${video.category.color}20` : undefined,
-                              borderColor: video.category.color || undefined 
-                            }}
-                          >
-                            {video.category.icon} {video.category.name}
-                          </span>
+                      {/* Categories */}
+                      {video.categories && video.categories.length > 0 && (
+                        <div className='mb-2 flex flex-wrap gap-1'>
+                          {video.categories.map((category) => (
+                            <span 
+                              key={category.id}
+                              className='inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border border-accent text-foreground'
+                              style={{ 
+                                backgroundColor: category.color ? `${category.color}20` : undefined,
+                                borderColor: category.color || undefined 
+                              }}
+                            >
+                              {category.icon} {category.name}
+                            </span>
+                          ))}
                         </div>
                       )}
                       

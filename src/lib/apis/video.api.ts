@@ -41,7 +41,7 @@ const videoApi = {
   },
 
   // Update video
-  updateVideo: async (videoId: string, data: Partial<VideoUploadData>): Promise<VideoResponse> => {
+  updateVideo: async (videoId: string, data: { title?: string; description?: string; isPublic?: boolean; categoryIds?: string[] }): Promise<VideoResponse> => {
     const response: ApiResponse<VideoResponse> = await axiosClient.put(`/videos/${videoId}`, data);
     return response.result!;
   },

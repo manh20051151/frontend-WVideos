@@ -19,7 +19,7 @@ export default function UploadVideoPage() {
     title: '',
     description: '',
     isPublic: true,
-    categoryId: '',
+    categoryIds: [],
   });
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -129,6 +129,11 @@ export default function UploadVideoPage() {
 
     if (!formData.title.trim()) {
       setError('Vui lòng nhập tiêu đề video');
+      return;
+    }
+
+    if (formData.categoryIds.length < 3) {
+      setError('Vui lòng chọn ít nhất 3 thể loại');
       return;
     }
 
@@ -269,30 +274,61 @@ export default function UploadVideoPage() {
               />
             </div>
 
-            {/* Category */}
+            {/* Category - Multi-select với checkboxes */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
-                Thể loại
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Thể loại * (chọn ít nhất 3)
               </label>
-              <select
-                id="category"
-                value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="auth-input"
-                disabled={uploading || loadingCategories}
-              >
-                <option value="">-- Chọn thể loại --</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.icon} {category.name}
-                  </option>
-                ))}
-              </select>
-              {loadingCategories && (
-                <div className="text-xs text-foreground opacity-60 mt-1">
-                  Đang tải danh sách thể loại...
-                </div>
-              )}
+              <div className="bg-secondary border border-accent rounded-lg p-4 max-h-60 overflow-y-auto">
+                {loadingCategories ? (
+                  <div className="text-sm text-foreground opacity-70 text-center py-4">
+                    Đang tải danh sách thể loại...
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="text-sm text-foreground opacity-70 text-center py-4">
+                    Không có thể loại nào
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {categories.map((category) => (
+                      <label
+                        key={category.id}
+                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.categoryIds.includes(category.id)
+                            ? 'border-highlight bg-highlight bg-opacity-10 text-black dark:text-white'
+                            : 'border-transparent bg-primary hover:border-accent hover:border-opacity-50 text-accent'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.categoryIds.includes(category.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({
+                                ...formData,
+                                categoryIds: [...formData.categoryIds, category.id],
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                categoryIds: formData.categoryIds.filter((id) => id !== category.id),
+                              });
+                            }
+                          }}
+                          className="h-4 w-4 text-accent focus:ring-accent border-accent rounded mr-3"
+                          disabled={uploading}
+                        />
+                        <span className="text-sm font-medium">
+                          {category.icon} {category.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="text-xs text-foreground opacity-70 mt-2">
+                Đã chọn: {formData.categoryIds.length}/3 (tối thiểu)
+              </div>
             </div>
 
             {/* Public/Private */}
@@ -337,7 +373,7 @@ export default function UploadVideoPage() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={uploading || !file}
+                disabled={uploading || !file || formData.categoryIds.length < 3}
                 className="flex-1 btn-accent font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? 'Đang upload...' : 'Upload Video'}
@@ -360,6 +396,7 @@ export default function UploadVideoPage() {
           <ul className="text-xs text-foreground opacity-70 space-y-0.5 list-disc list-inside">
             <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
             <li>Video sẽ được xử lý sau khi upload</li>
+            <li>Phải chọn ít nhất 3 thể loại cho video</li>
           </ul>
         </div>
       </div>

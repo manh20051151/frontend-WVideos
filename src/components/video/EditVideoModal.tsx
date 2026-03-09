@@ -8,14 +8,14 @@ interface EditVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
   video: VideoResponse | null;
-  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => Promise<void>;
+  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryIds: string[] }) => Promise<void>;
 }
 
 export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditVideoModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -33,7 +33,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       setTitle(video.title || '');
       setDescription(video.description || '');
       setIsPublic(video.isPublic ?? true);
-      setCategoryId(video.category?.id || '');
+      setCategoryIds(video.categories?.map(c => c.id) || []);
     }
   }, [video]);
 
@@ -53,13 +53,18 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
     e.preventDefault();
     if (!video) return;
 
+    if (categoryIds.length < 3) {
+      alert('Vui lòng chọn ít nhất 3 thể loại');
+      return;
+    }
+
     setSaving(true);
     try {
       await onSave(video.id, {
         title: title.trim(),
         description: description.trim(),
         isPublic,
-        categoryId: categoryId || undefined // Gửi undefined nếu không chọn thể loại
+        categoryIds
       });
       onClose();
     } catch (error) {
@@ -137,30 +142,54 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
             </div>
           </div>
 
-          {/* Category */}
+          {/* Category - Multi-select với checkboxes */}
           <div>
-            <label htmlFor='category' className='block text-sm font-medium text-foreground mb-2'>
-              Thể loại
+            <label className='block text-sm font-medium text-foreground mb-2'>
+              Thể loại * (chọn ít nhất 3)
             </label>
-            <select
-              id='category'
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className='auth-input'
-              disabled={loadingCategories}
-            >
-              <option value=''>-- Chọn thể loại --</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.icon} {category.name}
-                </option>
-              ))}
-            </select>
-            {loadingCategories && (
-              <div className='text-xs text-foreground opacity-60 mt-1'>
-                Đang tải danh sách thể loại...
-              </div>
-            )}
+            <div className='bg-primary border border-accent rounded-lg p-3 max-h-48 overflow-y-auto'>
+              {loadingCategories ? (
+                <div className='text-sm text-foreground opacity-60 text-center py-4'>
+                  Đang tải danh sách thể loại...
+                </div>
+              ) : categories.length === 0 ? (
+                <div className='text-sm text-foreground opacity-60 text-center py-4'>
+                  Không có thể loại nào
+                </div>
+              ) : (
+                <div className='grid grid-cols-1 gap-2'>
+                  {categories.map((category) => (
+                    <label
+                      key={category.id}
+                      className={`flex items-center p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                        categoryIds.includes(category.id)
+                          ? 'border-accent bg-accent bg-opacity-20'
+                          : 'border-transparent bg-secondary hover:border-accent hover:border-opacity-50'
+                      }`}
+                    >
+                      <input
+                        type='checkbox'
+                        checked={categoryIds.includes(category.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setCategoryIds([...categoryIds, category.id]);
+                          } else {
+                            setCategoryIds(categoryIds.filter((id) => id !== category.id));
+                          }
+                        }}
+                        className='h-4 w-4 text-accent focus:ring-accent border-accent rounded mr-2'
+                      />
+                      <span className='text-sm text-foreground'>
+                        {category.icon} {category.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className='text-xs text-foreground opacity-60 mt-1'>
+              Đã chọn: {categoryIds.length}/3 (tối thiểu)
+            </div>
           </div>
 
           {/* Privacy */}
@@ -205,7 +234,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
             <button
               type='submit'
               className='flex-1 btn-accent px-4 py-2 rounded-lg transition-colors disabled:opacity-50'
-              disabled={saving || !title.trim()}
+              disabled={saving || !title.trim() || categoryIds.length < 3}
             >
               {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
