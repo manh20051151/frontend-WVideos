@@ -109,7 +109,7 @@ export default function MyVideosPage() {
     setEditingVideo(video);
   };
 
-  const handleSaveVideo = async (videoId: string, data: { title: string; description: string; isPublic: boolean }) => {
+  const handleSaveVideo = async (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => {
     try {
       const updatedVideo = await videoApi.updateVideo(videoId, data);
       
@@ -269,6 +269,21 @@ export default function MyVideosPage() {
                           {video.title}
                         </h3>
                       </Link>
+                      
+                      {/* Category */}
+                      {video.category && (
+                        <div className='mb-2'>
+                          <span 
+                            className='inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border border-accent text-foreground'
+                            style={{ 
+                              backgroundColor: video.category.color ? `${video.category.color}20` : undefined,
+                              borderColor: video.category.color || undefined 
+                            }}
+                          >
+                            {video.category.icon} {video.category.name}
+                          </span>
+                        </div>
+                      )}
                       
                       <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
                         <span>👁️ {video.views} lượt xem</span>

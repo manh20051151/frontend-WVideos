@@ -37,6 +37,7 @@ axiosClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('❌ Axios Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -44,8 +45,9 @@ axiosClient.interceptors.request.use(
 // Response interceptor với auto-refresh token
 axiosClient.interceptors.response.use(
   (response) => {
-    // Return response.data để match với ApiResponse<T> format
-    return response.data;
+    // Return response.data.result để lấy data thực từ ApiResponse<T>
+    // Nếu không có result (response trực tiếp), return response.data
+    return response.data?.result !== undefined ? response.data.result : response.data;
   },
   async (error) => {
     const originalRequest = error.config;

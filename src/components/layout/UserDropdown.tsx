@@ -38,6 +38,15 @@ const MENU_ITEMS = [
     },
 ];
 
+// Admin menu items (chỉ hiện cho admin)
+const ADMIN_MENU_ITEMS = [
+    {
+        href: '/admin/dashboard',
+        label: '🎛️ Dashboard Admin',
+        icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    },
+];
+
 export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout }: UserDropdownProps) {
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -71,9 +80,34 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
                     <div className='px-4 py-3 border-b border-accent'>
                         <p className='text-sm font-medium text-foreground'>{user.fullName || user.username}</p>
                         <p className='text-xs text-gray-500 dark:text-gray-400 truncate'>{user.email}</p>
+                        {user.roles?.some(role => role.name === 'ADMIN') && (
+                            <span className='inline-block mt-1 px-2 py-1 text-xs bg-highlight text-white rounded-full'>
+                                Admin
+                            </span>
+                        )}
                     </div>
 
-                    {/* Menu items */}
+                    {/* Admin menu items (chỉ hiện cho admin) */}
+                    {user.roles?.some(role => role.name === 'ADMIN') && (
+                        <>
+                            {ADMIN_MENU_ITEMS.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className='flex items-center gap-2 px-4 py-2 text-foreground hover:bg-secondary transition-colors font-medium'
+                                    onClick={onClose}
+                                >
+                                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d={item.icon} />
+                                    </svg>
+                                    {item.label}
+                                </Link>
+                            ))}
+                            <hr className='my-2 border-accent' />
+                        </>
+                    )}
+
+                    {/* Regular menu items */}
                     {MENU_ITEMS.map((item) => (
                         <Link
                             key={item.href}

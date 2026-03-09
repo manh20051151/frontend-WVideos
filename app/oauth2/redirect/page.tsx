@@ -29,16 +29,46 @@ function OAuth2RedirectContent() {
       return;
     }
 
-    // Lưu token vào localStorage
-    localStorage.setItem('token', token);
-    
-    setStatus('success');
-    setMessage('Đăng nhập Google thành công!');
+    // Lưu token và lấy thông tin user
+    const handleOAuth2Login = async () => {
+      try {
+        // Lưu token vào localStorage
+        localStorage.setItem('token', token);
+        
+        // Gọi API để lấy thông tin user
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/users/myInfo`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-    // Redirect về trang chủ sau 1 giây
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 1000);
+        if (!response.ok) {
+          throw new Error('Không thể lấy thông tin người dùng');
+        }
+
+        const data = await response.json();
+        const userInfo = data.result || data;
+        
+        // Lưu thông tin user vào localStorage
+        localStorage.setItem('user', JSON.stringify(userInfo));
+        
+        setStatus('success');
+        setMessage('Đăng nhập Google thành công!');
+
+        // Redirect về trang chủ sau 1 giây
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+      } catch (err) {
+        console.error('Error fetching user info:', err);
+        setStatus('error');
+        setMessage('Đăng nhập thành công nhưng không thể lấy thông tin người dùng. Vui lòng thử đăng nhập lại.');
+        localStorage.removeItem('token');
+      }
+    };
+
+    handleOAuth2Login();
   }, [searchParams, router]);
 
   return (

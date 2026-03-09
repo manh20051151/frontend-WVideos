@@ -1,3 +1,5 @@
+import type { Category } from '@/lib/apis/category.api';
+
 /**
  * Dữ liệu gửi lên khi upload video
  */
@@ -5,6 +7,7 @@ export interface VideoUploadData {
     title: string;
     description?: string;
     isPublic?: boolean;
+    categoryId?: string; // ID của thể loại
 }
 
 /**
@@ -29,6 +32,7 @@ export interface VideoResponse {
     views: number;
     status: VideoStatus;
     isPublic: boolean;
+    category?: Category; // Thông tin thể loại
     userId: string;
     username: string;
     createdAt: string;

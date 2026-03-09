@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import videoApi from '@/lib/apis/video.api';
+import { categoryApi, Category } from '@/lib/apis/category.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { formatFileSize } from '@/lib/utils';
 import type { VideoUploadData } from '@/types';
@@ -18,11 +19,31 @@ export default function UploadVideoPage() {
     title: '',
     description: '',
     isPublic: true,
+    categoryId: '',
   });
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  // Load categories khi component mount
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const data = await categoryApi.getActiveCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách thể loại:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   // Show login required message if not authenticated
   if (!user) {
@@ -246,6 +267,32 @@ export default function UploadVideoPage() {
                 placeholder="Mô tả về video của bạn..."
                 disabled={uploading}
               />
+            </div>
+
+            {/* Category */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
+                Thể loại
+              </label>
+              <select
+                id="category"
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                className="auth-input"
+                disabled={uploading || loadingCategories}
+              >
+                <option value="">-- Chọn thể loại --</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.icon} {category.name}
+                  </option>
+                ))}
+              </select>
+              {loadingCategories && (
+                <div className="text-xs text-foreground opacity-60 mt-1">
+                  Đang tải danh sách thể loại...
+                </div>
+              )}
             </div>
 
             {/* Public/Private */}

@@ -2,19 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import { VideoResponse } from '@/lib/apis/video.api';
+import { categoryApi, Category } from '@/lib/apis/category.api';
 
 interface EditVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
   video: VideoResponse | null;
-  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean }) => Promise<void>;
+  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => Promise<void>;
 }
 
 export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditVideoModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const [categoryId, setCategoryId] = useState('');
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  // Load categories khi modal mở
+  useEffect(() => {
+    if (isOpen) {
+      loadCategories();
+    }
+  }, [isOpen]);
 
   // Cập nhật form khi video thay đổi
   useEffect(() => {
@@ -22,8 +33,21 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       setTitle(video.title || '');
       setDescription(video.description || '');
       setIsPublic(video.isPublic ?? true);
+      setCategoryId(video.category?.id || '');
     }
   }, [video]);
+
+  const loadCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const data = await categoryApi.getActiveCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách thể loại:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +58,8 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       await onSave(video.id, {
         title: title.trim(),
         description: description.trim(),
-        isPublic
+        isPublic,
+        categoryId: categoryId || undefined // Gửi undefined nếu không chọn thể loại
       });
       onClose();
     } catch (error) {
@@ -110,6 +135,32 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
             <div className='text-xs text-foreground opacity-60 mt-1'>
               {description.length}/1000 ký tự
             </div>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label htmlFor='category' className='block text-sm font-medium text-foreground mb-2'>
+              Thể loại
+            </label>
+            <select
+              id='category'
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className='auth-input'
+              disabled={loadingCategories}
+            >
+              <option value=''>-- Chọn thể loại --</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.icon} {category.name}
+                </option>
+              ))}
+            </select>
+            {loadingCategories && (
+              <div className='text-xs text-foreground opacity-60 mt-1'>
+                Đang tải danh sách thể loại...
+              </div>
+            )}
           </div>
 
           {/* Privacy */}

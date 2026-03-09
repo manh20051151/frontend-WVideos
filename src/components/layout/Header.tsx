@@ -114,6 +114,11 @@ export default function Header() {
                 <Link href='/nap-tien' className='btn'>
                   💰 Nạp tiền
                 </Link>
+                {user.roles?.some(role => role.name === 'ADMIN') && (
+                  <Link href='/admin/dashboard' className='btn btn-accent'>
+                    🔧 Admin
+                  </Link>
+                )}
                 <UserDropdown
                   user={user}
                   isOpen={isUserMenuOpen}
@@ -130,6 +135,9 @@ export default function Header() {
                 <button onClick={() => openAuthModal('login')} className='btn'>
                   Đăng nhập
                 </button>
+                <Link href='/login' className='btn btn-accent'>
+                  🔐 Admin
+                </Link>
               </>
             )}
           </div>
