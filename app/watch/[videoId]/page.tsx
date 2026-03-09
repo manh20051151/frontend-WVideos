@@ -23,9 +23,6 @@ export default function WatchVideoPage() {
         setLoading(true);
         const videoData = await videoApi.getVideoById(videoId);
         setVideo(videoData);
-        
-        // Tăng lượt xem
-        await videoApi.incrementViews(videoId);
       } catch (error) {
         console.error('Error fetching video:', error);
         setError('Không thể tải video');
@@ -38,6 +35,23 @@ export default function WatchVideoPage() {
       fetchVideo();
     }
   }, [videoId]);
+
+  // Tăng lượt xem một lần khi video load thành công
+  useEffect(() => {
+    if (video && video.status === 'READY') {
+      // Chỉ tăng view cho video sẵn sàng và delay một chút để tránh spam
+      const timer = setTimeout(async () => {
+        try {
+          await videoApi.incrementViews(videoId);
+          console.log('👁️ Đã tăng lượt xem cho video:', video.title);
+        } catch (error) {
+          console.error('Lỗi khi tăng lượt xem:', error);
+        }
+      }, 2000); // Delay 2 giây
+
+      return () => clearTimeout(timer);
+    }
+  }, [video, videoId]);
 
   if (loading) {
     return (
