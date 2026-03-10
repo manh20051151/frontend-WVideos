@@ -42,7 +42,7 @@ axiosClient.interceptors.request.use(
   }
 );
 
-// Response interceptor với auto-refresh token
+// Response interceptor với auto-refresh token chỉ khi token hết hạn
 axiosClient.interceptors.response.use(
   (response) => {
     // Return response.data.result để lấy data thực từ ApiResponse<T>
@@ -52,9 +52,20 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu lỗi 401 và không phải request refresh token
+    // Chỉ refresh khi: lỗi 401 + code 5002 (TOKEN_EXPIRED) + chưa retry + không phải request refresh
+    const isTokenExpired = error.response?.status === 401 && 
+                           error.response?.data?.code === 5002;
+    
+    // Nếu lỗi 401 nhưng KHÔNG phải token expired -> logout ngay (token invalid, revoked,...)
+    if (error.response?.status === 401 && !isTokenExpired && !originalRequest._retry) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+    
     if (
-      error.response?.status === 401 &&
+      isTokenExpired &&
       !originalRequest._retry &&
       !originalRequest.url?.includes('/auth/refresh')
     ) {
