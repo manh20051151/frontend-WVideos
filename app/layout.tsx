@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import QueryProvider from '@/components/providers/QueryProvider';
 
 export const metadata: Metadata = {
   title: 'WVideos - Nền tảng chia sẻ video',
@@ -36,7 +37,9 @@ export default function RootLayout({
         />
       </head>
       <body className='antialiased min-h-screen flex flex-col' suppressHydrationWarning>
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

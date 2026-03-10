@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import videoApi, { VideoResponse } from '@/lib/apis/video.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import ClientOnly from '@/components/common/ClientOnly';
-import HoverThumbnail from '@/components/common/HoverThumbnail';
+import VideoCard from '@/components/video/VideoCard';
 import EditVideoModal from '@/components/video/EditVideoModal';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -14,53 +15,55 @@ import Footer from '@/components/layout/Footer';
 export default function MyVideosPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [videos, setVideos] = useState<VideoResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [editingVideo, setEditingVideo] = useState<VideoResponse | null>(null);
 
-  const fetchVideos = async () => {
+  // Sử dụng React Query để caching và tối ưu performance
+  const { data: videosData, isLoading: loading } = useQuery({
+    queryKey: ['myVideos', page],
+    queryFn: () => videoApi.getMyVideos(page, 12),
+    enabled: !!user, // Chỉ fetch khi đã có user
+    staleTime: 5 * 60 * 1000, // Cache 5 phút
+  });
+
+  const videos = videosData?.content || [];
+  const totalPages = videosData?.totalPages || 0;
+
+  // Định nghĩa TẤT CẢ hooks trước khi có bất kỳ early return nào
+  const handleDelete = useCallback(async (videoId: string) => {
+    if (!confirm('Bạn có chắc muốn xóa video này?')) return;
+
     try {
-      setLoading(true);
-      const response = await videoApi.getMyVideos(page, 12);
-      console.log('📹 Videos response:', response);
-      console.log('📹 First video:', response.content[0]);
-      
-      // Debug thumbnail URLs
-      response.content.forEach((video, index) => {
-        console.log(`🖼️ Video ${index + 1} (${video.title}):`, {
-          id: video.id,
-          thumbnailUrl: video.thumbnailUrl,
-          splashImageUrl: video.splashImageUrl,
-          status: video.status
-        });
-      });
-      
-      setVideos(response.content);
-      setTotalPages(response.totalPages);
+      await videoApi.deleteVideo(videoId);
+      queryClient.invalidateQueries({ queryKey: ['myVideos'] });
     } catch (error) {
-      console.error('Error fetching videos:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error deleting video:', error);
+      alert('Xóa video thất bại');
     }
-  };
+  }, [queryClient]);
 
-  // Check authentication
-  useEffect(() => {
-    // Chỉ redirect khi đã load xong và không có user
-    if (!authLoading && !user) {
-      router.push('/');
+  const handleEditVideo = useCallback((video: VideoResponse) => {
+    setEditingVideo(video);
+  }, []);
+
+  const handleSaveVideo = useCallback(async (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => {
+    try {
+      await videoApi.updateVideo(videoId, data);
+      queryClient.invalidateQueries({ queryKey: ['myVideos'] });
+      setEditingVideo(null);
+      alert('Cập nhật video thành công!');
+    } catch (error) {
+      console.error('Error updating video:', error);
+      throw error;
     }
-  }, [user, authLoading, router]);
+  }, [queryClient]);
 
-  useEffect(() => {
-    if (user && typeof window !== 'undefined') {
-      fetchVideos();
-    }
-  }, [page, user]);
+  const handleCloseEditModal = useCallback(() => {
+    setEditingVideo(null);
+  }, []);
 
-  // Early return AFTER all hooks - wrap trong ClientOnly
+  // Early return SAU KHI đã định nghĩa tất cả hooks
   if (!user) {
     return (
       <ClientOnly fallback={
@@ -93,77 +96,6 @@ export default function MyVideosPage() {
     );
   }
 
-  const handleDelete = async (videoId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa video này?')) return;
-
-    try {
-      await videoApi.deleteVideo(videoId);
-      fetchVideos();
-    } catch (error) {
-      console.error('Error deleting video:', error);
-      alert('Xóa video thất bại');
-    }
-  };
-
-  const handleEditVideo = (video: VideoResponse) => {
-    setEditingVideo(video);
-  };
-
-  const handleSaveVideo = async (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => {
-    try {
-      const updatedVideo = await videoApi.updateVideo(videoId, data);
-      
-      // Cập nhật video trong danh sách
-      setVideos(prevVideos => 
-        prevVideos.map(video => 
-          video.id === videoId ? updatedVideo : video
-        )
-      );
-      
-      setEditingVideo(null);
-      alert('Cập nhật video thành công!');
-    } catch (error) {
-      console.error('Error updating video:', error);
-      throw error; // Re-throw để EditVideoModal xử lý
-    }
-  };
-
-  const handleCloseEditModal = () => {
-    setEditingVideo(null);
-  };
-
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      UPLOADING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      PROCESSING: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      READY: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      FAILED: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-      DELETED: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
-    };
-
-    const labels = {
-      UPLOADING: 'Đang upload',
-      PROCESSING: 'Đang xử lý',
-      READY: 'Sẵn sàng',
-      FAILED: 'Thất bại',
-      DELETED: 'Đã xóa',
-    };
-
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badges[status as keyof typeof badges]}`}>
-        {labels[status as keyof typeof labels]}
-      </span>
-    );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   return (
     <>
       <Header />
@@ -172,7 +104,7 @@ export default function MyVideosPage() {
           {/* Header */}
           <div className='flex justify-between items-center mb-8'>
             <div>
-              <h1 className='text-3xl font-bold text-foreground'>� Video của tôi</h1>
+              <h1 className='text-3xl font-bold text-foreground'> Video của tôi</h1>
               <p className='mt-2 text-foreground opacity-70'>
                 Quản lý tất cả video bạn đã upload
               </p>
@@ -186,7 +118,7 @@ export default function MyVideosPage() {
           </div>
 
           {/* Loading */}
-          {loading ? (
+          {loading || authLoading ? (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {[...Array(6)].map((_, i) => (
                 <div key={i} className='bg-secondary rounded-lg overflow-hidden shadow animate-pulse'>
@@ -232,88 +164,12 @@ export default function MyVideosPage() {
             <>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {videos.map((video) => (
-                  <div
+                  <VideoCard
                     key={video.id}
-                    className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'
-                  >
-                    {/* Thumbnail với Hover Splash Image */}
-                    <div className='relative'>
-                      <Link href={`/watch/${video.id}`} className='block cursor-pointer'>
-                        <HoverThumbnail
-                          thumbnailUrl={video.thumbnailUrl}
-                          splashImageUrl={video.splashImageUrl}
-                          alt={video.title}
-                          title={video.title}
-                          className='w-full h-48'
-                        />
-                        
-                        <div className='absolute top-2 right-2 z-20'>
-                          {getStatusBadge(video.status)}
-                        </div>
-
-                        {/* Play button overlay - hiện khi hover */}
-                        <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity'>
-                          <div className='bg-black bg-opacity-50 rounded-full p-3'>
-                            <svg className='w-8 h-8 text-white' fill='currentColor' viewBox='0 0 24 24'>
-                              <path d='M8 5v14l11-7z'/>
-                            </svg>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-
-                    {/* Info */}
-                    <div className='p-4'>
-                      <Link href={`/watch/${video.id}`} className='block hover:text-accent transition-colors'>
-                        <h3 className='font-semibold text-foreground line-clamp-2 mb-2'>
-                          {video.title}
-                        </h3>
-                      </Link>
-                      
-                      {/* Categories */}
-                      {video.categories && video.categories.length > 0 && (
-                        <div className='mb-2 flex flex-wrap gap-1'>
-                          {video.categories.map((category) => (
-                            <span 
-                              key={category.id}
-                              className='inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border border-accent text-foreground'
-                              style={{ 
-                                backgroundColor: category.color ? `${category.color}20` : undefined,
-                                borderColor: category.color || undefined 
-                              }}
-                            >
-                              {category.icon} {category.name}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
-                        <span>👁️ {video.views} lượt xem</span>
-                        <span>{video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}</span>
-                      </div>
-                      <p className='text-xs text-foreground opacity-50 mb-4'>
-                        {formatDate(video.createdAt)}
-                      </p>
-
-                      {/* Actions */}
-                      <div className='flex gap-2'>
-                        <button
-                          className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
-                          onClick={() => handleEditVideo(video)}
-                        >
-                          ✏️ Chỉnh sửa
-                        </button>
-                        
-                        <button
-                          onClick={() => handleDelete(video.id)}
-                          className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
-                        >
-                          🗑️ Xóa
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    video={video}
+                    onEdit={handleEditVideo}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </div>
 
