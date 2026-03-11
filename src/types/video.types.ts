@@ -8,6 +8,7 @@ export interface VideoUploadData {
     description?: string;
     isPublic?: boolean;
     categoryIds: string[]; // Danh sách ID của các thể loại (yêu cầu ít nhất 3)
+    tags?: string[]; // Tags cho video (tối đa 10 tags)
 }
 
 /**
@@ -32,7 +33,8 @@ export interface VideoResponse {
     views: number;
     status: VideoStatus;
     isPublic: boolean;
-    categories: Category[]; // Danh sách các thể loại
+    categories: Category[];
+    tags?: string[];
     userId: string;
     username: string;
     createdAt: string;

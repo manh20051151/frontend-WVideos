@@ -140,18 +140,18 @@ export default function WatchVideoPage() {
         <div className='max-w-6xl mx-auto'>
           {/* Video Player */}
           <div className='bg-secondary rounded-lg overflow-hidden shadow-lg mb-6'>
-            <div className='relative aspect-video'  style={{marginTop: '-94px',marginBottom: '0px'}}>
-              {video.downloadUrl ? (
+            <div className='relative aspect-video'  style={{marginBottom: '0px'}}>
+              {video.embedUrl ? (
                 <iframe
                   width='100%'
                   height='100%'
-                  src={video.downloadUrl}
+                  src={video.embedUrl}
                   scrolling='no'
                   frameBorder='0'
                   allowFullScreen={true}
                   title={video.title}
                   // className='w-full h-full'
-                  style={{marginLeft: '-28px', width: '105%',height: '111%'}}
+                  // style={{marginLeft: '-28px', width: '105%',height: '111%'}}
                 />
               ) : (
                 <div className='w-full h-full flex items-center justify-center text-white'>

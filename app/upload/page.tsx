@@ -20,7 +20,9 @@ export default function UploadVideoPage() {
     description: '',
     isPublic: true,
     categoryIds: [],
+    tags: [],
   });
+  const [tagInput, setTagInput] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
@@ -28,7 +30,44 @@ export default function UploadVideoPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
-  // Load categories khi component mount
+  // Thêm tag khi nhấn Enter hoặc dấu phẩy
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const addTag = () => {
+    const trimmed = tagInput.trim().toLowerCase();
+    if (!trimmed) return;
+    
+    // Tối đa 10 tags
+    if ((formData.tags?.length || 0) >= 10) {
+      setError('Tối đa 10 tags');
+      return;
+    }
+    
+    // Không trùng lặp
+    if (formData.tags?.includes(trimmed)) {
+      setTagInput('');
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      tags: [...(prev.tags || []), trimmed],
+    }));
+    setTagInput('');
+    setError('');
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || [],
+    }));
+  };
   useEffect(() => {
     loadCategories();
   }, []);
@@ -342,6 +381,45 @@ export default function UploadVideoPage() {
               </div>
             </div>
 
+            {/* Tags */}
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
+                Tags (tối đa 10)
+              </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {formData.tags?.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-accent text-white"
+                  >
+                    #{tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="ml-1 hover:text-red-200"
+                      disabled={uploading}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                type="text"
+                id="tags"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                onBlur={addTag}
+                className="auth-input"
+                placeholder="Nhập tag và nhấn Enter (ví dụ: gaming, tutorial)"
+                disabled={uploading}
+              />
+              <p className="text-xs text-foreground opacity-50 mt-1">
+                Nhấn Enter hoặc dấu phẩy để thêm tag. Tối đa 10 tags.
+              </p>
+            </div>
+
             {/* Public/Private */}
             <div className="flex items-center">
               <input
@@ -408,6 +486,7 @@ export default function UploadVideoPage() {
             <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
             <li>Video sẽ được xử lý sau khi upload</li>
             <li>Phải chọn từ 1 đến 10 thể loại cho video</li>
+            <li>Có thể thêm tối đa 10 tags để dễ tìm kiếm</li>
           </ul>
         </div>
       </div>
