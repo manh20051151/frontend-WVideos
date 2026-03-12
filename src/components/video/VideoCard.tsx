@@ -40,11 +40,32 @@ const getStatusBadge = (status: string) => {
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffSecs < 60) {
+    return 'vừa xong';
+  } else if (diffMins < 60) {
+    return `${diffMins} phút trước`;
+  } else if (diffHours < 24) {
+    return `${diffHours} giờ trước`;
+  } else if (diffDays < 7) {
+    return `${diffDays} ngày trước`;
+  } else if (diffWeeks < 4) {
+    return `${diffWeeks} tuần trước`;
+  } else if (diffMonths < 12) {
+    return `${diffMonths} tháng trước`;
+  } else {
+    return `${diffYears} năm trước`;
+  }
 };
 
 // Memoized component để tránh re-render không cần thiết
