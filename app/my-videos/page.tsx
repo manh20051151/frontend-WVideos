@@ -18,6 +18,8 @@ export default function MyVideosPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [editingVideo, setEditingVideo] = useState<VideoResponse | null>(null);
+  const [deletingVideo, setDeletingVideo] = useState<VideoResponse | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Sử dụng React Query để caching và tối ưu performance
   const { data: videosData, isLoading: loading } = useQuery({
@@ -31,17 +33,29 @@ export default function MyVideosPage() {
   const totalPages = videosData?.totalPages || 0;
 
   // Định nghĩa TẤT CẢ hooks trước khi có bất kỳ early return nào
-  const handleDelete = useCallback(async (videoId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa video này?')) return;
+  const handleDeleteClick = useCallback((video: VideoResponse) => {
+    setDeletingVideo(video);
+  }, []);
 
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deletingVideo) return;
+
+    setIsDeleting(true);
     try {
-      await videoApi.deleteVideo(videoId);
+      await videoApi.deleteVideo(deletingVideo.id);
       queryClient.invalidateQueries({ queryKey: ['myVideos'] });
+      setDeletingVideo(null);
     } catch (error) {
       console.error('Error deleting video:', error);
       alert('Xóa video thất bại');
+    } finally {
+      setIsDeleting(false);
     }
-  }, [queryClient]);
+  }, [deletingVideo, queryClient]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeletingVideo(null);
+  }, []);
 
   const handleEditVideo = useCallback((video: VideoResponse) => {
     setEditingVideo(video);
@@ -145,7 +159,7 @@ export default function MyVideosPage() {
             <>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {videos.map((video) => (
-                  <VideoCard key={video.id} video={video} onEdit={handleEditVideo} onDelete={handleDelete} />
+                  <VideoCard key={video.id} video={video} onEdit={handleEditVideo} onDelete={() => handleDeleteClick(video)} />
                 ))}
               </div>
               {totalPages > 1 && (
@@ -166,6 +180,54 @@ export default function MyVideosPage() {
           video={editingVideo}
           onSave={handleSaveVideo}
         />
+
+        {/* Delete Confirmation Modal */}
+        {deletingVideo && (
+          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+            <div className='bg-secondary rounded-xl p-6 max-w-md w-full border border-accent shadow-2xl'>
+              <div className='flex items-center gap-3 mb-4'>
+                <div className='w-12 h-12 rounded-full bg-red-100 flex items-center justify-center'>
+                  <svg className='w-6 h-6 text-red-600' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                  </svg>
+                </div>
+                <h3 className='text-xl font-bold text-foreground'>Xác nhận xóa</h3>
+              </div>
+
+              <p className='text-foreground opacity-80 mb-6'>
+                Bạn có chắc muốn xóa video <strong className='text-foreground'>&quot;{deletingVideo.title}&quot;</strong>?<br />
+                <span className='text-sm opacity-60'>Video sẽ được chuyển vào thùng rác và có thể khôi phục sau.</span>
+              </p>
+
+              <div className='flex gap-3 justify-end'>
+                <button
+                  onClick={handleCancelDelete}
+                  disabled={isDeleting}
+                  className='px-4 py-2 rounded-lg border border-accent text-foreground hover:bg-primary transition-colors disabled:opacity-50'
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  disabled={isDeleting}
+                  className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2'
+                >
+                  {isDeleting ? (
+                    <>
+                      <svg className='animate-spin h-4 w-4' viewBox='0 0 24 24'>
+                        <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' fill='none' />
+                        <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' />
+                      </svg>
+                      Đang xóa...
+                    </>
+                  ) : (
+                    <>🗑️ Xóa video</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
     </>
