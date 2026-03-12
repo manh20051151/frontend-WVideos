@@ -18,11 +18,23 @@ const videoApi = {
     return response.result!;
   },
 
-  // Get my videos
+  // Get my videos (không bao gồm đã xóa)
   getMyVideos: async (page = 0, size = 10): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get('/videos/my-videos', {
       params: { page, size, sortBy: 'createdAt', sortDir: 'DESC' },
     });
+  },
+
+  // Get deleted videos (thùng rác)
+  getDeletedVideos: async (page = 0, size = 10): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get('/videos/deleted', {
+      params: { page, size, sortBy: 'createdAt', sortDir: 'DESC' },
+    });
+  },
+
+  // Restore video
+  restoreVideo: async (videoId: string): Promise<VideoResponse> => {
+    return await axiosClient.post(`/videos/${videoId}/restore`);
   },
 
   // Get public videos

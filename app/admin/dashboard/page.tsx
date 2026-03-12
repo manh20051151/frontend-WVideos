@@ -208,7 +208,7 @@ export default function AdminDashboardPage() {
                 <span className='text-xl'>👥</span>
                 <span className='font-medium text-foreground'>Quản lý người dùng</span>
               </button>
-              
+
               <button
                 onClick={() => router.push('/admin/videos')}
                 className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
@@ -216,13 +216,21 @@ export default function AdminDashboardPage() {
                 <span className='text-xl'>📹</span>
                 <span className='font-medium text-foreground'>Quản lý video</span>
               </button>
-              
+
               <button
                 onClick={() => router.push('/admin/settings')}
                 className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
               >
                 <span className='text-xl'>⚙️</span>
                 <span className='font-medium text-foreground'>Cài đặt hệ thống</span>
+              </button>
+
+              <button
+                onClick={() => router.push('/admin/trash')}
+                className='flex items-center space-x-2 p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors'
+              >
+                <span className='text-xl'>🗑️</span>
+                <span className='font-medium text-red-600'>Thùng rác video</span>
               </button>
             </div>
           </div>

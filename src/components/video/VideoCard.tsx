@@ -9,6 +9,10 @@ interface VideoCardProps {
   video: VideoResponse;
   onEdit: (video: VideoResponse) => void;
   onDelete: (videoId: string) => void;
+  onRestore?: (videoId: string) => void;
+  isDeleted?: boolean;
+  showUserInfo?: boolean;
+  allowViewWhenDeleted?: boolean;
 }
 
 const getStatusBadge = (status: string) => {
@@ -44,36 +48,65 @@ const formatDate = (dateString: string) => {
 };
 
 // Memoized component để tránh re-render không cần thiết
-const VideoCard = memo(function VideoCard({ video, onEdit, onDelete }: VideoCardProps) {
+const VideoCard = memo(function VideoCard({ 
+  video, 
+  onEdit, 
+  onDelete, 
+  onRestore, 
+  isDeleted, 
+  showUserInfo = false,
+  allowViewWhenDeleted = false 
+}: VideoCardProps) {
   const handleEdit = () => onEdit(video);
   const handleDelete = () => onDelete(video.id);
+  const handleRestore = () => onRestore?.(video.id);
 
   return (
-    <div className='bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20'>
+    <div className={`bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20 ${isDeleted ? 'opacity-75' : ''}`}>
       {/* Thumbnail */}
       <div className='relative'>
-        <Link href={`/watch/${video.id}`} className='block cursor-pointer'>
-          <HoverThumbnail
-            thumbnailUrl={video.thumbnailUrl}
-            splashImageUrl={video.splashImageUrl}
-            alt={video.title}
-            title={video.title}
-            className='w-full h-48'
-          />
-          
-          <div className='absolute top-2 right-2 z-20'>
-            {getStatusBadge(video.status)}
-          </div>
+        {isDeleted && !allowViewWhenDeleted ? (
+          <div className='block cursor-not-allowed'>
+            <HoverThumbnail
+              thumbnailUrl={video.thumbnailUrl}
+              splashImageUrl={video.splashImageUrl}
+              alt={video.title}
+              title={video.title}
+              className='w-full h-48 grayscale'
+            />
+            
+            <div className='absolute top-2 right-2 z-20'>
+              {getStatusBadge(video.status)}
+            </div>
 
-          {/* Play button overlay */}
-          <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity'>
-            <div className='bg-black bg-opacity-50 rounded-full p-3'>
-              <svg className='w-8 h-8 text-white' fill='currentColor' viewBox='0 0 24 24'>
-                <path d='M8 5v14l11-7z'/>
-              </svg>
+            <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-40'>
+              <span className='text-white text-lg font-medium'>🗑️ Đã xóa</span>
             </div>
           </div>
-        </Link>
+        ) : (
+          <Link href={`/watch/${video.id}`} className='block cursor-pointer'>
+            <HoverThumbnail
+              thumbnailUrl={video.thumbnailUrl}
+              splashImageUrl={video.splashImageUrl}
+              alt={video.title}
+              title={video.title}
+              className={`w-full h-48 ${isDeleted ? 'grayscale' : ''}`}
+            />
+            
+            <div className='absolute top-2 right-2 z-20'>
+              {getStatusBadge(video.status)}
+            </div>
+
+            {/* Play button overlay */}
+            <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity'>
+              <div className='bg-black bg-opacity-50 rounded-full p-3'>
+                <svg className='w-8 h-8 text-white' fill='currentColor' viewBox='0 0 24 24'>
+                  <path d='M8 5v14l11-7z'/>
+                </svg>
+              </div>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Info */}
@@ -102,6 +135,18 @@ const VideoCard = memo(function VideoCard({ video, onEdit, onDelete }: VideoCard
           </div>
         )}
         
+        {/* User Info - Chỉ hiển thị khi showUserInfo = true (admin view) */}
+        {showUserInfo && video.username && (
+          <div className='flex items-center gap-2 mb-3 p-2 bg-accent bg-opacity-10 rounded-lg'>
+            <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-foreground'>
+              {video.username.charAt(0).toUpperCase()}
+            </div>
+            <span className='text-sm text-foreground font-medium'>
+              👤 {video.username}
+            </span>
+          </div>
+        )}
+
         <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
           <span>👁️ {video.views} lượt xem</span>
           <span>{video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}</span>
@@ -112,19 +157,30 @@ const VideoCard = memo(function VideoCard({ video, onEdit, onDelete }: VideoCard
 
         {/* Actions */}
         <div className='flex gap-2'>
-          <button
-            className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
-            onClick={handleEdit}
-          >
-            ✏️ Chỉnh sửa
-          </button>
-          
-          <button
-            onClick={handleDelete}
-            className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
-          >
-            🗑️ Xóa
-          </button>
+          {isDeleted ? (
+            <button
+              onClick={handleRestore}
+              className='flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+            >
+              ♻️ Khôi phục
+            </button>
+          ) : (
+            <>
+              <button
+                className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+                onClick={handleEdit}
+              >
+                ✏️ Chỉnh sửa
+              </button>
+              
+              <button
+                onClick={handleDelete}
+                className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+              >
+                🗑️ Xóa
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

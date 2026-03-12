@@ -117,7 +117,7 @@ export default function MyVideosPage() {
             </Link>
           </div>
 
-          {/* Loading */}
+          {/* Content - Danh sách video của tôi */}
           {loading || authLoading ? (
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {[...Array(6)].map((_, i) => (
@@ -131,68 +131,28 @@ export default function MyVideosPage() {
               ))}
             </div>
           ) : videos.length === 0 ? (
-            /* Empty State */
             <div className='text-center py-12'>
-              <svg
-                className='mx-auto h-24 w-24 text-accent'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
-                />
+              <svg className='mx-auto h-24 w-24 text-accent' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' />
               </svg>
-              <h3 className='mt-4 text-lg font-medium text-foreground'>
-                Chưa có video nào
-              </h3>
-              <p className='mt-2 text-foreground opacity-70'>
-                Bắt đầu bằng cách upload video đầu tiên của bạn
-              </p>
-              <Link
-                href='/upload'
-                className='mt-6 inline-block btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-              >
+              <h3 className='mt-4 text-lg font-medium text-foreground'>Chưa có video nào</h3>
+              <p className='mt-2 text-foreground opacity-70'>Bắt đầu bằng cách upload video đầu tiên của bạn</p>
+              <Link href='/upload' className='mt-6 inline-block btn-accent font-medium py-2 px-6 rounded-lg transition-colors'>
                 Upload Video
               </Link>
             </div>
           ) : (
-            /* Video Grid */
             <>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {videos.map((video) => (
-                  <VideoCard
-                    key={video.id}
-                    video={video}
-                    onEdit={handleEditVideo}
-                    onDelete={handleDelete}
-                  />
+                  <VideoCard key={video.id} video={video} onEdit={handleEditVideo} onDelete={handleDelete} />
                 ))}
               </div>
-
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className='mt-8 flex justify-center gap-2'>
-                  <button
-                    onClick={() => setPage(Math.max(0, page - 1))}
-                    disabled={page === 0}
-                    className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
-                  >
-                    Trước
-                  </button>
-                  <span className='px-4 py-2 text-foreground'>
-                    Trang {page + 1} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-                    disabled={page >= totalPages - 1}
-                    className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary transition-colors text-foreground'
-                  >
-                    Sau
-                  </button>
+                  <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0} className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 hover:bg-secondary transition-colors text-foreground'>Trước</button>
+                  <span className='px-4 py-2 text-foreground'>Trang {page + 1} / {totalPages}</span>
+                  <button onClick={() => setPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} className='px-4 py-2 border border-accent rounded-lg disabled:opacity-50 hover:bg-secondary transition-colors text-foreground'>Sau</button>
                 </div>
               )}
             </>

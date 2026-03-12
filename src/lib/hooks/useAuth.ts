@@ -91,6 +91,8 @@ export const useAuth = () => {
 
   const isAuthenticated = mounted && !!user && !!localStorage.getItem('token');
 
+  const isAdmin = user?.roles?.some(role => role.name === 'ADMIN') ?? false;
+
   return { 
     user, 
     loading, 
@@ -98,6 +100,7 @@ export const useAuth = () => {
     logout, 
     mounted,
     isAuthenticated,
+    isAdmin,
     refreshProfile: fetchProfile
   };
 };
