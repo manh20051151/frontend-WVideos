@@ -16,6 +16,8 @@ export default function WatchVideoPage() {
   const [video, setVideo] = useState<VideoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -35,6 +37,32 @@ export default function WatchVideoPage() {
       fetchVideo();
     }
   }, [videoId]);
+
+  // Fetch direct video URL
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      if (!video?.fileCode || videoUrl) return;
+      
+      try {
+        setVideoLoading(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+        const response = await fetch(`${apiUrl}/videos/${video.fileCode}/stream-url`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.result && data.result !== '') {
+            setVideoUrl(data.result);
+          }
+        }
+      } catch (error) {
+        console.error('Lỗi khi lấy video URL:', error);
+      } finally {
+        setVideoLoading(false);
+      }
+    };
+
+    fetchVideoUrl();
+  }, [video?.fileCode, videoUrl]);
 
   // Tăng lượt xem một lần khi video load thành công
   useEffect(() => {
@@ -140,19 +168,24 @@ export default function WatchVideoPage() {
         <div className='max-w-6xl mx-auto'>
           {/* Video Player */}
           <div className='bg-secondary rounded-lg overflow-hidden shadow-lg mb-6'>
-            <div className='relative aspect-video'  style={{marginBottom: '0px'}}>
-              {video.embedUrl ? (
-                <iframe
-                  width='100%'
-                  height='100%'
-                  src={video.embedUrl}
-                  scrolling='no'
-                  frameBorder='0'
-                  allowFullScreen={true}
-                  title={video.title}
-                  // className='w-full h-full'
-                  // style={{marginLeft: '-28px', width: '105%',height: '111%'}}
-                />
+            <div className='relative aspect-video' style={{marginBottom: '0px'}}>
+              {videoUrl ? (
+                <video
+                  controls
+                  src={videoUrl}
+                  poster={video.splashImageUrl || video.thumbnailUrl}
+                  className='w-full h-full object-cover'
+                  preload='metadata'
+                >
+                  Trình duyệt không hỗ trợ video.
+                </video>
+              ) : videoLoading ? (
+                <div className='w-full h-full flex items-center justify-center text-white'>
+                  <div className='text-center'>
+                    <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
+                    <p className='text-lg'>Đang tải video...</p>
+                  </div>
+                </div>
               ) : (
                 <div className='w-full h-full flex items-center justify-center text-white'>
                   <div className='text-center'>
