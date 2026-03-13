@@ -373,7 +373,9 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
                     onClick={() => setIsPublic(true)}
                     className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                       isPublic
-                        ? 'border-blue-500 bg-blue-500/20 text-white'
+                        ? isDark 
+                          ? 'border-blue-500 bg-blue-500/20 text-white'
+                          : 'border-blue-500 bg-blue-100 text-blue-700'
                         : isDark 
                           ? 'border-gray-600 bg-gray-900 text-gray-200 hover:bg-gray-800'
                           : 'border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100'
@@ -390,7 +392,9 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
                     onClick={() => setIsPublic(false)}
                     className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                       !isPublic
-                        ? 'border-blue-500 bg-blue-500/20 text-white'
+                        ? isDark 
+                          ? 'border-blue-500 bg-blue-500/20 text-white'
+                          : 'border-blue-500 bg-blue-100 text-blue-700'
                         : isDark 
                           ? 'border-gray-600 bg-gray-900 text-gray-200 hover:bg-gray-800'
                           : 'border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100'

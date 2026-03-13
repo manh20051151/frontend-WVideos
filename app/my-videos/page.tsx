@@ -10,6 +10,7 @@ import Link from 'next/link';
 import ClientOnly from '@/components/common/ClientOnly';
 import VideoCard from '@/components/video/VideoCard';
 import EditVideoModal from '@/components/video/EditVideoModal';
+import Toast from '@/components/common/Toast';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
@@ -23,12 +24,27 @@ export default function MyVideosPage() {
   const [deletingVideo, setDeletingVideo] = useState<VideoResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Toast state
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+    isVisible: boolean;
+  }>({ message: '', type: 'success', isVisible: false });
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type, isVisible: true });
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  }, []);
+
   // Sử dụng React Query để caching và tối ưu performance
   const { data: videosData, isLoading: loading } = useQuery({
     queryKey: ['myVideos', page],
     queryFn: () => videoApi.getMyVideos(page, 12),
-    enabled: !!user, // Chỉ fetch khi đã có user
-    staleTime: 5 * 60 * 1000, // Cache 5 phút
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
   });
 
   const videos = videosData?.content || [];
@@ -47,13 +63,14 @@ export default function MyVideosPage() {
       await videoApi.deleteVideo(deletingVideo.id);
       queryClient.invalidateQueries({ queryKey: ['myVideos'] });
       setDeletingVideo(null);
+      showToast('Xóa video thành công!', 'success');
     } catch (error) {
       console.error('Error deleting video:', error);
-      alert('Xóa video thất bại');
+      showToast('Xóa video thất bại!', 'error');
     } finally {
       setIsDeleting(false);
     }
-  }, [deletingVideo, queryClient]);
+  }, [deletingVideo, queryClient, showToast]);
 
   const handleCancelDelete = useCallback(() => {
     setDeletingVideo(null);
@@ -73,12 +90,13 @@ export default function MyVideosPage() {
       });
       queryClient.invalidateQueries({ queryKey: ['myVideos'] });
       setEditingVideo(null);
-      alert('Cập nhật video thành công!');
+      showToast('Cập nhật video thành công!', 'success');
     } catch (error) {
       console.error('Error updating video:', error);
+      showToast('Cập nhật video thất bại!', 'error');
       throw error;
     }
-  }, [queryClient]);
+  }, [queryClient, showToast]);
 
   const handleCloseEditModal = useCallback(() => {
     setEditingVideo(null);
@@ -205,7 +223,7 @@ export default function MyVideosPage() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className={`flex items-center gap-3 px-6 py-4 border-b ${
+              <div className={`flex items-center gap-3 px-6 py-4 border-b rounded-t-2xl ${
                 isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
               }`}>
                 <div className={`p-2 rounded-xl ${isDark ? 'bg-red-500/20' : 'bg-red-100'}`}>
@@ -259,7 +277,7 @@ export default function MyVideosPage() {
                     type='button'
                     onClick={handleConfirmDelete}
                     disabled={isDeleting}
-                    className={`flex items-center gap-2 px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className='flex items-center gap-2 px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     {isDeleting ? (
                       <>
@@ -282,6 +300,15 @@ export default function MyVideosPage() {
         )}
       </div>
       <Footer />
+      
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+        duration={3000}
+      />
     </>
   );
 }
