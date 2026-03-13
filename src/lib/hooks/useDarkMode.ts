@@ -1,38 +1,68 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+// Tạo một global event emitter để đồng bộ dark mode across components
+const DARK_MODE_CHANGE_EVENT = 'darkmodechange';
+
+// Global state để theo dõi dark mode
+let globalIsDark = false;
+let initialized = false;
+
+const emitChange = (isDark: boolean) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(DARK_MODE_CHANGE_EVENT, { detail: isDark }));
+  }
+};
 
 export const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(false); // Khởi tạo với false để tránh hydration mismatch
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
-    // Check localStorage first, nếu không có thì mặc định dark mode
     if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('darkMode');
-      if (savedMode !== null) {
-        const isDarkMode = savedMode === 'true';
-        setIsDark(isDarkMode);
-        document.documentElement.classList.toggle('dark', isDarkMode);
-      } else {
-        // Mặc định dark mode
-        setIsDark(true);
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
+      // Khởi tạo từ localStorage chỉ 1 lần
+      if (!initialized) {
+        const savedMode = localStorage.getItem('darkMode');
+        if (savedMode !== null) {
+          globalIsDark = savedMode === 'true';
+        } else {
+          // Mặc định dark mode
+          globalIsDark = true;
+          localStorage.setItem('darkMode', 'true');
+        }
+        document.documentElement.classList.toggle('dark', globalIsDark);
+        initialized = true;
       }
+      
+      // Set state từ global
+      setIsDark(globalIsDark);
+
+      // Lắng nghe sự kiện thay đổi từ các component khác
+      const handleChange = (e: CustomEvent) => {
+        setIsDark(e.detail);
+      };
+      
+      window.addEventListener(DARK_MODE_CHANGE_EVENT, handleChange as EventListener);
+      
+      return () => {
+        window.removeEventListener(DARK_MODE_CHANGE_EVENT, handleChange as EventListener);
+      };
     }
   }, []);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = useCallback(() => {
     if (typeof window !== 'undefined') {
       const newMode = !isDark;
+      globalIsDark = newMode;
       setIsDark(newMode);
       localStorage.setItem('darkMode', String(newMode));
       document.documentElement.classList.toggle('dark', newMode);
+      emitChange(newMode);
     }
-  };
+  }, [isDark]);
 
   return { isDark, toggleDarkMode, mounted };
 };

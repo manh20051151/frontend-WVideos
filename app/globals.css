@@ -26,61 +26,24 @@
 }
 
 @theme inline {
-  /* Light Mode Theme */
+  /* Use CSS variables for theming */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
-  /* Custom Colors */
-  --color-primary: #ffffff;
-  --color-secondary: #f5f5f5;
-  --color-accent: #009688;
-  --color-highlight: #00796b;
+  /* Custom Colors - using CSS variables */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-highlight: var(--color-highlight);
+  --color-black: var(--color-black);
+  --color-white: var(--color-white);
   
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Mode Colors */
-    --color-primary: #222831;
-    --color-secondary: #393e46;
-    --color-accent: #00adb5;
-    --color-highlight: #eeeeee;
-    --color-black: #000000;
-    --color-white: #ffffff;
-    
-    /* Background & Foreground */
-    --background: #222831;
-    --foreground: #ffffff;
-    
-    /* Button Colors - Dark Mode */
-    --btn-primary-bg: #00adb5;
-    --btn-primary-text: #222831;
-    --btn-secondary-bg: #393e46;
-    --btn-secondary-text: #ffffff;
-    --btn-accent-bg: #00adb5;
-    --btn-accent-text: #222831;
-    
-    /* Border Colors */
-    --border-light: #00adb5;
-  }
-  
-  @theme inline {
-    /* Dark Mode Theme */
-    --color-background: #222831;
-    --color-foreground: #ffffff;
-    
-    /* Custom Colors */
-    --color-primary: #222831;
-    --color-secondary: #393e46;
-    --color-accent: #00adb5;
-    --color-highlight: #eeeeee;
-  }
-}
-
-/* Manual dark mode with .dark class */
+/* Manual dark mode with .dark class - ONLY use this, no media query */
 .dark {
   /* Dark Mode Colors */
   --color-primary: #222831;

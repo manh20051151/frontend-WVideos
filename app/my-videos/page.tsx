@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import videoApi, { VideoResponse } from '@/lib/apis/video.api';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useDarkMode } from '@/lib/hooks/useDarkMode';
 import Link from 'next/link';
 import ClientOnly from '@/components/common/ClientOnly';
 import VideoCard from '@/components/video/VideoCard';
@@ -15,6 +16,7 @@ import Footer from '@/components/layout/Footer';
 export default function MyVideosPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { isDark } = useDarkMode();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [editingVideo, setEditingVideo] = useState<VideoResponse | null>(null);
@@ -188,47 +190,92 @@ export default function MyVideosPage() {
 
         {/* Delete Confirmation Modal */}
         {deletingVideo && (
-          <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-            <div className='bg-secondary rounded-xl p-6 max-w-md w-full border border-accent shadow-2xl'>
-              <div className='flex items-center gap-3 mb-4'>
-                <div className='w-12 h-12 rounded-full bg-red-100 flex items-center justify-center'>
-                  <svg className='w-6 h-6 text-red-600' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+          <div
+            className='fixed inset-0 z-50 flex items-center justify-center p-4'
+            onClick={handleCancelDelete}
+          >
+            {/* Backdrop */}
+            <div className='absolute inset-0 bg-black/70 backdrop-blur-md' />
+
+            {/* Modal */}
+            <div
+              className={`relative rounded-2xl shadow-2xl w-full max-w-md mx-4 border ${
+                isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className={`flex items-center gap-3 px-6 py-4 border-b ${
+                isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
+              }`}>
+                <div className={`p-2 rounded-xl ${isDark ? 'bg-red-500/20' : 'bg-red-100'}`}>
+                  <svg className={`w-5 h-5 ${isDark ? 'text-red-400' : 'text-red-500'}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
                   </svg>
                 </div>
-                <h3 className='text-xl font-bold text-foreground'>Xác nhận xóa</h3>
+                <div>
+                  <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Xác nhận xóa
+                  </h2>
+                  <p className={`text-sm truncate max-w-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {deletingVideo.title}
+                  </p>
+                </div>
               </div>
 
-              <p className='text-foreground opacity-80 mb-6'>
-                Bạn có chắc muốn xóa video <strong className='text-foreground'>&quot;{deletingVideo.title}&quot;</strong>?<br />
-                <span className='text-sm opacity-60'>Video sẽ được chuyển vào thùng rác và có thể khôi phục sau.</span>
-              </p>
+              {/* Content */}
+              <div className='p-6'>
+                <p className={`mb-4 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                  Bạn có chắc chắn muốn xóa video <strong className={isDark ? 'text-white' : 'text-gray-900'}>&quot;{deletingVideo.title}&quot;</strong>?
+                </p>
+                <div className={`flex items-start gap-2 p-3 rounded-xl border ${
+                  isDark ? 'bg-yellow-900/30 border-yellow-600/50' : 'bg-yellow-100 border-yellow-300'
+                }`}>
+                  <svg className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isDark ? 'text-yellow-400' : 'text-yellow-600'}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                  </svg>
+                  <p className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'}`}>
+                    Video sẽ được chuyển vào thùng rác và có thể khôi phục trong vòng 30 ngày.
+                  </p>
+                </div>
 
-              <div className='flex gap-3 justify-end'>
-                <button
-                  onClick={handleCancelDelete}
-                  disabled={isDeleting}
-                  className='px-4 py-2 rounded-lg border border-accent text-foreground hover:bg-primary transition-colors disabled:opacity-50'
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  disabled={isDeleting}
-                  className='px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2'
-                >
-                  {isDeleting ? (
-                    <>
-                      <svg className='animate-spin h-4 w-4' viewBox='0 0 24 24'>
-                        <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' fill='none' />
-                        <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' />
-                      </svg>
-                      Đang xóa...
-                    </>
-                  ) : (
-                    <>🗑️ Xóa video</>
-                  )}
-                </button>
+                {/* Actions */}
+                <div className={`flex items-center justify-end gap-3 pt-6 mt-6 border-t ${
+                  isDark ? 'border-gray-700' : 'border-gray-200'
+                }`}>
+                  <button
+                    type='button'
+                    onClick={handleCancelDelete}
+                    disabled={isDeleting}
+                    className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all disabled:opacity-50 ${
+                      isDark 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type='button'
+                    onClick={handleConfirmDelete}
+                    disabled={isDeleting}
+                    className={`flex items-center gap-2 px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white' />
+                        Đang xóa...
+                      </>
+                    ) : (
+                      <>
+                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                        </svg>
+                        Xóa video
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
