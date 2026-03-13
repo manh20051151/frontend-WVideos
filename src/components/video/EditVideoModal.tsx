@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { VideoResponse } from '@/lib/apis/video.api';
 import { categoryApi, Category } from '@/lib/apis/category.api';
+import ThumbnailSelector from './ThumbnailSelector';
 
 interface EditVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
   video: VideoResponse | null;
-  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryIds: string[] }) => Promise<void>;
+  onSave: (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryIds: string[]; thumbnailUrl?: string | null }) => Promise<void>;
 }
 
 export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditVideoModalProps) {
@@ -16,6 +17,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -34,6 +36,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       setDescription(video.description || '');
       setIsPublic(video.isPublic ?? true);
       setCategoryIds(video.categories?.map(c => c.id) || []);
+      setThumbnailUrl(video.thumbnailUrl || null);
     }
   }, [video]);
 
@@ -48,6 +51,10 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       setLoadingCategories(false);
     }
   };
+
+  const handleThumbnailChange = useCallback((url: string | null) => {
+    setThumbnailUrl(url);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +76,8 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
         title: title.trim(),
         description: description.trim(),
         isPublic,
-        categoryIds
+        categoryIds,
+        thumbnailUrl
       });
       onClose();
     } catch (error) {
@@ -108,6 +116,28 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
 
         {/* Form */}
         <form onSubmit={handleSubmit} className='p-6 space-y-4'>
+          {/* Current Thumbnail Preview */}
+          <div className='mb-4'>
+            <label className='block text-sm font-medium text-foreground mb-2'>
+              🖼️ Thumbnail hiện tại
+            </label>
+            <div className='rounded-lg overflow-hidden border border-accent'>
+              <img
+                src={video.thumbnailUrl}
+                alt='Current thumbnail'
+                className='w-full h-32 object-cover'
+                loading='lazy'
+              />
+            </div>
+          </div>
+
+          {/* Thumbnail Selector */}
+          <ThumbnailSelector
+            thumbnailUrl={thumbnailUrl}
+            onThumbnailChange={handleThumbnailChange}
+            disabled={saving}
+          />
+
           {/* Title */}
           <div>
             <label htmlFor='title' className='block text-sm font-medium text-foreground mb-2'>

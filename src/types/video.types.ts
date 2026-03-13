@@ -9,6 +9,7 @@ export interface VideoUploadData {
     isPublic?: boolean;
     categoryIds: string[]; // Danh sách ID của các thể loại (yêu cầu ít nhất 3)
     tags?: string[]; // Tags cho video (tối đa 10 tags)
+    thumbnailUrl?: string; // URL ảnh thumbnail tùy chọn
 }
 
 /**

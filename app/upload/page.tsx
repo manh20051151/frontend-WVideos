@@ -10,6 +10,7 @@ import { formatFileSize } from '@/lib/utils';
 import type { VideoUploadData } from '@/types';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ThumbnailSelector from '@/components/video/ThumbnailSelector';
 
 export default function UploadVideoPage() {
   const router = useRouter();
@@ -186,20 +187,24 @@ export default function UploadVideoPage() {
       setProgress(10);
       setError('');
 
-      // Simulate progress
+      console.log('[UPLOAD] Bắt đầu upload video');
+      const startApiTime = Date.now();
+
+      // Chạy progress bar trong khi đợi API
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
+            return prev;
           }
-          return prev + 10;
+          return prev + 5;
         });
-      }, 500);
+      }, 200);
 
       const result = await videoApi.uploadVideo(file, formData);
 
       clearInterval(progressInterval);
+      const apiDuration = Date.now() - startApiTime;
+      console.log(`[UPLOAD] API trả về sau ${apiDuration}ms`, result);
       setProgress(100);
 
       // Redirect to video detail or my videos
@@ -229,59 +234,129 @@ export default function UploadVideoPage() {
               <h1 className="text-3xl font-bold text-foreground">📹 Upload Video</h1>
               <p className="mt-2 text-foreground opacity-80">Chia sẻ video của bạn với cộng đồng</p>
             </div>
-            </div>
 
             {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Chọn video *
-              </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-accent border-dashed rounded-lg hover:border-highlight transition-colors">
-                <div className="space-y-1 text-center">
-                  {preview ? (
-                    <div className="mb-4">
+            {/* File Upload & Thumbnail - 2 Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* Video Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  📹 Chọn video *
+                </label>
+                {preview ? (
+                  <div className="space-y-3">
+                    {/* Video Player */}
+                    <div className="relative rounded-xl overflow-hidden bg-black border-2 border-accent shadow-lg">
                       <video
                         src={preview}
                         controls
-                        className="mx-auto h-48 w-auto rounded-lg"
+                        className="w-full aspect-video"
                       />
-                      <p className="mt-2 text-sm text-foreground opacity-70">
-                        {file?.name} ({formatFileSize(file?.size || 0)})
-                      </p>
                     </div>
-                  ) : (
-                    <svg
-                      className="mx-auto h-12 w-12 text-accent"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                    >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                  <div className="flex text-sm text-foreground opacity-70">
-                    <label className="relative cursor-pointer bg-primary rounded-md font-medium text-accent hover:text-highlight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-accent px-3 py-2">
-                      <span>{file ? 'Chọn video khác' : 'Chọn video'}</span>
-                      <input
-                        type="file"
-                        className="sr-only"
-                        accept="video/*"
-                        onChange={handleFileChange}
-                        disabled={uploading}
-                      />
-                    </label>
+                    
+                    {/* File Info Card */}
+                    <div className="bg-primary border border-accent rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-accent bg-opacity-20 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate" title={file?.name}>
+                            {file?.name}
+                          </p>
+                          <p className="text-xs text-foreground opacity-60">
+                            {formatFileSize(file?.size || 0)}
+                          </p>
+                        </div>
+                      </div>
+                      <label className="cursor-pointer flex-shrink-0">
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-accent text-white rounded-lg hover:bg-highlight transition-colors">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          Đổi video
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="video/*"
+                          onChange={handleFileChange}
+                          disabled={uploading}
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <p className="text-xs text-foreground opacity-50">
-                    MP4, AVI, MOV, WMV tối đa 2GB
-                  </p>
-                </div>
+                ) : (
+                  <label className="relative block group cursor-pointer">
+                    <div className="border-2 border-dashed border-accent rounded-xl p-8 text-center transition-all group-hover:border-highlight  group-hover:bg-opacity-5 h-[280px] flex flex-col justify-center">
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
+                        <svg
+                          className="w-10 h-10 "
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                        >
+                          <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-lg font-medium text-foreground mb-1">
+                        Click hoặc kéo thả video vào đây
+                      </p>
+                      <p className="text-sm text-foreground opacity-60 mb-4">
+                        Hỗ trợ MP4, AVI, MOV, WMV
+                      </p>
+                      <span className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent text-white font-medium rounded-lg group-hover:bg-highlight transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Chọn video từ máy
+                      </span>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="video/*"
+                      onChange={handleFileChange}
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
+                <p className="text-xs text-foreground opacity-50 mt-2">
+                  * Tối đa 2GB. Video sẽ được xử lý sau khi upload.
+                </p>
+              </div>
+
+              {/* Thumbnail Section */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  🖼️ Thumbnail (tùy chọn)
+                </label>
+                {file ? (
+                  <ThumbnailSelector
+                    thumbnailUrl={formData.thumbnailUrl || null}
+                    onThumbnailChange={(url) => setFormData({ ...formData, thumbnailUrl: url || undefined })}
+                    disabled={uploading}
+                  />
+                ) : (
+                  <div className="border-2 border-dashed border-accent border-opacity-30 rounded-xl p-8 text-center bg-primary bg-opacity-50 h-[280px] flex flex-col justify-center">
+                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent bg-opacity-10 flex items-center justify-center">
+                      <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-foreground opacity-50">
+                      Chọn video trước để upload thumbnail
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -489,6 +564,7 @@ export default function UploadVideoPage() {
             <li>Có thể thêm tối đa 10 tags để dễ tìm kiếm</li>
           </ul>
         </div>
+      </div>
       </div>
       <Footer />
     </>

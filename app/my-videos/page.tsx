@@ -61,9 +61,14 @@ export default function MyVideosPage() {
     setEditingVideo(video);
   }, []);
 
-  const handleSaveVideo = useCallback(async (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryId?: string }) => {
+  const handleSaveVideo = useCallback(async (videoId: string, data: { title: string; description: string; isPublic: boolean; categoryIds: string[]; thumbnailUrl?: string | null }) => {
     try {
-      await videoApi.updateVideo(videoId, data);
+      await videoApi.updateVideo(videoId, {
+        title: data.title,
+        description: data.description,
+        isPublic: data.isPublic,
+        categoryIds: data.categoryIds
+      });
       queryClient.invalidateQueries({ queryKey: ['myVideos'] });
       setEditingVideo(null);
       alert('Cập nhật video thành công!');
