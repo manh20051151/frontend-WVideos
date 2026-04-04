@@ -48,15 +48,23 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('=== LOGIN SUBMIT TRIGGERED ===');
+        console.log('Form data:', formData);
         setError('');
         setSuccess('');
         setLoading(true);
 
         try {
+            console.log('Calling authApi.login with:', formData);
             const response = await authApi.login(formData);
+            console.log('Login API response:', response);
 
-            if (response.result?.token) {
-                localStorage.setItem('token', response.result.token);
+            // Xử lý cả 2 cấu trúc response: trực tiếp hoặc wrap trong result
+            const res = response as any;
+            const token = res.token || res.result?.token;
+            if (token) {
+                console.log('Token received, saving...');
+                localStorage.setItem('token', token);
 
                 const userInfo = await authApi.getMyInfo();
                 if (userInfo.result) {

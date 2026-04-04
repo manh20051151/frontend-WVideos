@@ -42,10 +42,16 @@ export default function AuthModal({ isOpen, onClose, defaultTab = 'login', onLog
     setActiveTab('login');
   };
 
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'
-      onClick={onClose}
+      onClick={handleOverlayClick}
     >
       <div
         className='bg-primary rounded-lg shadow-xl w-full max-w-md mx-4 relative'
