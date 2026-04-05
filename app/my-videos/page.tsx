@@ -86,7 +86,8 @@ export default function MyVideosPage() {
         title: data.title,
         description: data.description,
         isPublic: data.isPublic,
-        categoryIds: data.categoryIds
+        categoryIds: data.categoryIds,
+        thumbnailUrl: data.thumbnailUrl
       });
       queryClient.invalidateQueries({ queryKey: ['myVideos'] });
       setEditingVideo(null);
