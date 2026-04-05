@@ -68,6 +68,17 @@ const formatDate = (dateString: string) => {
   }
 };
 
+const formatDuration = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
+
 // Memoized component để tránh re-render không cần thiết
 const VideoCard = memo(function VideoCard({ 
   video, 
@@ -114,7 +125,14 @@ const VideoCard = memo(function VideoCard({
               className={`w-full h-48 ${isDeleted ? 'grayscale' : ''}`}
             />
             
-            <div className='absolute top-2 right-2 z-20'>
+            <div className='absolute top-2 right-2 z-20 flex items-center gap-2'>
+              {!video.isPublic && (
+                <div className='bg-gray-900/80 text-white p-1.5 rounded'>
+                  <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+                  </svg>
+                </div>
+              )}
               {getStatusBadge(video.status)}
             </div>
 
@@ -138,24 +156,6 @@ const VideoCard = memo(function VideoCard({
           </h3>
         </Link>
         
-        {/* Categories */}
-        {video.categories && video.categories.length > 0 && (
-          <div className='mb-2 flex flex-wrap gap-1'>
-            {video.categories.map((category) => (
-              <span 
-                key={category.id}
-                className='inline-flex items-center px-2 py-1 text-xs font-medium rounded-full border border-accent text-foreground'
-                style={{ 
-                  backgroundColor: category.color ? `${category.color}20` : undefined,
-                  borderColor: category.color || undefined 
-                }}
-              >
-                {category.icon} {category.name}
-              </span>
-            ))}
-          </div>
-        )}
-        
         {/* User Info - Chỉ hiển thị khi showUserInfo = true (admin view) */}
         {showUserInfo && video.username && (
           <div className='flex items-center gap-2 mb-3 p-2 bg-accent bg-opacity-10 rounded-lg'>
@@ -170,7 +170,9 @@ const VideoCard = memo(function VideoCard({
 
         <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
           <span>👁️ {video.views} lượt xem</span>
-          <span>{video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}</span>
+          {video.duration > 0 && (
+            <span>⏱️ {formatDuration(video.duration)}</span>
+          )}
         </div>
         <p className='text-xs text-foreground opacity-50 mb-4'>
           {formatDate(video.createdAt)}
