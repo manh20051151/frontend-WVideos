@@ -37,17 +37,17 @@ const videoApi = {
     return await axiosClient.post(`/videos/${videoId}/restore`);
   },
 
-  // Get public videos (sorted by newest)
-  getPublicVideos: async (page = 0, size = 10): Promise<PageResponse<VideoResponse>> => {
+  // Get public videos (sorted)
+  getPublicVideos: async (page = 0, size = 10, sort = 'newest'): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get('/videos/public', {
-      params: { page, size, sortBy: 'createdAt', sortDir: 'DESC' },
+      params: { page, size, sort },
     });
   },
 
   // Get trending videos (sorted by views)
-  getTrendingVideos: async (page = 0, size = 10): Promise<PageResponse<VideoResponse>> => {
+  getTrendingVideos: async (page = 0, size = 8): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get('/videos/public', {
-      params: { page, size, sortBy: 'views', sortDir: 'DESC' },
+      params: { page, size, sort: 'popular' },
     });
   },
 
