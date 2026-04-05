@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -136,19 +136,33 @@ const getSortLabel = (key: SortOption): string => {
 
 export default function Home() {
   const { isDark } = useDarkMode();
+  const queryClient = useQueryClient();
   const [latestPage, setLatestPage] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ['trendingVideos'],
+      queryFn: () => videoApi.getTrendingVideos(0, 8),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['latestVideos', 0, sortBy],
+      queryFn: () => videoApi.getAllVideos(0, 8, sortBy),
+    });
+  }, [queryClient, sortBy]);
 
   const { data: trendingData, isLoading: loadingTrending } = useQuery({
     queryKey: ['trendingVideos'],
     queryFn: () => videoApi.getTrendingVideos(0, 8),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const { data: latestData, isLoading: loadingLatest } = useQuery({
     queryKey: ['latestVideos', latestPage, sortBy],
-    queryFn: () => videoApi.getAllVideos(latestPage, 12, sortBy),
-    staleTime: 2 * 60 * 1000,
+    queryFn: () => videoApi.getAllVideos(latestPage, 8, sortBy),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const trendingVideos = trendingData?.content || [];
