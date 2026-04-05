@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
 import Header from '@/components/layout/Header';
@@ -10,7 +10,6 @@ import ClientOnly from '@/components/common/ClientOnly';
 
 export default function WatchVideoPage() {
   const params = useParams();
-  const router = useRouter();
   const videoId = params.videoId as string;
   
   const [video, setVideo] = useState<VideoResponse | null>(null);
@@ -18,6 +17,7 @@ export default function WatchVideoPage() {
   const [error, setError] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -38,7 +38,6 @@ export default function WatchVideoPage() {
     }
   }, [videoId]);
 
-  // Fetch direct video URL
   useEffect(() => {
     const fetchVideoUrl = async () => {
       if (!video?.fileCode || videoUrl) return;
@@ -64,22 +63,41 @@ export default function WatchVideoPage() {
     fetchVideoUrl();
   }, [video?.fileCode, videoUrl]);
 
-  // Tăng lượt xem một lần khi video load thành công
   useEffect(() => {
     if (video && video.status === 'READY') {
-      // Chỉ tăng view cho video sẵn sàng và delay một chút để tránh spam
       const timer = setTimeout(async () => {
         try {
           await videoApi.incrementViews(videoId);
-          console.log('👁️ Đã tăng lượt xem cho video:', video.title);
         } catch (error) {
           console.error('Lỗi khi tăng lượt xem:', error);
         }
-      }, 2000); // Delay 2 giây
-
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [video, videoId]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatViews = (views: number) => {
+    if (views >= 1000000) {
+      return `${(views / 1000000).toFixed(1)}M lượt xem`;
+    }
+    if (views >= 1000) {
+      return `${(views / 1000).toFixed(1)}N lượt xem`;
+    }
+    return `${views} lượt xem`;
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Đã sao chép link!');
+  };
 
   if (loading) {
     return (
@@ -89,7 +107,7 @@ export default function WatchVideoPage() {
           <div className='min-h-screen bg-primary py-12 px-4'>
             <div className='max-w-6xl mx-auto'>
               <div className='animate-pulse'>
-                <div className='w-full h-96 bg-secondary rounded-lg mb-6'></div>
+                <div className='w-full h-[500px] bg-secondary rounded-lg mb-6'></div>
                 <div className='h-8 bg-secondary rounded w-3/4 mb-4'></div>
                 <div className='h-4 bg-secondary rounded w-1/2'></div>
               </div>
@@ -132,172 +150,209 @@ export default function WatchVideoPage() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  const descriptionPreview = video.description && video.description.length > 200 
+    ? video.description.slice(0, 200) + '...' 
+    : video.description;
 
   return (
     <>
       <Header />
-      <div className='min-h-screen bg-primary py-8 px-4'>
-        <div className='max-w-6xl mx-auto'>
-          {/* Video Player */}
-          <div className='bg-secondary rounded-lg overflow-hidden shadow-lg mb-6'>
-            <div className='relative aspect-video' style={{marginBottom: '0px'}}>
-              {videoUrl ? (
-                <video
-                  controls
-                  src={videoUrl}
-                  poster={video.splashImageUrl || video.thumbnailUrl}
-                  className='w-full h-full object-cover'
-                  preload='metadata'
-                >
-                  Trình duyệt không hỗ trợ video.
-                </video>
-              ) : videoLoading ? (
-                <div className='w-full h-full flex items-center justify-center text-white'>
-                  <div className='text-center'>
-                    <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
-                    <p className='text-lg'>Đang tải video...</p>
-                  </div>
-                </div>
-              ) : (
-                <div className='w-full h-full flex items-center justify-center text-white'>
-                  <div className='text-center'>
-                    <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                      <path d='M8 5v14l11-7z'/>
-                    </svg>
-                    <p className='text-lg'>Video đang được xử lý</p>
-                    <p className='text-sm opacity-70'>Vui lòng thử lại sau</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
+      <div className='min-h-screen bg-primary'>
+        <div className='max-w-7xl mx-auto px-4 py-6'>
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-            {/* Video Info */}
-            <div className='lg:col-span-2'>
-              <div className='bg-secondary rounded-lg p-6 shadow'>
-                <h1 className='text-2xl font-bold text-foreground mb-4'>
-                  {video.title}
-                </h1>
+            {/* Left Column - Video + Info */}
+            <div className='lg:col-span-2 space-y-4'>
+              {/* Video Player */}
+              <div className='bg-black rounded-lg overflow-hidden'>
+                <div className='relative aspect-video'>
+                  {videoUrl ? (
+                    <video
+                      controls
+                      src={videoUrl}
+                      poster={video.splashImageUrl || video.thumbnailUrl}
+                      className='w-full h-full object-contain'
+                      preload='metadata'
+                    >
+                      Trình duyệt không hỗ trợ video.
+                    </video>
+                  ) : videoLoading ? (
+                    <div className='w-full h-full flex items-center justify-center text-white'>
+                      <div className='text-center'>
+                        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
+                        <p className='text-lg'>Đang tải video...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='w-full h-full flex items-center justify-center text-white'>
+                      <div className='text-center'>
+                        <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='currentColor' viewBox='0 0 24 24'>
+                          <path d='M8 5v14l11-7z'/>
+                        </svg>
+                        <p className='text-lg'>Video đang được xử lý</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Video Title */}
+              <h1 className='text-xl font-bold text-foreground'>
+                {video.title}
+              </h1>
+
+              {/* Action Bar */}
+              <div className='flex items-center justify-between border-b border-accent border-opacity-20 pb-4'>
+                <div className='text-foreground opacity-70'>
+                  <span>{formatViews(video.views)}</span>
+                  <span className='mx-2'>•</span>
+                  <span>{formatDate(video.createdAt)}</span>
+                </div>
                 
-                <div className='flex flex-wrap items-center gap-4 text-sm text-foreground opacity-70 mb-4'>
-                  <span>👁️ {video.views} lượt xem</span>
-                  <span>📅 {formatDate(video.createdAt)}</span>
-                  {video.duration && (
-                    <span>⏱️ {formatDuration(video.duration)}</span>
-                  )}
-                  {video.fileSize && (
-                    <span>💾 {formatFileSize(video.fileSize)}</span>
-                  )}
-                </div>
+                <div className='flex items-center gap-2'>
+                  <button className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5' />
+                    </svg>
+                    <span className='font-medium'>Thích</span>
+                  </button>
 
-                <div className='flex items-center gap-2 mb-6'>
-                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                    video.status === 'READY' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                  }`}>
-                    {video.status === 'READY' ? '✅ Sẵn sàng' : '⏳ Đang xử lý'}
-                  </span>
-                  
-                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                    video.isPublic 
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                  }`}>
-                    {video.isPublic ? '🌐 Công khai' : '🔒 Riêng tư'}
-                  </span>
-                </div>
+                  <button className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'>
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5' />
+                    </svg>
+                    <span className='font-medium'>Không thích</span>
+                  </button>
 
-                {video.description && (
-                  <div className='border-t border-accent border-opacity-20 pt-4'>
-                    <h3 className='font-semibold text-foreground mb-2'>Mô tả</h3>
-                    <p className='text-foreground opacity-80 whitespace-pre-wrap'>
-                      {video.description}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className='space-y-6'>
-              {/* Thumbnail */}
-              <div className='bg-secondary rounded-lg p-4 shadow'>
-                <h3 className='font-semibold text-foreground mb-3'>Hình ảnh</h3>
-                <div className='space-y-3'>
-                  {video.thumbnailUrl && (
-                    <div>
-                      <p className='text-sm text-foreground opacity-70 mb-1'>Thumbnail</p>
-                      <img
-                        src={video.thumbnailUrl}
-                        alt='Thumbnail'
-                        className='w-full rounded border border-accent border-opacity-20'
-                      />
-                    </div>
-                  )}
-                  {video.splashImageUrl && (
-                    <div>
-                      <p className='text-sm text-foreground opacity-70 mb-1'>Splash Image</p>
-                      <img
-                        src={video.splashImageUrl}
-                        alt='Splash'
-                        className='w-full rounded border border-accent border-opacity-20'
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className='bg-secondary rounded-lg p-4 shadow'>
-                <h3 className='font-semibold text-foreground mb-3'>Hành động</h3>
-                <div className='space-y-2'>
-                  <Link
-                    href='/my-videos'
-                    className='block w-full text-center btn-accent font-medium py-2 px-4 rounded transition-colors'
+                  <button 
+                    onClick={copyLink}
+                    className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
                   >
-                    📋 Video của tôi
-                  </Link>
-                  
+                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z' />
+                    </svg>
+                    <span className='font-medium'>Chia sẻ</span>
+                  </button>
+
                   {video.downloadUrl && (
                     <a
                       href={video.downloadUrl}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors'
+                      className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
                     >
-                      📥 Tải xuống
+                      <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
+                      </svg>
+                      <span className='font-medium'>Tải xuống</span>
                     </a>
                   )}
+                </div>
+              </div>
+
+              {/* Channel Bar */}
+              <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
+                <div className='flex items-center gap-4'>
+                  <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
+                    {video.username?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <h3 className='font-semibold text-foreground'>{video.username}</h3>
+                    <p className='text-sm text-foreground opacity-60'>Kênh của bạn</p>
+                  </div>
+                </div>
+                <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
+                  Đăng ký
+                </button>
+              </div>
+
+              {/* Description */}
+              {video.description && (
+                <div className='bg-secondary rounded-xl p-4'>
+                  <div className='text-foreground'>
+                    <p className='whitespace-pre-wrap'>
+                      {showFullDescription ? video.description : descriptionPreview}
+                    </p>
+                    {video.description.length > 200 && (
+                      <button
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className='text-blue-500 font-medium mt-2 hover:underline'
+                      >
+                        {showFullDescription ? 'Thu gọn' : 'Xem thêm'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Categories & Tags */}
+              {(video.categories?.length > 0 || video.tags?.length > 0) && (
+                <div className='flex flex-wrap gap-2'>
+                  {video.categories?.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/category/${cat.slug}`}
+                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground hover:bg-accent hover:text-white transition-colors'
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                  {video.tags?.map((tag, index) => (
+                    <span
+                      key={index}
+                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground opacity-70'
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Comments Section */}
+              <div className='bg-secondary rounded-xl p-6'>
+                <h3 className='font-bold text-lg text-foreground mb-4'>Bình luận</h3>
+                <div className='text-foreground opacity-60 text-center py-8'>
+                  <svg className='w-12 h-12 mx-auto mb-3 opacity-50' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' />
+                  </svg>
+                  <p>Tính năng bình luận đang được phát triển</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Related Videos */}
+            <div className='space-y-4'>
+              <h3 className='font-bold text-lg text-foreground'>Video liên quan</h3>
+              
+              <div className='space-y-4'>
+                {/* Placeholder for related videos */}
+                <div className='bg-secondary rounded-lg p-4 opacity-60'>
+                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
+                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
+                      <path d='M8 5v14l11-7z'/>
+                    </svg>
+                  </div>
+                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
+                  <p className='text-xs text-foreground opacity-60'>Kênh • 1N lượt xem</p>
+                </div>
+
+                <div className='bg-secondary rounded-lg p-4 opacity-60'>
+                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
+                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
+                      <path d='M8 5v14l11-7z'/>
+                    </svg>
+                  </div>
+                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
+                  <p className='text-xs text-foreground opacity-60'>Kênh • 500 lượt xem</p>
+                </div>
+
+                <div className='bg-secondary rounded-lg p-4 opacity-60'>
+                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
+                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
+                      <path d='M8 5v14l11-7z'/>
+                    </svg>
+                  </div>
+                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
+                  <p className='text-xs text-foreground opacity-60'>Kênh • 2.5N lượt xem</p>
                 </div>
               </div>
             </div>
