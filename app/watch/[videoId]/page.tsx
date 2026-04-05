@@ -158,10 +158,10 @@ export default function WatchVideoPage() {
     <>
       <Header />
       <div className='min-h-screen bg-primary'>
-        <div className='max-w-7xl mx-auto px-4 py-6'>
-          <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        <div className='px-40 py-6'>
+          <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
             {/* Left Column - Video + Info */}
-            <div className='lg:col-span-2 space-y-4'>
+            <div className='lg:col-span-4 space-y-4'>
               {/* Video Player */}
               <div className='bg-black rounded-lg overflow-hidden'>
                 <div className='relative aspect-video'>
