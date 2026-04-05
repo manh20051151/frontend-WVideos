@@ -3,6 +3,7 @@
 import React, { memo } from 'react';
 import Link from 'next/link';
 import HoverThumbnail from '@/components/common/HoverThumbnail';
+import { useDarkMode } from '@/lib/hooks/useDarkMode';
 import type { VideoResponse } from '@/lib/apis/video.api';
 
 interface VideoCardProps {
@@ -33,7 +34,7 @@ const getStatusBadge = (status: string) => {
   };
 
   return (
-    <span className={`px-2 py-1 text-xs font-medium rounded-full ${badges[status]}`}>
+    <span className={`px-2 py-0.5 text-xs font-medium rounded ${badges[status]}`}>
       {labels[status]}
     </span>
   );
@@ -68,18 +69,6 @@ const formatDate = (dateString: string) => {
   }
 };
 
-const formatDuration = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
-};
-
-// Memoized component để tránh re-render không cần thiết
 const VideoCard = memo(function VideoCard({ 
   video, 
   onEdit, 
@@ -89,45 +78,46 @@ const VideoCard = memo(function VideoCard({
   showUserInfo = false,
   allowViewWhenDeleted = false 
 }: VideoCardProps) {
+  const { isDark } = useDarkMode();
   const handleEdit = () => onEdit(video);
   const handleDelete = () => onDelete(video.id);
   const handleRestore = () => onRestore?.(video.id);
 
   return (
-    <div className={`bg-secondary rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow border border-accent border-opacity-20 ${isDeleted ? 'opacity-75' : ''}`}>
-      {/* Thumbnail */}
-      <div className='relative'>
+    <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 ${
+      isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
+    } ${isDeleted ? 'opacity-75' : ''}`}>
+      <div className='relative w-full aspect-video'>
         {isDeleted && !allowViewWhenDeleted ? (
-          <div className='block cursor-not-allowed'>
+          <div className='block cursor-not-allowed w-full h-full'>
             <HoverThumbnail
               thumbnailUrl={video.thumbnailUrl}
               splashImageUrl={video.splashImageUrl}
               alt={video.title}
               title={video.title}
-              className='w-full h-48 grayscale'
+              className='w-full h-full grayscale'
             />
-            
-            <div className='absolute top-2 right-2 z-20'>
-              {getStatusBadge(video.status)}
-            </div>
-
-            <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-40'>
-              <span className='text-white text-lg font-medium'>🗑️ Đã xóa</span>
+            <div className='absolute inset-0 flex items-center justify-center bg-black/40 z-20'>
+              <span className='text-white text-lg font-medium'>Đã xóa</span>
             </div>
           </div>
         ) : (
-          <Link href={`/watch/${video.id}`} className='block cursor-pointer'>
+          <Link href={`/watch/${video.id}`} className='block w-full h-full'>
             <HoverThumbnail
               thumbnailUrl={video.thumbnailUrl}
               splashImageUrl={video.splashImageUrl}
               alt={video.title}
               title={video.title}
-              className={`w-full h-48 ${isDeleted ? 'grayscale' : ''}`}
+              className='w-full h-full'
             />
-            
-            <div className='absolute top-2 right-2 z-20 flex items-center gap-2'>
+            {video.duration > 0 && (
+              <span className='absolute bottom-2 right-2 z-30 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded'>
+                {Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}
+              </span>
+            )}
+            <div className='absolute top-2 right-2 z-30 flex items-center gap-2'>
               {!video.isPublic && (
-                <div className='bg-gray-900/80 text-white p-1.5 rounded'>
+                <div className='bg-black/70 text-white p-1 rounded'>
                   <svg className='w-3.5 h-3.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
                   </svg>
@@ -135,72 +125,55 @@ const VideoCard = memo(function VideoCard({
               )}
               {getStatusBadge(video.status)}
             </div>
-
-            {/* Play button overlay */}
-            <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity'>
-              <div className='bg-black bg-opacity-50 rounded-full p-3'>
-                <svg className='w-8 h-8 text-white' fill='currentColor' viewBox='0 0 24 24'>
-                  <path d='M8 5v14l11-7z'/>
-                </svg>
-              </div>
-            </div>
           </Link>
         )}
       </div>
 
-      {/* Info */}
       <div className='p-4'>
-        <Link href={`/watch/${video.id}`} className='block hover:text-accent transition-colors'>
-          <h3 className='font-semibold text-foreground line-clamp-2 mb-2'>
+        <Link href={`/watch/${video.id}`} className='block group/link'>
+          <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover/link:text-accent transition-colors'>
             {video.title}
           </h3>
         </Link>
-        
-        {/* User Info - Chỉ hiển thị khi showUserInfo = true (admin view) */}
+
         {showUserInfo && video.username && (
-          <div className='flex items-center gap-2 mb-3 p-2 bg-accent bg-opacity-10 rounded-lg'>
-            <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-foreground'>
+          <div className='flex items-center gap-2 mb-3 p-2 bg-accent/10 rounded-lg'>
+            <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-white'>
               {video.username.charAt(0).toUpperCase()}
             </div>
             <span className='text-sm text-foreground font-medium'>
-              👤 {video.username}
+              {video.username}
             </span>
           </div>
         )}
 
-        <div className='flex items-center text-sm text-foreground opacity-70 space-x-4 mb-3'>
-          <span>👁️ {video.views} lượt xem</span>
-          {video.duration > 0 && (
-            <span>⏱️ {formatDuration(video.duration)}</span>
-          )}
+        <div className='flex items-center justify-between text-sm text-foreground/60 mb-4'>
+          <span>{video.views?.toLocaleString() || 0} lượt xem</span>
+          <span>{formatDate(video.createdAt)}</span>
         </div>
-        <p className='text-xs text-foreground opacity-50 mb-4'>
-          {formatDate(video.createdAt)}
-        </p>
 
-        {/* Actions */}
         <div className='flex gap-2'>
           {isDeleted ? (
             <button
               onClick={handleRestore}
-              className='flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+              className='flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer'
             >
-              ♻️ Khôi phục
+              Khôi phục
             </button>
           ) : (
             <>
               <button
-                className='flex-1 text-center btn-accent text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+                className='flex-1 text-center bg-accent hover:bg-accent/90 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer'
                 onClick={handleEdit}
               >
-                ✏️ Chỉnh sửa
+                Chỉnh sửa
               </button>
               
               <button
                 onClick={handleDelete}
-                className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors cursor-pointer'
+                className='bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors cursor-pointer'
               >
-                🗑️ Xóa
+                Xóa
               </button>
             </>
           )}

@@ -1,17 +1,248 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import videoApi from '@/lib/apis/video.api';
+import { useDarkMode } from '@/lib/hooks/useDarkMode';
+import HoverThumbnail from '@/components/common/HoverThumbnail';
+
+const FireIcon = () => (
+  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z' />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+  </svg>
+);
+
+const VideoCard = ({ video, isDark }: { video: any; isDark: boolean }) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+
+    if (diffSecs < 60) return 'vừa xong';
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    if (diffWeeks < 4) return `${diffWeeks} tuần trước`;
+    if (diffMonths < 12) return `${diffMonths} tháng trước`;
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  return (
+    <Link href={`/watch/${video.id}`} className='group block'>
+      <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 ${
+        isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
+      }`}>
+        <div className='relative w-full aspect-video'>
+          <HoverThumbnail
+            thumbnailUrl={video.thumbnailUrl}
+            splashImageUrl={video.splashImageUrl}
+            alt={video.title}
+            title={video.title}
+            className='w-full h-full'
+          />
+          {video.duration > 0 && (
+            <span className='absolute bottom-2 right-2 z-30 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded'>
+              {Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}
+            </span>
+          )}
+        </div>
+        <div className='p-4'>
+          <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-accent transition-colors'>
+            {video.title}
+          </h3>
+          <div className='flex items-center justify-between text-sm text-foreground/60'>
+            <span>{video.views?.toLocaleString() || 0} lượt xem</span>
+            <span>{video.createdAt && formatDate(video.createdAt)}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+const SkeletonCard = () => {
+  const { isDark } = useDarkMode();
+  return (
+    <div className={`rounded-xl overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-white shadow'} animate-pulse`}>
+      <div className='aspect-video bg-gray-300 dark:bg-gray-700' />
+      <div className='p-4 space-y-3'>
+        <div className='h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4' />
+        <div className='h-3 bg-gray-300 dark:bg-gray-700 rounded w-1/2' />
+      </div>
+    </div>
+  );
+};
 
 export default function Home() {
+  const { isDark } = useDarkMode();
+  const [latestPage, setLatestPage] = useState(0);
+
+  const { data: trendingData, isLoading: loadingTrending } = useQuery({
+    queryKey: ['trendingVideos'],
+    queryFn: () => videoApi.getTrendingVideos(0, 8),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: latestData, isLoading: loadingLatest } = useQuery({
+    queryKey: ['latestVideos', latestPage],
+    queryFn: () => videoApi.getPublicVideos(latestPage, 12),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const trendingVideos = trendingData?.content || [];
+  const latestVideos = latestData?.content || [];
+  const latestTotalPages = latestData?.totalPages || 0;
+
   return (
     <>
       <Header />
-      <main className='flex-1 container mx-auto px-4 py-8'>
-        <h1 className='text-4xl font-bold mb-8'>Khám phá video mới</h1>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-          {/* Video cards sẽ được render ở đây */}
-          <p className='col-span-full text-center text-gray-500'>
-            Đang tải video...
-          </p>
+      <main className='flex-1 bg-primary'>
+        <div className='container mx-auto px-4 py-8'>
+          {/* Section: Đang được xem (Trending) */}
+          <div className='mb-12'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-orange-500/20 rounded-lg'>
+                <FireIcon />
+              </div>
+              <div>
+                <h2 className='text-2xl font-bold text-foreground'>Đang được xem</h2>
+                <p className='text-sm text-foreground/60'>Video được xem nhiều nhất</p>
+              </div>
+            </div>
+
+            {loadingTrending ? (
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                {[...Array(4)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : trendingVideos.length === 0 ? (
+              <div className={`text-center py-12 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                <p className='text-foreground/60'>Chưa có video trending</p>
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                {trendingVideos.map((video: any) => (
+                  <VideoCard key={video.id} video={video} isDark={isDark} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section: Video mới nhất */}
+          <div>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-blue-500/20 rounded-lg'>
+                <ClockIcon />
+              </div>
+              <div>
+                <h2 className='text-2xl font-bold text-foreground'>Video mới nhất</h2>
+                <p className='text-sm text-foreground/60'>Cập nhật liên tục</p>
+              </div>
+            </div>
+
+            {loadingLatest ? (
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                {[...Array(8)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : latestVideos.length === 0 ? (
+              <div className={`text-center py-12 rounded-xl ${isDark ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} mb-4`}>
+                  <svg className='w-8 h-8 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' />
+                  </svg>
+                </div>
+                <h3 className='text-lg font-semibold text-foreground mb-2'>Chưa có video nào</h3>
+                <p className='text-foreground/60 mb-4'>Hãy là người đầu tiên chia sẻ video!</p>
+                <Link
+                  href='/upload'
+                  className='inline-flex items-center gap-2 px-6 py-2 bg-accent hover:bg-accent/90 text-white font-medium rounded-full transition-all'
+                >
+                  Upload video
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                  {latestVideos.map((video: any) => (
+                    <VideoCard key={video.id} video={video} isDark={isDark} />
+                  ))}
+                </div>
+
+                {latestTotalPages > 1 && (
+                  <div className='flex items-center justify-center gap-2 mt-10'>
+                    <button
+                      onClick={() => setLatestPage(Math.max(0, latestPage - 1))}
+                      disabled={latestPage === 0}
+                      className={`p-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                      }`}
+                    >
+                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                      </svg>
+                    </button>
+                    
+                    {[...Array(Math.min(5, latestTotalPages))].map((_, i) => {
+                      let pageNum: number;
+                      if (latestTotalPages <= 5) {
+                        pageNum = i;
+                      } else if (latestPage < 3) {
+                        pageNum = i;
+                      } else if (latestPage > latestTotalPages - 3) {
+                        pageNum = latestTotalPages - 5 + i;
+                      } else {
+                        pageNum = latestPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setLatestPage(pageNum)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-all ${
+                            latestPage === pageNum
+                              ? 'bg-accent text-white shadow-lg shadow-accent/30'
+                              : isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                          }`}
+                        >
+                          {pageNum + 1}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      onClick={() => setLatestPage(Math.min(latestTotalPages - 1, latestPage + 1))}
+                      disabled={latestPage >= latestTotalPages - 1}
+                      className={`p-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                      }`}
+                    >
+                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </main>
       <Footer />
