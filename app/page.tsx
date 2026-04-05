@@ -147,7 +147,7 @@ export default function Home() {
 
   const { data: latestData, isLoading: loadingLatest } = useQuery({
     queryKey: ['latestVideos', latestPage, sortBy],
-    queryFn: () => videoApi.getPublicVideos(latestPage, 12, sortBy),
+    queryFn: () => videoApi.getAllVideos(latestPage, 12, sortBy),
     staleTime: 2 * 60 * 1000,
   });
 

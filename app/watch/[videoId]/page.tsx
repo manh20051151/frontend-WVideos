@@ -7,6 +7,7 @@ import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
+import AuthModal from '@/components/auth/AuthModal';
 
 export default function WatchVideoPage() {
   const params = useParams();
@@ -18,6 +19,8 @@ export default function WatchVideoPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoLoading, setVideoLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -25,9 +28,15 @@ export default function WatchVideoPage() {
         setLoading(true);
         const videoData = await videoApi.getVideoById(videoId);
         setVideo(videoData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching video:', error);
-        setError('Không thể tải video');
+        console.log('Error response:', error?.response?.data);
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          // Luôn hiện modal đăng nhập cho video riêng tư
+          setShowLoginModal(true);
+        } else {
+          setError('Không thể tải video');
+        }
       } finally {
         setLoading(false);
       }
@@ -123,25 +132,84 @@ export default function WatchVideoPage() {
     );
   }
 
+  // Login Modal for private videos - ƯU TIÊN HƠN
+  if (showLoginModal) {
+    return (
+      <>
+        <Header />
+        <div className='min-h-screen bg-primary py-12 px-4'>
+          <div className='max-w-md mx-auto text-center'>
+            <div className='bg-secondary rounded-lg p-8'>
+              <div className='w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center'>
+                <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+                </svg>
+              </div>
+              <h2 className='text-xl font-bold text-foreground mb-2'>
+                Video riêng tư
+              </h2>
+              <p className='text-foreground opacity-70 mb-6'>
+                Đây là video riêng tư. Bạn cần đăng nhập để xem video này.
+              </p>
+              <div className='flex gap-3 justify-center'>
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
+                >
+                  Đăng nhập / Đăng ký
+                </button>
+                <Link
+                  href='/'
+                  className='bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium py-2 px-6 rounded-lg transition-colors text-foreground'
+                >
+                  Về trang chủ
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => {
+            setShowAuthModal(false);
+          }}
+          onLoginSuccess={() => {
+            setShowAuthModal(false);
+            setShowLoginModal(false);
+            window.location.reload();
+          }} 
+        />
+      </>
+    );
+  }
+
   if (error || !video) {
     return (
       <>
         <Header />
         <div className='min-h-screen bg-primary py-12 px-4'>
-          <div className='max-w-6xl mx-auto text-center'>
+          <div className='max-w-md mx-auto text-center'>
             <div className='bg-secondary rounded-lg p-8'>
-              <h1 className='text-2xl font-bold text-foreground mb-4'>
-                {error || 'Video không tồn tại'}
+              <div className='w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center'>
+                <svg className='w-8 h-8 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                </svg>
+              </div>
+              <h1 className='text-xl font-bold text-foreground mb-2'>
+                Video không tồn tại
               </h1>
               <p className='text-foreground opacity-70 mb-6'>
-                Video này có thể đã bị xóa hoặc không công khai
+                Video này có thể đã bị xóa hoặc không tồn tại
               </p>
-              <Link
-                href='/'
-                className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-              >
-                Về trang chủ
-              </Link>
+              <div className='flex gap-3 justify-center'>
+                <Link
+                  href='/'
+                  className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
+                >
+                  Về trang chủ
+                </Link>
+              </div>
             </div>
           </div>
         </div>

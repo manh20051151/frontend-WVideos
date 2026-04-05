@@ -44,9 +44,16 @@ const videoApi = {
     });
   },
 
-  // Get trending videos (sorted by views)
+  // Get all videos (sorted) - cho người đăng nhập
+  getAllVideos: async (page = 0, size = 10, sort = 'newest'): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get('/videos/all', {
+      params: { page, size, sort },
+    });
+  },
+
+  // Get trending videos (sorted by views) - hiển thị tất cả video (bao gồm private)
   getTrendingVideos: async (page = 0, size = 8): Promise<PageResponse<VideoResponse>> => {
-    return await axiosClient.get('/videos/public', {
+    return await axiosClient.get('/videos/all', {
       params: { page, size, sort: 'popular' },
     });
   },
