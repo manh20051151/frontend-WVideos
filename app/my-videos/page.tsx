@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import videoApi, { VideoResponse } from '@/lib/apis/video.api';
@@ -38,6 +38,10 @@ export default function MyVideosPage() {
   const hideToast = useCallback(() => {
     setToast(prev => ({ ...prev, isVisible: false }));
   }, []);
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['myVideos'] });
+  }, [queryClient]);
 
   // Sử dụng React Query để caching và tối ưu performance
   const { data: videosData, isLoading: loading } = useQuery({
