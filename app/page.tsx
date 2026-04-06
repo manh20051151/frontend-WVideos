@@ -79,28 +79,30 @@ const VideoCard = ({ video, isDark }: { video: any; isDark: boolean }) => {
 
   return (
     <Link href={`/watch/${video.id}`} className='group block'>
-      <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 ${
+      <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 h-full flex flex-col ${
         isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
       }`}>
-        <div className='relative w-full aspect-video'>
-          <HoverThumbnail
-            thumbnailUrl={video.thumbnailUrl}
-            splashImageUrl={video.splashImageUrl}
-            alt={video.title}
-            title={video.title}
-            className='w-full h-full'
-          />
+        <div className='relative w-full pb-[56.25%] flex-shrink-0'>
+          <div className='absolute inset-0'>
+            <HoverThumbnail
+              thumbnailUrl={video.thumbnailUrl}
+              splashImageUrl={video.splashImageUrl}
+              alt={video.title}
+              title={video.title}
+              className='w-full h-full'
+            />
+          </div>
           {video.duration > 0 && (
             <span className='absolute bottom-2 right-2 z-30 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded'>
               {Math.floor(video.duration / 60)}:{String(video.duration % 60).padStart(2, '0')}
             </span>
           )}
         </div>
-        <div className='p-4'>
-          <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-accent transition-colors'>
+        <div className='p-4 flex flex-col flex-grow min-h-[80px]'>
+          <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-accent transition-colors' style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {video.title}
           </h3>
-          <div className='flex items-center justify-between text-sm text-foreground/60'>
+          <div className='mt-auto flex items-center justify-between text-sm text-foreground/60'>
             <span>{video.views?.toLocaleString() || 0} lượt xem</span>
             <span>{video.createdAt && formatDate(video.createdAt)}</span>
           </div>
@@ -197,7 +199,7 @@ export default function Home() {
                 <p className='text-foreground/60'>Chưa có video trending</p>
               </div>
             ) : (
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-full'>
                 {trendingVideos.map((video: any) => (
                   <VideoCard key={video.id} video={video} isDark={isDark} />
                 ))}
@@ -266,7 +268,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 h-full'>
                   {latestVideos.map((video: any) => (
                     <VideoCard key={video.id} video={video} isDark={isDark} />
                   ))}
