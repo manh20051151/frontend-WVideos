@@ -67,8 +67,8 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
                 localStorage.setItem('token', token);
 
                 const userInfo = await authApi.getMyInfo();
-                if (userInfo.result) {
-                    localStorage.setItem('user', JSON.stringify(userInfo.result));
+                if (userInfo && userInfo.id) {
+                    localStorage.setItem('user', JSON.stringify(userInfo));
                 }
 
                 setSuccess('Đăng nhập thành công!');
