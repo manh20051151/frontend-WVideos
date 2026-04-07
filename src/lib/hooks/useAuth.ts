@@ -34,11 +34,11 @@ export const useAuth = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await authApi.getMyInfo();
+      const userData = await authApi.getMyInfo();
       
-      if (response.result) {
-        setUser(response.result);
-        localStorage.setItem('user', JSON.stringify(response.result));
+      if (userData && userData.id) {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
       }
     } catch (error: any) {
       console.error('Failed to fetch profile:', error);
@@ -52,18 +52,18 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await authApi.login({ email, password });
+      const authResponse = await authApi.login({ email, password });
       
-      if (response.result?.token) {
-        localStorage.setItem('token', response.result.token);
+      if (authResponse?.token) {
+        localStorage.setItem('token', authResponse.token);
         
-        const userResponse = await authApi.getMyInfo();
-        if (userResponse.result) {
-          setUser(userResponse.result);
-          localStorage.setItem('user', JSON.stringify(userResponse.result));
+        const userData = await authApi.getMyInfo();
+        if (userData && userData.id) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
         }
         
-        return response;
+        return authResponse;
       }
       
       throw new Error('Login failed');

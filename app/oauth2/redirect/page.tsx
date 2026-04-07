@@ -36,7 +36,7 @@ function OAuth2RedirectContent() {
         localStorage.setItem('token', token);
         
         // Gọi API để lấy thông tin user
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/users/myInfo`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/users/my-info`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

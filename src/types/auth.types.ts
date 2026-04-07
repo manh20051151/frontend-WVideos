@@ -40,4 +40,8 @@ export interface UserResponse {
         name: string;
         description: string;
     }>;
+    joinedDate?: string;
+    bankName?: string;
+    bankAccountHolderName?: string;
+    bankAccountNumber?: string;
 }

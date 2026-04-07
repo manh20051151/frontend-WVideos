@@ -52,6 +52,6 @@ export const dashboardApi = {
   // Lấy thống kê dashboard (admin only)
   getDashboardStats: async (): Promise<DashboardStats> => {
     const response = await axiosClient.get('/admin/dashboard/stats');
-    return response.result || response;
+    return response as unknown as DashboardStats;
   },
 };

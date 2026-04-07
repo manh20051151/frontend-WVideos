@@ -353,7 +353,7 @@ export default function WatchVideoPage() {
               )}
 
               {/* Categories & Tags */}
-              {(video.categories?.length > 0 || video.tags?.length > 0) && (
+              {((video.categories?.length ?? 0) > 0 || (video.tags?.length ?? 0) > 0) && (
                 <div className='flex flex-wrap gap-2'>
                   {video.categories?.map((cat) => (
                     <Link
