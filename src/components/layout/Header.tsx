@@ -111,7 +111,7 @@ export default function Header() {
                 <Link href='/upload' className='btn'>
                   📤 Tải lên
                 </Link>
-                <Link href='/nap-tien' className='btn'>
+                <Link href='/wallet/topup' className='btn'>
                   💰 Nạp tiền
                 </Link>
                 {user.roles?.some(role => role.name === 'ADMIN') && (
