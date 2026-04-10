@@ -7,6 +7,7 @@ export interface DashboardStats {
   totalVideos: number;
   totalCategories: number;
   totalViews: number;
+  pendingComments: number;  // Số comment chờ duyệt
   
   // Thống kê video theo trạng thái
   videosUploading: number;

@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
           ) : stats ? (
             <>
               {/* Overview Stats */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8'>
                 <StatCard
                   title='Tổng người dùng'
                   value={stats.totalUsers}
@@ -145,6 +145,12 @@ export default function AdminDashboardPage() {
                   value={stats.totalViews}
                   icon='👁️'
                   color='secondary'
+                />
+                <StatCard
+                  title='Bình luận chờ duyệt'
+                  value={stats.pendingComments || 0}
+                  icon='💬'
+                  color='accent'
                 />
               </div>
 
@@ -223,6 +229,19 @@ export default function AdminDashboardPage() {
               >
                 <span className='text-xl'>⚙️</span>
                 <span className='font-medium text-foreground'>Cài đặt hệ thống</span>
+              </button>
+
+              <button
+                onClick={() => router.push('/admin/comments')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors relative'
+              >
+                <span className='text-xl'>💬</span>
+                <span className='font-medium text-foreground'>Duyệt bình luận</span>
+                {stats && (stats.pendingComments || 0) > 0 && (
+                  <span className='absolute -top-1 -right-1 px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full'>
+                    {stats.pendingComments}
+                  </span>
+                )}
               </button>
 
               <button

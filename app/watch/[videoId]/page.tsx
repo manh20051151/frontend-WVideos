@@ -10,6 +10,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
 import AuthModal from '@/components/auth/AuthModal';
+import CommentSection from '@/components/video/CommentSection';
 
 export default function WatchVideoPage() {
   const params = useParams();
@@ -163,6 +164,11 @@ export default function WatchVideoPage() {
   const handleReaction = async (reactionType: 'LIKE' | 'DISLIKE') => {
     if (!currentUser) {
       setShowAuthModal(true);
+      return;
+    }
+
+    // Không cho phép tự react video của mình
+    if (currentUser.id === video?.userId) {
       return;
     }
 
@@ -350,8 +356,10 @@ export default function WatchVideoPage() {
                 <div className='flex items-center gap-2'>
                   <button 
                     onClick={() => handleReaction('LIKE')}
-                    disabled={reacting}
+                    disabled={reacting || (currentUser?.id === video.userId)}
+                    title={currentUser?.id === video.userId ? 'Không thể tự thích video của mình' : ''}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                      currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
                       userReaction === 'LIKE' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-foreground'
                     }`}
                   >
@@ -363,8 +371,10 @@ export default function WatchVideoPage() {
 
                   <button 
                     onClick={() => handleReaction('DISLIKE')}
-                    disabled={reacting}
+                    disabled={reacting || (currentUser?.id === video.userId)}
+                    title={currentUser?.id === video.userId ? 'Không thể tự dislike video của mình' : ''}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                      currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
                       userReaction === 'DISLIKE' ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-foreground'
                     }`}
                   >
@@ -488,13 +498,7 @@ export default function WatchVideoPage() {
 
               {/* Comments Section */}
               <div className='bg-secondary rounded-xl p-6'>
-                <h3 className='font-bold text-lg text-foreground mb-4'>Bình luận</h3>
-                <div className='text-foreground opacity-60 text-center py-8'>
-                  <svg className='w-12 h-12 mx-auto mb-3 opacity-50' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' />
-                  </svg>
-                  <p>Tính năng bình luận đang được phát triển</p>
-                </div>
+                <CommentSection videoId={videoId} />
               </div>
             </div>
 
