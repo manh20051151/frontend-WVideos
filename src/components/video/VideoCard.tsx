@@ -14,6 +14,7 @@ interface VideoCardProps {
   isDeleted?: boolean;
   showUserInfo?: boolean;
   allowViewWhenDeleted?: boolean;
+  showActions?: boolean;
 }
 
 const getStatusBadge = (status: string) => {
@@ -76,7 +77,8 @@ const VideoCard = memo(function VideoCard({
   onRestore, 
   isDeleted, 
   showUserInfo = false,
-  allowViewWhenDeleted = false 
+  allowViewWhenDeleted = false,
+  showActions = true 
 }: VideoCardProps) {
   const { isDark } = useDarkMode();
   const handleEdit = () => onEdit(video);
@@ -154,6 +156,7 @@ const VideoCard = memo(function VideoCard({
           <span>{formatDate(video.createdAt)}</span>
         </div>
 
+        {showActions && (
         <div className='flex gap-2 mt-3'>
           {isDeleted ? (
             <button
@@ -180,6 +183,7 @@ const VideoCard = memo(function VideoCard({
             </>
           )}
         </div>
+        )}
       </div>
     </div>
   );

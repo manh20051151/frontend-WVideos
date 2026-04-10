@@ -357,7 +357,7 @@ export default function WatchVideoPage() {
 
               {/* Channel Bar */}
               <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
-                <div className='flex items-center gap-4'>
+                <Link href={`/channel/${video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
                   <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
                     {video.userFullName?.charAt(0).toUpperCase() || 'U'}
                   </div>
@@ -370,7 +370,7 @@ export default function WatchVideoPage() {
                       }
                     </p>
                   </div>
-                </div>
+                </Link>
                 {currentUser && currentUser.id !== video.userId && (
                   <button 
                     onClick={handleSubscribe}
