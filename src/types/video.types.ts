@@ -18,6 +18,11 @@ export interface VideoUploadData {
 export type VideoStatus = 'UPLOADING' | 'PROCESSING' | 'READY' | 'FAILED' | 'DELETED';
 
 /**
+ * Loại reaction
+ */
+export type VideoReactionType = 'LIKE' | 'DISLIKE' | null;
+
+/**
  * Thông tin chi tiết của một video
  */
 export interface VideoResponse {
@@ -32,6 +37,9 @@ export interface VideoResponse {
     fileSize: number;
     duration: number;
     views: number;
+    likeCount?: number;
+    dislikeCount?: number;
+    userReaction?: VideoReactionType;
     status: VideoStatus;
     isPublic: boolean;
     categories: Category[];

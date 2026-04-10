@@ -1,7 +1,13 @@
 import axiosClient from './axiosClient';
-import type { ApiResponse, PageResponse, VideoUploadData, VideoResponse } from '@/types';
+import type { ApiResponse, PageResponse, VideoUploadData, VideoResponse, VideoReactionType } from '@/types';
 
 export type { VideoUploadData, VideoResponse, PageResponse };
+
+export interface VideoReactionResponse {
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: VideoReactionType;
+}
 
 const videoApi = {
   // Upload video
@@ -81,6 +87,16 @@ const videoApi = {
   // Sync video info from DoodStream
   syncVideoInfo: async (videoId: string): Promise<VideoResponse> => {
     return axiosClient.post(`/videos/${videoId}/sync`);
+  },
+
+  // Toggle reaction (like/dislike)
+  toggleReaction: async (videoId: string, reactionType: VideoReactionType): Promise<VideoReactionResponse> => {
+    return axiosClient.post(`/videos/${videoId}/reactions`, { reactionType });
+  },
+
+  // Get reaction counts
+  getReactions: async (videoId: string): Promise<VideoReactionResponse> => {
+    return axiosClient.get(`/videos/${videoId}/reactions`);
   },
 };
 

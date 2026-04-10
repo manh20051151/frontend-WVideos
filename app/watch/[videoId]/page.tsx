@@ -27,6 +27,10 @@ export default function WatchVideoPage() {
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [subscribing, setSubscribing] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [dislikeCount, setDislikeCount] = useState(0);
+  const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
+  const [reacting, setReacting] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -41,6 +45,16 @@ export default function WatchVideoPage() {
         }
         if (videoData.isSubscribed !== undefined) {
           setIsSubscribed(videoData.isSubscribed);
+        }
+        // Set reaction info
+        if (videoData.likeCount !== undefined) {
+          setLikeCount(videoData.likeCount);
+        }
+        if (videoData.dislikeCount !== undefined) {
+          setDislikeCount(videoData.dislikeCount);
+        }
+        if (videoData.userReaction !== undefined) {
+          setUserReaction(videoData.userReaction);
         }
       } catch (error: any) {
         console.error('Error fetching video:', error);
@@ -143,6 +157,25 @@ export default function WatchVideoPage() {
       console.error('Subscription error:', error);
     } finally {
       setSubscribing(false);
+    }
+  };
+
+  const handleReaction = async (reactionType: 'LIKE' | 'DISLIKE') => {
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    try {
+      setReacting(true);
+      const response = await videoApi.toggleReaction(video.id, reactionType);
+      setLikeCount(response.likeCount);
+      setDislikeCount(response.dislikeCount);
+      setUserReaction(response.userReaction);
+    } catch (error) {
+      console.error('Reaction error:', error);
+    } finally {
+      setReacting(false);
     }
   };
 
@@ -315,18 +348,30 @@ export default function WatchVideoPage() {
                 </div>
                 
                 <div className='flex items-center gap-2'>
-                  <button className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'>
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <button 
+                    onClick={() => handleReaction('LIKE')}
+                    disabled={reacting}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                      userReaction === 'LIKE' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-foreground'
+                    }`}
+                  >
+                    <svg className='w-6 h-6' fill={userReaction === 'LIKE' ? 'currentColor' : 'none'} stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5' />
                     </svg>
-                    <span className='font-medium'>Thích</span>
+                    <span className='font-medium'>{likeCount.toLocaleString('vi-VN')}</span>
                   </button>
 
-                  <button className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'>
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <button 
+                    onClick={() => handleReaction('DISLIKE')}
+                    disabled={reacting}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                      userReaction === 'DISLIKE' ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-foreground'
+                    }`}
+                  >
+                    <svg className='w-6 h-6' fill={userReaction === 'DISLIKE' ? 'currentColor' : 'none'} stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5' />
                     </svg>
-                    <span className='font-medium'>Không thích</span>
+                    <span className='font-medium'>{dislikeCount.toLocaleString('vi-VN')}</span>
                   </button>
 
                   <button 
