@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
+import { subscriptionApi } from '@/lib/apis/subscription.api';
+import { useAuth } from '@/lib/hooks/useAuth';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
@@ -12,6 +14,7 @@ import AuthModal from '@/components/auth/AuthModal';
 export default function WatchVideoPage() {
   const params = useParams();
   const videoId = params.videoId as string;
+  const { user: currentUser } = useAuth();
   
   const [video, setVideo] = useState<VideoResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +24,9 @@ export default function WatchVideoPage() {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+  const [subscriberCount, setSubscriberCount] = useState<number>(0);
+  const [subscribing, setSubscribing] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -28,6 +34,14 @@ export default function WatchVideoPage() {
         setLoading(true);
         const videoData = await videoApi.getVideoById(videoId);
         setVideo(videoData);
+        
+        // Set subscription info từ video response
+        if (videoData.subscriberCount !== undefined) {
+          setSubscriberCount(videoData.subscriberCount);
+        }
+        if (videoData.isSubscribed !== undefined) {
+          setIsSubscribed(videoData.isSubscribed);
+        }
       } catch (error: any) {
         console.error('Error fetching video:', error);
         console.log('Error response:', error?.response?.data);
@@ -106,6 +120,30 @@ export default function WatchVideoPage() {
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     alert('Đã sao chép link!');
+  };
+
+  const handleSubscribe = async () => {
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    try {
+      setSubscribing(true);
+      if (isSubscribed) {
+        await subscriptionApi.unsubscribe(video.userId);
+        setIsSubscribed(false);
+        setSubscriberCount(prev => prev - 1);
+      } else {
+        await subscriptionApi.subscribe(video.userId);
+        setIsSubscribed(true);
+        setSubscriberCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   if (loading) {
@@ -325,12 +363,40 @@ export default function WatchVideoPage() {
                   </div>
                   <div>
                     <h3 className='font-semibold text-foreground'>{video.userFullName}</h3>
-                    <p className='text-sm text-foreground opacity-60'>Kênh của bạn</p>
+                    <p className='text-sm text-foreground opacity-60'>
+                      {subscriberCount > 0 
+                        ? `${subscriberCount.toLocaleString('vi-VN')} người đăng ký`
+                        : (currentUser && currentUser.id === video.userId ? 'Kênh của bạn' : 'Kênh')
+                      }
+                    </p>
                   </div>
                 </div>
-                <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
-                  Đăng ký
-                </button>
+                {currentUser && currentUser.id !== video.userId && (
+                  <button 
+                    onClick={handleSubscribe}
+                    disabled={subscribing}
+                    className={`font-medium py-2 px-6 rounded-full transition-colors ${
+                      isSubscribed 
+                        ? 'bg-gray-500 hover:bg-gray-600 text-white' 
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {subscribing ? 'Đang xử lý...' : (isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
+                  </button>
+                )}
+                {currentUser && currentUser.id === video.userId && (
+                  <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
+                    Kênh của bạn
+                  </button>
+                )}
+                {!currentUser && (
+                  <button 
+                    onClick={() => setShowAuthModal(true)}
+                    className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'
+                  >
+                    Đăng ký
+                  </button>
+                )}
               </div>
 
               {/* Description */}

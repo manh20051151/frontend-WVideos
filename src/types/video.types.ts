@@ -38,6 +38,8 @@ export interface VideoResponse {
     tags?: string[];
     userId: string;
     userFullName: string;
+    subscriberCount?: number;
+    isSubscribed?: boolean;
     createdAt: string;
     updatedAt: string;
 }

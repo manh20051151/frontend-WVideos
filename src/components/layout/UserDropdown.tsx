@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import type { UserResponse } from '@/types';
 
 interface UserDropdownProps {
@@ -61,6 +61,8 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen, onClose]);
 
+    const [avatarError, setAvatarError] = useState(false);
+
     return (
         <div className='relative' ref={menuRef}>
             <button
@@ -68,9 +70,10 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
                 className='p-1 rounded-full hover:ring-2 hover:ring-accent transition-all'
             >
                 <img
-                    src={user.avatar || DEFAULT_AVATAR}
+                    src={!avatarError ? (user.avatar || DEFAULT_AVATAR) : DEFAULT_AVATAR}
                     alt={user.fullName || user.email}
                     className='w-10 h-10 rounded-full object-cover border-2 border-accent'
+                    onError={() => setAvatarError(true)}
                 />
             </button>
 

@@ -53,6 +53,7 @@ function ProfileContent() {
   const [banksLoading, setBanksLoading] = useState<boolean>(false);
   const [bankSearch, setBankSearch] = useState<string>('');
   const [avatarUploading, setAvatarUploading] = useState<boolean>(false);
+  const [avatarError, setAvatarError] = useState<boolean>(false);
 
   const { data: myVideosData, isLoading: myVideosLoading, refetch: refetchMyVideos } = useQuery({
     queryKey: ['myVideos'],
@@ -229,8 +230,8 @@ function ProfileContent() {
               <div className={`rounded-2xl shadow-lg border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                 <div className={`p-6 text-center border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
                   <div className="relative inline-block">
-                    {formData.avatar ? (
-                      <img src={formData.avatar} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-4 border-accent mx-auto" />
+                    {formData.avatar && !avatarError ? (
+                      <img src={formData.avatar} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-4 border-accent mx-auto" onError={() => setAvatarError(true)} />
                     ) : (
                       <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center text-white text-2xl font-bold mx-auto">
                         {user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
@@ -310,9 +311,9 @@ function ProfileContent() {
                       <div className={`rounded-xl p-4 ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
                         <div className="flex flex-col sm:flex-row items-center gap-4">
                           <div className="relative group">
-                            {formData.avatar ? (
+                            {formData.avatar && !avatarError ? (
                               <div className="relative">
-                                <img src={formData.avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-accent" />
+                                <img src={formData.avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-accent" onError={() => setAvatarError(true)} />
                                 {isEditing && (
                                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer group-hover:bg-black/60 transition-colors">
                                     <input
