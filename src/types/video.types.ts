@@ -37,7 +37,7 @@ export interface VideoResponse {
     categories: Category[];
     tags?: string[];
     userId: string;
-    username: string;
+    userFullName: string;
     createdAt: string;
     updatedAt: string;
 }

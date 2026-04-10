@@ -321,10 +321,10 @@ export default function WatchVideoPage() {
               <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
                 <div className='flex items-center gap-4'>
                   <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
-                    {video.username?.charAt(0).toUpperCase() || 'U'}
+                    {video.userFullName?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div>
-                    <h3 className='font-semibold text-foreground'>{video.username}</h3>
+                    <h3 className='font-semibold text-foreground'>{video.userFullName}</h3>
                     <p className='text-sm text-foreground opacity-60'>Kênh của bạn</p>
                   </div>
                 </div>

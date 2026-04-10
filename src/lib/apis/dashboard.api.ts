@@ -40,7 +40,6 @@ export interface CategoryStats {
 
 export interface UserStats {
   userId: string;
-  username: string;
   email: string;
   videoCount: number;
   totalViews: number;

@@ -23,7 +23,6 @@ const EyeOffIcon = () => (
 );
 
 const INITIAL_FORM: RegisterRequest & { confirmPassword: string; gender: string; agreeTerms: boolean } = {
-    username: '',
     fullName: '',
     numberPhone: '',
     email: '',
@@ -63,7 +62,6 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
         setLoading(true);
         try {
             const registerData: RegisterRequest = {
-                username: formData.username || formData.email.split('@')[0],
                 password: formData.password,
                 email: formData.email,
                 fullName: formData.fullName,

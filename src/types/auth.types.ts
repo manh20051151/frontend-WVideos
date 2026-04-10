@@ -2,7 +2,6 @@
  * Payload gửi lên khi đăng ký tài khoản
  */
 export interface RegisterRequest {
-    username: string;
     password: string;
     email: string;
     fullName: string;
@@ -30,7 +29,6 @@ export interface AuthResponse {
  */
 export interface UserResponse {
     id: string;
-    username: string;
     email: string;
     fullName: string;
     numberPhone: string;

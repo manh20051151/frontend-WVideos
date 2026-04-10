@@ -138,13 +138,13 @@ const VideoCard = memo(function VideoCard({
           </h3>
         </Link>
 
-        {showUserInfo && video.username && (
+        {showUserInfo && video.userFullName && (
           <div className='flex items-center gap-2 mb-2 p-2 bg-accent/10 rounded-lg'>
             <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-white'>
-              {video.username.charAt(0).toUpperCase()}
+              {video.userFullName.charAt(0).toUpperCase()}
             </div>
             <span className='text-sm text-foreground font-medium'>
-              {video.username}
+              {video.userFullName}
             </span>
           </div>
         )}

@@ -233,11 +233,11 @@ function ProfileContent() {
                       <img src={formData.avatar} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-4 border-accent mx-auto" />
                     ) : (
                       <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center text-white text-2xl font-bold mx-auto">
-                        {user.username?.charAt(0).toUpperCase()}
+                        {user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
-                  <h3 className="mt-3 text-lg font-semibold text-foreground">{user.fullName || user.username}</h3>
+                  <h3 className="mt-3 text-lg font-semibold text-foreground">{user.fullName || user.email}</h3>
                   <p className="text-sm text-foreground opacity-60">{user.email}</p>
                 </div>
                 <div className="p-4">
@@ -352,7 +352,7 @@ function ProfileContent() {
                             ) : (
                               <div className="relative">
                                 <div className="w-24 h-24 rounded-full bg-accent flex items-center justify-center text-white text-3xl font-bold">
-                                  {user.username?.charAt(0).toUpperCase()}
+                                  {user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                                 </div>
                                 {isEditing && (
                                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer group-hover:bg-black/60 transition-colors">

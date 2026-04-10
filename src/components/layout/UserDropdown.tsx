@@ -69,7 +69,7 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
             >
                 <img
                     src={user.avatar || DEFAULT_AVATAR}
-                    alt={user.fullName || user.username}
+                    alt={user.fullName || user.email}
                     className='w-10 h-10 rounded-full object-cover border-2 border-accent'
                 />
             </button>
@@ -78,7 +78,7 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
                 <div className='absolute right-0 mt-2 w-56 bg-primary border-2 border-accent rounded-lg shadow-xl py-2 z-50'>
                     {/* User info */}
                     <div className='px-4 py-3 border-b border-accent'>
-                        <p className='text-sm font-medium text-foreground'>{user.fullName || user.username}</p>
+                        <p className='text-sm font-medium text-foreground'>{user.fullName || user.email}</p>
                         <p className='text-xs text-gray-500 dark:text-gray-400 truncate'>{user.email}</p>
                         {user.roles?.some(role => role.name === 'ADMIN') && (
                             <span className='inline-block mt-1 px-2 py-1 text-xs bg-highlight text-white rounded-full'>

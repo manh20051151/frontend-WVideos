@@ -21,7 +21,12 @@ export const useAuth = () => {
     if (token) {
       if (savedUser) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          const userWithAvatar: UserResponse = {
+            ...parsedUser,
+            avatar: parsedUser.avatar || (parsedUser as unknown as { picture?: string }).picture || (parsedUser as unknown as { imageUrl?: string }).imageUrl || (parsedUser as unknown as { photoURL?: string }).photoURL || ''
+          };
+          setUser(userWithAvatar);
         } catch (e) {
           console.error('Failed to parse saved user:', e);
         }
@@ -35,12 +40,20 @@ export const useAuth = () => {
   const fetchProfile = async () => {
     try {
       const userData = await authApi.getMyInfo();
+      console.log('🔍 fetchProfile - raw userData received:', userData);
       
       if (userData && userData.id) {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+        // Xử lý avatar từ Google - backend có thể trả về picture thay vì avatar
+        const processedUser: UserResponse = {
+          ...userData,
+          avatar: userData.avatar || (userData as unknown as { picture?: string }).picture || (userData as unknown as { imageUrl?: string }).imageUrl || (userData as unknown as { photoURL?: string }).photoURL || ''
+        };
+        console.log('🔍 fetchProfile - processed user with avatar:', processedUser.avatar);
+        
+        setUser(processedUser);
+        localStorage.setItem('user', JSON.stringify(processedUser));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch profile:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('user');

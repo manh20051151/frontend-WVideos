@@ -14,9 +14,9 @@ export default function TopUsersCard({ users }: TopUsersCardProps) {
     return date.toLocaleDateString('vi-VN');
   };
 
-  const getAvatarColor = (username: string) => {
+  const getAvatarColor = (email: string) => {
     const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
-    const index = username.charCodeAt(0) % colors.length;
+    const index = email.charCodeAt(0) % colors.length;
     return colors[index];
   };
 
@@ -36,16 +36,13 @@ export default function TopUsersCard({ users }: TopUsersCardProps) {
                 {index + 1}
               </div>
               
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full text-white font-bold ${getAvatarColor(user.username)}`}>
-                {user.username.charAt(0).toUpperCase()}
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full text-white font-bold ${getAvatarColor(user.email)}`}>
+                {user.email.charAt(0).toUpperCase()}
               </div>
               
               <div className='flex-1 min-w-0'>
                 <div className='flex items-center justify-between mb-1'>
-                  <div>
-                    <p className='font-medium text-foreground truncate'>{user.username}</p>
-                    <p className='text-xs text-foreground opacity-50 truncate'>{user.email}</p>
-                  </div>
+                  <p className='font-medium text-foreground truncate'>{user.email}</p>
                   <div className='text-right'>
                     <p className='text-sm font-medium text-foreground'>{user.videoCount} video</p>
                     <p className='text-xs text-foreground opacity-50'>
