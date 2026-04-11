@@ -134,9 +134,12 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
       ) : (
         <div className="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            <a href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'login' } }))}
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            >
               Đăng nhập
-            </a>{' '}
+            </button>{' '}
             để bình luận
           </p>
         </div>

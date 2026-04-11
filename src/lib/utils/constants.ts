@@ -13,8 +13,6 @@ export const USER_ROLES = {
 
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/login',
-  REGISTER: '/register',
   PROFILE: '/profile',
   UPLOAD: '/upload',
   ADMIN: '/admin',

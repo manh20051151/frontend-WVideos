@@ -135,9 +135,6 @@ export default function Header() {
                 <button onClick={() => openAuthModal('login')} className='btn'>
                   Đăng nhập
                 </button>
-                <Link href='/login' className='btn btn-accent'>
-                  🔐 Admin
-                </Link>
               </>
             )}
           </div>

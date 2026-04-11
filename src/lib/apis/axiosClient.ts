@@ -62,11 +62,11 @@ axiosClient.interceptors.response.use(
     console.log('🔍 isTokenExpired:', isTokenExpired, 'status:', error.response?.status, 'code:', error.response?.data?.code);
     
     // Nếu lỗi 401 nhưng KHÔNG phải token expired -> logout ngay (token invalid, revoked,...)
-    // CHỈ redirect về login nếu có token (người dùng đã đăng nhập trước đó)
+    // CHỈ hiển thị modal nếu có token (người dùng đã đăng nhập trước đó)
     if (error.response?.status === 401 && !isTokenExpired && !originalRequest._retry && hasToken) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'login' } }));
       return Promise.reject(error);
     }
     

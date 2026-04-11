@@ -161,12 +161,12 @@ export default function ChannelPage() {
                 )}
                 
                 {!currentUser && (
-                  <Link 
-                    href="/login"
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'register' } }))}
                     className="inline-block px-8 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
                   >
                     Đăng ký
-                  </Link>
+                  </button>
                 )}
               </div>
             </div>
