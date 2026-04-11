@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import videoApi from '@/lib/apis/video.api';
@@ -146,8 +147,42 @@ const getSortLabel = (key: SortOption): string => {
 export default function Home() {
   const { isDark } = useDarkMode();
   const queryClient = useQueryClient();
-  const [latestPage, setLatestPage] = useState(0);
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const initialPage = parseInt(searchParams.get('page') || '1', 10);
+  const initialSort = searchParams.get('sort') as SortOption | null;
+
+  const [latestPage, setLatestPage] = useState(Math.max(1, initialPage) - 1);
+  const [sortBy, setSortBy] = useState<SortOption>(initialSort || 'newest');
+  const [jumpInput, setJumpInput] = useState('');
+
+  // Sync URL params with state
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (latestPage > 0) params.set('page', String(latestPage + 1));
+    if (sortBy !== 'newest') params.set('sort', sortBy);
+
+    const queryString = params.toString();
+    const url = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(url, { scroll: false });
+  }, [latestPage, sortBy, pathname, router]);
+
+  const goToPage = (page: number) => {
+    setLatestPage(Math.max(0, Math.min(page, latestTotalPages - 1)));
+  };
+
+  const handleJumpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const pageNum = parseInt(jumpInput, 10);
+      if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= latestTotalPages) {
+        goToPage(pageNum - 1);
+        setJumpInput('');
+      }
+      e.currentTarget.blur();
+    }
+  };
 
   useEffect(() => {
     queryClient.prefetchQuery({
@@ -282,57 +317,165 @@ export default function Home() {
                 </div>
 
                 {latestTotalPages > 1 && (
-                  <div className='flex items-center justify-center gap-2 mt-10'>
-                    <button
-                      onClick={() => setLatestPage(Math.max(0, latestPage - 1))}
-                      disabled={latestPage === 0}
-                      className={`p-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
-                      </svg>
-                    </button>
-                    
-                    {[...Array(Math.min(5, latestTotalPages))].map((_, i) => {
-                      let pageNum: number;
-                      if (latestTotalPages <= 5) {
-                        pageNum = i;
-                      } else if (latestPage < 3) {
-                        pageNum = i;
-                      } else if (latestPage > latestTotalPages - 3) {
-                        pageNum = latestTotalPages - 5 + i;
-                      } else {
-                        pageNum = latestPage - 2 + i;
-                      }
-                      
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setLatestPage(pageNum)}
-                          className={`w-10 h-10 rounded-lg font-medium transition-all ${
-                            latestPage === pageNum
-                              ? 'bg-accent text-white shadow-lg shadow-accent/30'
-                              : isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                          }`}
-                        >
-                          {pageNum + 1}
-                        </button>
-                      );
-                    })}
-                    
-                    <button
-                      onClick={() => setLatestPage(Math.min(latestTotalPages - 1, latestPage + 1))}
-                      disabled={latestPage >= latestTotalPages - 1}
-                      className={`p-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isDark ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
-                      </svg>
-                    </button>
+                  <div className='flex flex-col items-center gap-4 mt-12'>
+                    <div className='flex items-center gap-2'>
+                      {/* First page */}
+                      <button
+                        onClick={() => goToPage(0)}
+                        disabled={latestPage === 0}
+                        className={`p-2.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                        }`}
+                        title='Trang đầu'
+                      >
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M11 19l-7-7 7-7m8 14l-7-7 7-7' />
+                        </svg>
+                      </button>
+
+                      {/* Previous */}
+                      <button
+                        onClick={() => goToPage(latestPage - 1)}
+                        disabled={latestPage === 0}
+                        className={`p-2.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                        }`}
+                        title='Trang trước'
+                      >
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                        </svg>
+                      </button>
+
+                      {/* Page numbers */}
+                      <div className='flex items-center gap-1'>
+                        {(() => {
+                          const pages: number[] = [];
+                          const total = latestTotalPages;
+                          const current = latestPage;
+
+                          pages.push(0); // always show page 1
+
+                          if (total <= 7) {
+                            for (let i = 1; i < total; i++) {
+                              pages.push(i);
+                            }
+                          } else {
+                            const start = Math.max(1, current - 1);
+                            const end = Math.min(total - 2, current + 1);
+
+                            if (start > 1) pages.push(-1); // ellipsis
+
+                            for (let i = start; i <= end; i++) {
+                              pages.push(i);
+                            }
+
+                            if (end < total - 2) pages.push(-2); // ellipsis
+
+                            pages.push(total - 1); // always show last page
+                          }
+
+                          return pages.map((p, i) => {
+                            if (p < 0) {
+                              return (
+                                <span
+                                  key={`ellipsis-${i}`}
+                                  className={`w-10 h-10 flex items-center justify-center text-sm ${
+                                    isDark ? 'text-gray-500' : 'text-gray-400'
+                                  }`}
+                                >
+                                  ...
+                                </span>
+                              );
+                            }
+                            return (
+                              <button
+                                key={p}
+                                onClick={() => goToPage(p)}
+                                className={`w-10 h-10 rounded-lg font-medium text-sm transition-all ${
+                                  latestPage === p
+                                    ? 'bg-accent text-white shadow-lg shadow-accent/30 scale-105'
+                                    : isDark
+                                      ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                }`}
+                              >
+                                {p + 1}
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+
+                      {/* Next */}
+                      <button
+                        onClick={() => goToPage(latestPage + 1)}
+                        disabled={latestPage >= latestTotalPages - 1}
+                        className={`p-2.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                        }`}
+                        title='Trang sau'
+                      >
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                        </svg>
+                      </button>
+
+                      {/* Last page */}
+                      <button
+                        onClick={() => goToPage(latestTotalPages - 1)}
+                        disabled={latestPage >= latestTotalPages - 1}
+                        className={`p-2.5 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                          isDark
+                            ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                        }`}
+                        title='Trang cuối'
+                      >
+                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 5l7 7-7 7M5 5l7 7-7 7' />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Jump to page input */}
+                    <div className='flex items-center gap-2'>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Đến trang
+                      </span>
+                      <input
+                        type='number'
+                        min={1}
+                        max={latestTotalPages}
+                        value={jumpInput}
+                        onChange={(e) => setJumpInput(e.target.value)}
+                        onKeyDown={handleJumpKeyDown}
+                        onBlur={() => {
+                          if (jumpInput) {
+                            const pageNum = parseInt(jumpInput, 10);
+                            if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= latestTotalPages) {
+                              goToPage(pageNum - 1);
+                            }
+                            setJumpInput('');
+                          }
+                        }}
+                        className={`w-20 px-3 py-1.5 rounded-lg text-sm text-center font-medium transition-all border outline-none ${
+                          isDark
+                            ? 'bg-gray-800 border-gray-700 text-white focus:border-accent focus:ring-1 focus:ring-accent/30'
+                            : 'bg-white border-gray-200 text-gray-900 focus:border-accent focus:ring-1 focus:ring-accent/30'
+                        }`}
+                        placeholder={`${latestPage + 1}`}
+                      />
+                      <span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        / {latestTotalPages}
+                      </span>
+                    </div>
                   </div>
                 )}
               </>
