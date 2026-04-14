@@ -60,14 +60,15 @@ export default function ChannelPage() {
     }
   };
   
-  const formatViews = (views: number) => {
-    if (views >= 1000000) {
-      return `${(views / 1000000).toFixed(1)}M`;
+  const formatViews = (views: number | null | undefined) => {
+    const viewCount = views || 0;
+    if (viewCount >= 1000000) {
+      return `${(viewCount / 1000000).toFixed(1)}M`;
     }
-    if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}N`;
+    if (viewCount >= 1000) {
+      return `${(viewCount / 1000).toFixed(1)}N`;
     }
-    return views.toString();
+    return viewCount.toString();
   };
   
   if (loading) {

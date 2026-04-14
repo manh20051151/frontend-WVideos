@@ -38,7 +38,7 @@ export default function VideoCard({
           <h3 className='font-semibold text-lg line-clamp-2 mb-2'>{title}</h3>
           <p className='text-sm text-gray-600'>{author}</p>
           <div className='flex items-center justify-between mt-2 text-sm text-gray-500'>
-            <span>{views.toLocaleString()} lượt xem</span>
+            <span>{views?.toLocaleString() || 0} lượt xem</span>
             <span>{new Date(createdAt).toLocaleDateString('vi-VN')}</span>
           </div>
         </div>

@@ -98,6 +98,13 @@ const videoApi = {
   getReactions: async (videoId: string): Promise<VideoReactionResponse> => {
     return axiosClient.get(`/videos/${videoId}/reactions`);
   },
+
+  // Get related videos
+  getRelatedVideos: async (videoId: string, page: number = 0, size: number = 6): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get(`/videos/${videoId}/related`, {
+      params: { page, size },
+    });
+  },
 };
 
 export default videoApi;

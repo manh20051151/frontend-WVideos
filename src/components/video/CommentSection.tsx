@@ -79,7 +79,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
         </svg>
         Bình luận
         {commentsData?.totalElements !== undefined && (
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-normal text-foreground/50">
             ({commentsData.totalElements})
           </span>
         )}
@@ -132,11 +132,11 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
           )}
         </form>
       ) : (
-        <div className="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 text-center">
-          <p className="text-gray-600 dark:text-gray-400">
-            <button 
+        <div className="mb-6 p-4 rounded-xl bg-secondary text-center">
+          <p className="text-foreground/60">
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'login' } }))}
-              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+              className="text-accent hover:underline font-medium"
             >
               Đăng nhập
             </button>{' '}
@@ -160,6 +160,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
         </div>
       ) : comments.length === 0 ? (
         <div className="text-center py-12">
+          <div className="border-t border-accent/30 my-6 pt-6"></div>
           <svg className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>

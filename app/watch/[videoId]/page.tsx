@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
 import AuthModal from '@/components/auth/AuthModal';
 import CommentSection from '@/components/video/CommentSection';
+import RelatedVideosSection from '@/components/video/RelatedVideosSection';
 
 export default function WatchVideoPage() {
   const params = useParams();
@@ -122,14 +125,26 @@ export default function WatchVideoPage() {
     });
   };
 
-  const formatViews = (views: number) => {
-    if (views >= 1000000) {
-      return `${(views / 1000000).toFixed(1)}M lượt xem`;
+  const formatViews = (views: number | null | undefined) => {
+    const viewCount = views || 0;
+    if (viewCount >= 1000000) {
+      return `${(viewCount / 1000000).toFixed(1)}M lượt xem`;
     }
-    if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}N lượt xem`;
+    if (viewCount >= 1000) {
+      return `${(viewCount / 1000).toFixed(1)}N lượt xem`;
     }
-    return `${views} lượt xem`;
+    return `${viewCount} lượt xem`;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
   const copyLink = () => {
@@ -505,39 +520,10 @@ export default function WatchVideoPage() {
             {/* Right Column - Related Videos */}
             <div className='space-y-4'>
               <h3 className='font-bold text-lg text-foreground'>Video liên quan</h3>
-              
-              <div className='space-y-4'>
-                {/* Placeholder for related videos */}
-                <div className='bg-secondary rounded-lg p-4 opacity-60'>
-                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
-                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                      <path d='M8 5v14l11-7z'/>
-                    </svg>
-                  </div>
-                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
-                  <p className='text-xs text-foreground opacity-60'>Kênh • 1N lượt xem</p>
-                </div>
 
-                <div className='bg-secondary rounded-lg p-4 opacity-60'>
-                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
-                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                      <path d='M8 5v14l11-7z'/>
-                    </svg>
-                  </div>
-                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
-                  <p className='text-xs text-foreground opacity-60'>Kênh • 500 lượt xem</p>
-                </div>
-
-                <div className='bg-secondary rounded-lg p-4 opacity-60'>
-                  <div className='aspect-video bg-black rounded-lg mb-3 flex items-center justify-center'>
-                    <svg className='w-10 h-10 text-white opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                      <path d='M8 5v14l11-7z'/>
-                    </svg>
-                  </div>
-                  <p className='text-sm text-foreground font-medium'>Video đang được cập nhật...</p>
-                  <p className='text-xs text-foreground opacity-60'>Kênh • 2.5N lượt xem</p>
-                </div>
-              </div>
+              {video && (
+                <RelatedVideosSection currentVideoId={videoId} />
+              )}
             </div>
           </div>
         </div>
