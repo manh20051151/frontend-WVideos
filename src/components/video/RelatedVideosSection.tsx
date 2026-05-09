@@ -8,12 +8,13 @@ import type { PageResponse } from '@/types';
 
 interface RelatedVideosSectionProps {
   currentVideoId: string;
+  size?: number;
 }
 
-export default function RelatedVideosSection({ currentVideoId }: RelatedVideosSectionProps) {
+export default function RelatedVideosSection({ currentVideoId, size = 15 }: RelatedVideosSectionProps) {
   const { data: relatedVideosData, isLoading } = useQuery({
     queryKey: ['relatedVideos', currentVideoId],
-    queryFn: () => videoApi.getRelatedVideos(currentVideoId, 0, 6),
+    queryFn: () => videoApi.getRelatedVideos(currentVideoId, 0, size),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -37,6 +38,26 @@ export default function RelatedVideosSection({ currentVideoId }: RelatedVideosSe
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      return '1 ngày trước';
+    } else if (diffDays < 30) {
+      return `${diffDays} ngày trước`;
+    } else {
+      const months = Math.floor(diffDays / 30);
+      if (months === 1) {
+        return '1 tháng trước';
+      } else {
+        return `${months} tháng trước`;
+      }
+    }
   };
 
   return (
@@ -81,10 +102,9 @@ export default function RelatedVideosSection({ currentVideoId }: RelatedVideosSe
               <h4 className='font-medium text-foreground line-clamp-2 group-hover:text-accent transition-colors'>
                 {relatedVideo.title}
               </h4>
-              <div className='flex items-center gap-2 text-xs text-foreground opacity-70 mt-1'>
-                <span>{relatedVideo.userFullName}</span>
-                <span>•</span>
+              <div className='flex items-center justify-between text-xs text-foreground opacity-70 mt-1'>
                 <span>{formatViews(relatedVideo.views)}</span>
+                {relatedVideo.createdAt && <span className='ml-auto'>{formatDate(relatedVideo.createdAt)}</span>}
               </div>
             </div>
           </Link>

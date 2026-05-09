@@ -207,9 +207,9 @@ export default function UploadVideoPage() {
       console.log(`[UPLOAD] API trả về sau ${apiDuration}ms`, result);
       setProgress(100);
 
-      // Redirect to video detail or my videos
+      // Redirect to profile page with my-videos tab
       setTimeout(() => {
-        router.push('/my-videos');
+        router.push('/profile?tab=my-videos');
       }, 1000);
     } catch (err: any) {
       console.error('Upload error:', err);
