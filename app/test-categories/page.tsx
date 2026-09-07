@@ -23,7 +23,7 @@ export default function TestCategoriesPage() {
     setLoading(true);
     try {
       // Test endpoint không cần auth
-      const response = await fetch('http://localhost:8080/api/categories/test', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api'}/categories/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

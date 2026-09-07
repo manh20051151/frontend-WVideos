@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ticdn.net',
       },
+      {
+        protocol: 'https',
+        hostname: 'thumb.tapecontent.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'tapecontent.net',
+      },
     ],
   },
   // Suppress hydration warnings caused by browser extensions

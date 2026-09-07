@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type SyntheticEvent } from 'react';
 
 interface HoverThumbnailProps {
   thumbnailUrl?: string;
@@ -24,6 +24,7 @@ export default function HoverThumbnail({
   const [isHovered, setIsHovered] = useState(false);
   const [splashLoaded, setSplashLoaded] = useState(false);
   const [splashError, setSplashError] = useState(false);
+  const [thumbnailInvalid, setThumbnailInvalid] = useState(false);
 
   // Preload splash image khi component mount
   useEffect(() => {
@@ -35,8 +36,22 @@ export default function HoverThumbnail({
     }
   }, [splashImageUrl]);
 
-  // Nếu không có URL nào
-  if (!thumbnailUrl && !splashImageUrl) {
+  // Streamtape trả về ảnh PNG 1x1 trong suốt khi chưa có splash -> coi như không có thumbnail
+  const handleThumbnailLoad = (e: SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth <= 1 || img.naturalHeight <= 1) {
+      setThumbnailInvalid(true);
+    }
+    onLoad?.();
+  };
+
+  const handleThumbnailError = () => {
+    setThumbnailInvalid(true);
+    onError?.();
+  };
+
+  // Nếu không có URL hợp lệ nào
+  if ((!thumbnailUrl && !splashImageUrl) || thumbnailInvalid) {
     return (
       <div className={`flex flex-col items-center justify-center text-foreground bg-secondary ${className}`}>
         <svg className='w-16 h-16 mb-2 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -60,8 +75,8 @@ export default function HoverThumbnail({
           src={thumbnailUrl}
           alt={alt}
           className='w-full h-full object-cover'
-          onError={onError}
-          onLoad={onLoad}
+          onError={handleThumbnailError}
+          onLoad={handleThumbnailLoad}
           loading='lazy'
         />
       )}

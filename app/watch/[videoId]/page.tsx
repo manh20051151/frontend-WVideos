@@ -23,8 +23,6 @@ export default function WatchVideoPage() {
   const [video, setVideo] = useState<VideoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoLoading, setVideoLoading] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -78,31 +76,6 @@ export default function WatchVideoPage() {
       fetchVideo();
     }
   }, [videoId]);
-
-  useEffect(() => {
-    const fetchVideoUrl = async () => {
-      if (!video?.fileCode || videoUrl) return;
-      
-      try {
-        setVideoLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-        const response = await fetch(`${apiUrl}/videos/${video.fileCode}/stream-url`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.result && data.result !== '') {
-            setVideoUrl(data.result);
-          }
-        }
-      } catch (error) {
-        console.error('Lỗi khi lấy video URL:', error);
-      } finally {
-        setVideoLoading(false);
-      }
-    };
-
-    fetchVideoUrl();
-  }, [video?.fileCode, videoUrl]);
 
   useEffect(() => {
     if (video && video.status === 'READY') {
@@ -325,21 +298,22 @@ export default function WatchVideoPage() {
               {/* Video Player */}
               <div className='bg-black rounded-lg overflow-hidden'>
                 <div className='relative aspect-video'>
-                  {videoUrl ? (
-                    <video
-                      controls
-                      src={videoUrl}
-                      poster={video.splashImageUrl || video.thumbnailUrl}
-                      className='w-full h-full object-contain'
-                      preload='metadata'
-                    >
-                      Trình duyệt không hỗ trợ video.
-                    </video>
-                  ) : videoLoading ? (
+                  {video.embedUrl ? (
+                    <iframe
+                      src={video.embedUrl}
+                      className='w-full h-full'
+                      allowFullScreen
+                      allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
+                      frameBorder='0'
+                      title={video.title}
+                    />
+                  ) : video.status === 'READY' ? (
                     <div className='w-full h-full flex items-center justify-center text-white'>
                       <div className='text-center'>
-                        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4'></div>
-                        <p className='text-lg'>Đang tải video...</p>
+                        <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='currentColor' viewBox='0 0 24 24'>
+                          <path d='M8 5v14l11-7z'/>
+                        </svg>
+                        <p className='text-lg'>Không có nguồn video</p>
                       </div>
                     </div>
                   ) : (
