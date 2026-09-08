@@ -105,6 +105,22 @@ const videoApi = {
       params: { page, size },
     });
   },
+
+  // Lấy direct video URL (mp4) từ Streamtape để phát trực tiếp qua <video>
+  getStreamtapeStreamUrl: async (url: string): Promise<string | null> => {
+    const data = (await axiosClient.get('/videos/streamtape/stream-url', {
+      params: { url },
+    })) as unknown;
+    // Interceptor trả về response.data.result nếu có, ngược lại trả toàn bộ body.
+    // Cần unwrap an toàn để tránh nhận object ([object Object]) khi result rỗng.
+    if (typeof data === 'string') {
+      return data;
+    }
+    if (data && typeof data === 'object' && typeof (data as { result?: unknown }).result === 'string') {
+      return (data as { result: string }).result;
+    }
+    return null;
+  },
 };
 
 export default videoApi;

@@ -33,6 +33,7 @@ export default function WatchVideoPage() {
   const [dislikeCount, setDislikeCount] = useState(0);
   const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
   const [reacting, setReacting] = useState(false);
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -89,6 +90,21 @@ export default function WatchVideoPage() {
       return () => clearTimeout(timer);
     }
   }, [video, videoId]);
+
+  // Với Streamtape: lấy direct mp4 URL để phát trực tiếp qua <video> (fallback iframe nếu fail)
+  useEffect(() => {
+    let cancelled = false;
+    if (video && video.status === 'READY' && video.embedUrl.includes('streamtape.com')) {
+      videoApi.getStreamtapeStreamUrl(video.embedUrl)
+        .then((url) => {
+          if (!cancelled && url) {
+            setStreamUrl(url);
+          }
+        })
+        .catch((e) => console.error('❌ Lỗi lấy direct URL Streamtape:', e));
+    }
+    return () => { cancelled = true; };
+  }, [video]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -298,7 +314,17 @@ export default function WatchVideoPage() {
               {/* Video Player */}
               <div className='bg-black rounded-lg overflow-hidden'>
                 <div className='relative aspect-video'>
-                  {video.embedUrl ? (
+                  {streamUrl ? (
+                    <video
+                      src={streamUrl}
+                      className='w-full h-full'
+                      controls
+                      playsInline
+                      poster={video.splashImageUrl || video.thumbnailUrl || undefined}
+                      title={video.title}
+                      onError={() => setStreamUrl(null)}
+                    />
+                  ) : video.embedUrl ? (
                     <iframe
                       src={video.embedUrl}
                       className='w-full h-full'
