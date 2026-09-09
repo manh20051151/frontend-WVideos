@@ -153,7 +153,7 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       onClose();
     } catch (error) {
       console.error('Error saving video:', error);
-      alert('Lỗi khi lưu video: ' + (error as any)?.message || 'Unknown error');
+      alert('Lỗi khi lưu video: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setSaving(false);
     }

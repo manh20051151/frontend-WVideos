@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useDarkMode } from '@/lib/hooks/useDarkMode';
 import { useQuery } from '@tanstack/react-query';
 import { authApi } from '@/lib/apis/auth.api';
-import videoApi from '@/lib/apis/video.api';
+import videoApi, { VideoResponse } from '@/lib/apis/video.api';
 import { uploadImageToImgbb } from '@/lib/utils/imgbb';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -49,8 +49,9 @@ function ProfileContent() {
 
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<boolean>(false);
   const [banks, setBanks] = useState<Array<{ code: string; name: string; shortName: string; logo: string }>>([]);
-  const [banksLoading, setBanksLoading] = useState<boolean>(false);
   const [bankSearch, setBankSearch] = useState<string>('');
   const [avatarUploading, setAvatarUploading] = useState<boolean>(false);
   const [avatarError, setAvatarError] = useState<boolean>(false);
@@ -84,7 +85,6 @@ function ProfileContent() {
 
   useEffect(() => {
     const fetchBanks = async () => {
-      setBanksLoading(true);
       try {
         const response = await authApi.getBankList();
         if (response.code === '00' && response.data) {
@@ -92,8 +92,6 @@ function ProfileContent() {
         }
       } catch (error) {
         console.error('Lỗi khi lấy danh sách ngân hàng:', error);
-      } finally {
-        setBanksLoading(false);
       }
     };
     fetchBanks();
@@ -151,8 +149,9 @@ function ProfileContent() {
       await refreshProfile();
       setSuccess('Cập nhật thông tin thành công!');
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Cập nhật thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Cập nhật thất bại. Vui lòng thử lại.';
+      setError(message);
     } finally {
       setIsSaving(false);
     }
@@ -183,8 +182,9 @@ function ProfileContent() {
       });
       setSuccess('Đổi mật khẩu thành công!');
       setPasswordData({ passwordOld: '', passwordNew: '', confirmPassword: '' });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Đổi mật khẩu thất bại. Vui lòng thử lại.';
+      setError(message);
     } finally {
       setIsSaving(false);
     }
@@ -207,6 +207,39 @@ function ProfileContent() {
     setSuccess('');
   }, [user]);
 
+  // Video edit handlers
+  const handleEditVideo = useCallback((video: VideoResponse) => {
+    router.push(`/edit/${video.id}`);
+  }, [router]);
+
+  // Video delete handlers
+  const handleDeleteVideo = useCallback((videoId: string) => {
+    setDeletingVideoId(videoId);
+    setDeleteConfirm(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deletingVideoId) return;
+    setError('');
+    setSuccess('');
+    try {
+      await videoApi.deleteVideo(deletingVideoId);
+      await refetchMyVideos();
+      setSuccess('Xóa video thành công!');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Xóa video thất bại. Vui lòng thử lại.';
+      setError(message);
+    } finally {
+      setDeletingVideoId(null);
+      setDeleteConfirm(false);
+    }
+  }, [deletingVideoId, refetchMyVideos]);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeletingVideoId(null);
+    setDeleteConfirm(false);
+  }, []);
+
   if (!user) {
     return (
       <div className="min-h-screen bg-primary">
@@ -219,8 +252,39 @@ function ProfileContent() {
     );
   }
 
+  const deleteModal = deleteConfirm && deletingVideoId ? (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={handleCancelDelete} />
+      <div className={`relative rounded-2xl shadow-2xl w-full max-w-md mx-4 border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+          <h3 className="text-lg font-semibold text-foreground">Xác nhận xóa video</h3>
+        </div>
+        <div className="p-6">
+          <p className={`text-foreground/80 mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Bạn có chắc chắn muốn xóa video này? Hành động này không thể hoàn tác.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={handleCancelDelete}
+              className={`px-5 py-2.5 text-sm font-medium rounded-xl transition-all ${isDark ? 'text-gray-200 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
+            >
+              Hủy
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="px-5 py-2.5 text-sm font-medium rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all"
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="min-h-screen bg-primary">
+      {deleteModal}
       <div className="px-40 py-12 w-full">
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -669,8 +733,13 @@ function ProfileContent() {
                         </div>
                       ) : myVideosData?.content && myVideosData.content.length > 0 ? (
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-                          {myVideosData.content.map((video: any) => (
-                            <VideoCard key={video.id} video={video} onEdit={() => {}} onDelete={() => {}} />
+                          {myVideosData.content.map((video: VideoResponse) => (
+                            <VideoCard
+                              key={video.id}
+                              video={video}
+                              onEdit={handleEditVideo}
+                              onDelete={handleDeleteVideo}
+                            />
                           ))}
                         </div>
                       ) : (
