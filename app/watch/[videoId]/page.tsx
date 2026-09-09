@@ -34,6 +34,9 @@ export default function WatchVideoPage() {
   const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
   const [reacting, setReacting] = useState(false);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [streamFailed, setStreamFailed] = useState(false);
+  const [streamRetry, setStreamRetry] = useState(0);
+  const STREAM_MAX_RETRY = 1;
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -94,17 +97,51 @@ export default function WatchVideoPage() {
   // Với Streamtape: lấy direct mp4 URL để phát trực tiếp qua <video> (fallback iframe nếu fail)
   useEffect(() => {
     let cancelled = false;
-    if (video && video.status === 'READY' && video.embedUrl.includes('streamtape.com')) {
-      videoApi.getStreamtapeStreamUrl(video.embedUrl)
-        .then((url) => {
-          if (!cancelled && url) {
-            setStreamUrl(url);
-          }
-        })
-        .catch((e) => console.error('❌ Lỗi lấy direct URL Streamtape:', e));
-    }
+    // Reset mỗi lần đổi video: ẩn iframe cho tới khi resolve xong
+    setStreamUrl(null);
+    setStreamFailed(false);
+    setStreamRetry(0);
+
+    const resolve = async () => {
+      if (!video || video.status !== 'READY' || !video.embedUrl.includes('streamtape.com')) return;
+      try {
+        const url = await videoApi.getStreamtapeStreamUrl(video.embedUrl);
+        if (cancelled) return;
+        if (url) {
+          setStreamUrl(url);
+          setStreamFailed(false);
+        } else {
+          setStreamFailed(true);
+        }
+      } catch (e) {
+        console.error('❌ Lỗi lấy direct URL Streamtape:', e);
+        if (!cancelled) setStreamFailed(true);
+      }
+    };
+
+    resolve();
     return () => { cancelled = true; };
   }, [video]);
+
+  // Khi link direct hết hạn giữa chừng: tự lấy link mới thay vì nhảy sang iframe
+  const handleVideoError = () => {
+    if (streamRetry < STREAM_MAX_RETRY && video?.embedUrl.includes('streamtape.com')) {
+      setStreamRetry((prev) => prev + 1);
+      setStreamUrl(null);
+      videoApi.getStreamtapeStreamUrl(video.embedUrl)
+        .then((url) => {
+          if (url) {
+            setStreamUrl(url);
+            setStreamFailed(false);
+          } else {
+            setStreamFailed(true);
+          }
+        })
+        .catch(() => setStreamFailed(true));
+    } else {
+      setStreamFailed(true);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -339,6 +376,8 @@ export default function WatchVideoPage() {
     ? video.description.slice(0, 200) + '...' 
     : video.description;
 
+  const isStreamtape = !!video?.embedUrl?.includes('streamtape.com');
+
   return (
     <>
       <Header />
@@ -358,8 +397,15 @@ export default function WatchVideoPage() {
                       playsInline
                       poster={video.splashImageUrl || video.thumbnailUrl || undefined}
                       title={video.title}
-                      onError={() => setStreamUrl(null)}
+                      onError={handleVideoError}
                     />
+                  ) : isStreamtape && !streamFailed ? (
+                    <div className='w-full h-full flex items-center justify-center text-white bg-black'>
+                      <div className='text-center'>
+                        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4'></div>
+                        <p className='text-lg'>Đang tải video...</p>
+                      </div>
+                    </div>
                   ) : video.embedUrl ? (
                     <iframe
                       src={video.embedUrl}
