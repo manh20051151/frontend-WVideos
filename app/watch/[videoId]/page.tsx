@@ -299,6 +299,42 @@ export default function WatchVideoPage() {
     );
   }
 
+  // Chặn truy cập nếu video chưa sẵn sàng (chưa READY)
+  if (video && video.status !== 'READY') {
+    const isFailed = video.status === 'FAILED';
+    return (
+      <>
+        <Header />
+        <div className='min-h-screen bg-primary flex items-center justify-center px-4'>
+          <div className='max-w-md w-full text-center'>
+            <div className='bg-secondary rounded-lg p-8'>
+              <div className='w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center'>
+                <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+                </svg>
+              </div>
+              <h1 className='text-xl font-bold text-foreground mb-2'>
+                {isFailed ? 'Video xử lý thất bại' : 'Video đang được xử lý'}
+              </h1>
+              <p className='text-foreground opacity-70 mb-6'>
+                {isFailed
+                  ? 'Video này xử lý không thành công. Vui lòng thử upload lại.'
+                  : 'Video của bạn đang được tải lên và chuyển đổi. Vui lòng quay lại sau ít phút.'}
+              </p>
+              <Link
+                href='/'
+                className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
+              >
+                Về trang chủ
+              </Link>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   const descriptionPreview = video.description && video.description.length > 200 
     ? video.description.slice(0, 200) + '...' 
     : video.description;

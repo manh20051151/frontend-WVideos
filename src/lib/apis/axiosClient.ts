@@ -31,7 +31,12 @@ const processQueue = (error: any, token: string | null = null) => {
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const url = config.url || '';
+    // Không gắn Authorization header cho các endpoint xác thực công khai (/auth/...)
+    // vì oauth2ResourceServer sẽ reject request ngay cả khi endpoint là permitAll
+    // nếu token cũ đã hết hạn -> gây lỗi 401 khi đăng nhập bằng tài khoản đúng
+    const isPublicAuthEndpoint = url.includes('/auth/');
+    if (token && !isPublicAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
