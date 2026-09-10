@@ -189,7 +189,7 @@ export default function ShortsPage() {
             {/* Avatar + follow */}
             <div className='relative'>
               <img
-                src={v.thumbnailUrl || v.splashImageUrl}
+                src={v.avatarUrl || v.thumbnailUrl || v.splashImageUrl}
                 alt={v.userFullName}
                 className='w-12 h-12 rounded-full object-cover border-2 border-white'
               />

@@ -23,6 +23,7 @@ export interface ShortsResponse {
     thumbnailUrl: string;
     splashImageUrl: string;
     userFullName: string;
+    avatarUrl?: string; // ảnh đại diện người đăng
     duration: number;
     views: number;
     likeCount?: number;
