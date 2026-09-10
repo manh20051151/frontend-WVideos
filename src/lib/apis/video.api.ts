@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { ApiResponse, PageResponse, VideoUploadData, VideoResponse, VideoReactionType } from '@/types';
+import type { ApiResponse, PageResponse, VideoUploadData, VideoResponse, VideoReactionType, ShortsResponse } from '@/types';
 
 export type { VideoUploadData, VideoResponse, PageResponse };
 
@@ -120,6 +120,23 @@ const videoApi = {
       return (data as { result: string }).result;
     }
     return null;
+  },
+
+  // Lấy shorts feed (TikTok style). Trả kèm streamUrl đã resolve.
+  getShorts: async (params: {
+    lastCreatedAt?: string;
+    size?: number;
+    guestId?: string;
+  } = {}): Promise<ShortsResponse[]> => {
+    const response = await axiosClient.get('/videos/shorts', { params });
+    return (response as ShortsResponse[]) ?? [];
+  },
+
+  // Đánh dấu video đã xem (ẩn khỏi shorts feed sau này)
+  markWatched: async (videoId: string, guestId?: string): Promise<void> => {
+    await axiosClient.post(`/videos/${videoId}/watched`, null, {
+      params: guestId ? { guestId } : {},
+    });
   },
 };
 

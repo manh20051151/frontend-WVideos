@@ -14,6 +14,23 @@ export interface VideoUploadData {
 }
 
 /**
+ * Video trong shorts feed (TikTok style)
+ */
+export interface ShortsResponse {
+    id: string;
+    title: string;
+    streamUrl: string | null; // direct mp4 URL đã resolve
+    thumbnailUrl: string;
+    splashImageUrl: string;
+    userFullName: string;
+    duration: number;
+    views: number;
+    likeCount?: number;
+    isLiked?: boolean;
+    createdAt: string;
+}
+
+/**
  * Trạng thái xử lý video
  */
 export type VideoStatus = 'UPLOADING' | 'PROCESSING' | 'READY' | 'FAILED' | 'DELETED';
