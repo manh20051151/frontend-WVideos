@@ -15,6 +15,7 @@ export default function ShortsPage() {
   const [lastCreatedAt, setLastCreatedAt] = useState<string | undefined>(undefined);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [muted, setMuted] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -80,18 +81,27 @@ export default function ShortsPage() {
     return () => observer.disconnect();
   }, [videos]);
 
-  // Play active, pause others
+  // Khi chuyển sang video khác thì bỏ trạng thái tạm dừng
+  useEffect(() => {
+    setPaused(false);
+  }, [activeId]);
+
+  // Play active, pause others (tôn trọng trạng thái paused của user)
   useEffect(() => {
     videoRefs.current.forEach((v) => {
       if (!v) return;
       const section = v.closest('[data-id]');
       if (section && section.getAttribute('data-id') === activeId) {
-        v.play().catch(() => {});
+        if (paused) {
+          v.pause();
+        } else {
+          v.play().catch(() => {});
+        }
       } else {
         v.pause();
       }
     });
-  }, [activeId]);
+  }, [activeId, paused]);
 
   // Đánh dấu đã xem + tăng view khi active đủ lâu
   useEffect(() => {
@@ -133,11 +143,23 @@ export default function ShortsPage() {
               loop
               playsInline
               preload='auto'
+              onClick={() => setPaused((p) => !p)}
             />
           ) : (
             <div className='flex flex-col items-center text-white'>
               <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-accent mb-3' />
               <p className='opacity-70'>Không thể tải video</p>
+            </div>
+          )}
+
+          {/* Icon tạm dừng khi user pause video đang phát */}
+          {paused && activeId === v.id && (
+            <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+              <div className='w-20 h-20 rounded-full bg-black/50 flex items-center justify-center text-white'>
+                <svg width='32' height='32' viewBox='0 0 24 24' fill='white' className='ml-1'>
+                  <path d='M8 5v14l11-7z' />
+                </svg>
+              </div>
             </div>
           )}
 
