@@ -180,6 +180,10 @@ export default function ShortsPage() {
             </div>
           )}
 
+          {/* Scrim tăng độ tương phản cho text và action bar (đặc biệt video ngang) */}
+          <div className='absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-[5]' />
+          <div className='absolute top-0 bottom-0 right-0 w-44 bg-gradient-to-l from-black/70 via-black/20 to-transparent pointer-events-none z-[5]' />
+
           {/* Thanh action bar bên phải (style TikTok) */}
           <div className='absolute right-3 bottom-28 z-10 flex flex-col items-center gap-5 text-white'>
             {/* Avatar + follow */}
