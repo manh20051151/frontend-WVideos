@@ -12,6 +12,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ClientOnly from '@/components/common/ClientOnly';
 import AuthModal from '@/components/auth/AuthModal';
+import LoginRequiredModal from '@/components/common/LoginRequiredModal';
 import CommentSection from '@/components/video/CommentSection';
 import RelatedVideosSection from '@/components/video/RelatedVideosSection';
 
@@ -26,6 +27,7 @@ export default function WatchVideoPage() {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [subscriberCount, setSubscriberCount] = useState<number>(0);
   const [subscribing, setSubscribing] = useState(false);
@@ -180,7 +182,7 @@ export default function WatchVideoPage() {
 
   const handleSubscribe = async () => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      setShowLoginRequired(true);
       return;
     }
 
@@ -204,7 +206,7 @@ export default function WatchVideoPage() {
 
   const handleReaction = async (reactionType: 'LIKE' | 'DISLIKE') => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      setShowLoginRequired(true);
       return;
     }
 
@@ -543,7 +545,7 @@ export default function WatchVideoPage() {
                 )}
                 {!currentUser && (
                   <button 
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={() => setShowLoginRequired(true)}
                     className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'
                   >
                     Đăng ký
@@ -611,6 +613,23 @@ export default function WatchVideoPage() {
         </div>
       </div>
       <Footer />
+
+      {/* Popup yêu cầu đăng nhập (thích/dislike/đăng ký khi chưa login) */}
+      <LoginRequiredModal
+        isOpen={showLoginRequired}
+        onClose={() => setShowLoginRequired(false)}
+        onLogin={() => setShowAuthModal(true)}
+      />
+
+      {/* Modal đăng nhập / đăng ký thực tế */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLoginSuccess={() => {
+          setShowAuthModal(false);
+          window.location.reload();
+        }}
+      />
     </>
   );
 }

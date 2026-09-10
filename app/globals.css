@@ -180,6 +180,11 @@ body {
   border-color: var(--color-accent);
 }
 
+/* Đảm bảo mọi nút (kể cả action bar / modal) hiển thị con trỏ pointer khi hover */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 /* Dark mode button hover - better contrast */
 .dark .btn:hover {
   background-color: var(--color-accent);
