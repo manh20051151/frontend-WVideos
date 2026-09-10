@@ -156,6 +156,16 @@ export default function UploadVideoPage() {
       // Create preview
       const videoUrl = URL.createObjectURL(selectedFile);
       setPreview(videoUrl);
+
+      // Đọc thời lượng video từ metadata (duration tính bằng giây)
+      const probe = document.createElement('video');
+      probe.preload = 'metadata';
+      probe.onloadedmetadata = () => {
+        if (probe.duration && isFinite(probe.duration)) {
+          setFormData((prev) => ({ ...prev, duration: Math.round(probe.duration) }));
+        }
+      };
+      probe.src = videoUrl;
     }
   };
 
