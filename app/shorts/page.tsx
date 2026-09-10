@@ -117,7 +117,7 @@ export default function ShortsPage() {
   };
 
   return (
-    <div className='h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory' ref={containerRef}>
+    <div className='h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide' ref={containerRef}>
       {videos.map((v, index) => (
         <section
           key={v.id}
