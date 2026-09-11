@@ -13,11 +13,14 @@ import Footer from '@/components/layout/Footer';
 import VideoCard from '@/components/video/VideoCard';
 import VideoCardLite from '@/components/video/VideoCardLite';
 import Pagination from '@/components/common/Pagination';
+import { subscriptionApi } from '@/lib/apis/subscription.api';
+import Link from 'next/link';
 
 const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   { id: 'my-videos', label: 'Video của tôi', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
   { id: 'liked', label: 'Video đã thích', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+  { id: 'channels', label: 'Kênh đã đăng ký', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 100-8 4 4 0 000 8z' },
   { id: 'password', label: 'Đổi mật khẩu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
 
@@ -86,6 +89,13 @@ function ProfileContent() {
   });
 
   const likedVideosTotalPages = likedVideosData?.totalPages ?? 0;
+
+  const { data: channelsData, isLoading: channelsLoading } = useQuery({
+    queryKey: ['myChannels'],
+    queryFn: () => subscriptionApi.getMyChannels(),
+    enabled: selectedMenu === 'channels',
+  });
+
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -852,12 +862,64 @@ function ProfileContent() {
                       )}
                     </div>
                   )}
-                </div>
+
+                  {selectedMenu === 'channels' && (
+                    <div>
+                      {channelsLoading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse flex items-center gap-3 p-4 rounded-xl">
+                              <div className="w-14 h-14 rounded-full bg-gray-300"></div>
+                              <div className="flex-1">
+                                <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+                                <div className="h-3 bg-gray-300 rounded w-1/3"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : channelsData && channelsData.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {channelsData.map((channel) => (
+                            <Link
+                              key={channel.id}
+                              href={`/channel/${channel.id}`}
+                              className={`flex items-center gap-3 p-4 rounded-xl transition-all hover:-translate-y-0.5 ${
+                                isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white shadow-lg shadow-gray-200/50 hover:shadow-xl'
+                              }`}
+                            >
+                              {channel.avatar ? (
+                                <img src={channel.avatar} alt={channel.fullName} className="w-14 h-14 rounded-full object-cover border-2 border-accent" />
+                              ) : (
+                                <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-white text-xl font-bold">
+                                  {channel.fullName?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="font-semibold text-foreground truncate">{channel.fullName || channel.email}</p>
+                                <p className="text-sm text-foreground/60">
+                                  {(channel.subscriberCount ?? 0).toLocaleString('vi-VN')} người đăng ký
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 100-8 4 4 0 000 8z" />
+                          </svg>
+                          <p className="text-lg font-medium">Chưa đăng ký kênh nào</p>
+                          <p className="mt-1">Hãy khám phá và đăng ký các kênh bạn yêu thích!</p>
+                        </div>
+                      )}
+    </div>
+                  )}
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

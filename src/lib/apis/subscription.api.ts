@@ -1,4 +1,5 @@
 import axiosClient from './axiosClient';
+import type { UserResponse } from '@/types';
 
 export interface SubscriptionRequest {
   channelId: string;
@@ -31,5 +32,9 @@ export const subscriptionApi = {
 
   getMySubscriptions: (): Promise<string[]> => {
     return axiosClient.get('/subscriptions/my-subscriptions');
+  },
+
+  getMyChannels: (): Promise<UserResponse[]> => {
+    return axiosClient.get('/subscriptions/my-channels');
   },
 };
