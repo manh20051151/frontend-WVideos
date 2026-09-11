@@ -11,6 +11,7 @@ export interface VideoUploadData {
     tags?: string[]; // Tags cho video (tối đa 10 tags)
     thumbnailUrl?: string; // URL ảnh thumbnail tùy chọn
     duration?: number; // Thời lượng video (giây), đọc từ metadata trước khi upload
+    price?: number; // Giá video (VND), 0 = miễn phí
 }
 
 /**
@@ -61,6 +62,9 @@ export interface VideoResponse {
     userReaction?: VideoReactionType;
     status: VideoStatus;
     isPublic: boolean;
+    price?: number;        // Giá video (VND), 0 = miễn phí
+    isPurchased?: boolean;  // User hiện tại đã mua chưa
+    hasAccess?: boolean;    // User hiện tại có quyền xem (owner | miễn phí | đã mua)
     categories: Category[];
     tags?: string[];
     userId: string;

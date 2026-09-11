@@ -39,6 +39,8 @@ export default function WatchVideoPage() {
   const [streamFailed, setStreamFailed] = useState(false);
   const [streamRetry, setStreamRetry] = useState(0);
   const STREAM_MAX_RETRY = 1;
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -178,6 +180,30 @@ export default function WatchVideoPage() {
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     alert('Đã sao chép link!');
+  };
+
+  const formatPrice = (price?: number) => {
+    if (!price) return 'Miễn phí';
+    return `${new Intl.NumberFormat('vi-VN').format(price)} VNĐ`;
+  };
+
+  const handlePurchase = async () => {
+    if (!currentUser) {
+      setShowLoginRequired(true);
+      return;
+    }
+    try {
+      setPurchasing(true);
+      setPurchaseError(null);
+      const updated = await videoApi.purchaseVideo(videoId);
+      setVideo(updated);
+    } catch (err) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      const msg = axiosErr.response?.data?.message || 'Mua video thất bại. Vui lòng thử lại';
+      setPurchaseError(msg);
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   const handleSubscribe = async () => {
@@ -374,6 +400,8 @@ export default function WatchVideoPage() {
     );
   }
 
+  const isLocked = !!video.price && video.price > 0 && !video.hasAccess;
+
   const descriptionPreview = video.description && video.description.length > 200 
     ? video.description.slice(0, 200) + '...' 
     : video.description;
@@ -391,7 +419,38 @@ export default function WatchVideoPage() {
               {/* Video Player */}
               <div className='bg-black rounded-lg overflow-hidden'>
                 <div className='relative aspect-video'>
-                  {streamUrl ? (
+                  {isLocked ? (
+                    <>
+                      {/* Thumbnail mờ + overlay mua video */}
+                      <img
+                        src={video.thumbnailUrl || video.splashImageUrl || undefined}
+                        alt={video.title}
+                        className='absolute inset-0 w-full h-full object-cover blur-md scale-105'
+                      />
+                      <div className='absolute inset-0 bg-black/50 flex items-center justify-center px-4'>
+                        <div className='relative max-w-sm w-full text-center bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl'>
+                          <div className='mx-auto mb-5 w-16 h-16 rounded-2xl bg-accent/25 flex items-center justify-center'>
+                            <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
+                            </svg>
+                          </div>
+                          <h1 className='text-xl font-bold text-white mb-1'>Video có phí</h1>
+                          <p className='text-sm text-white/70 mb-5'>Video này yêu cầu thanh toán để xem.</p>
+                          <p className='text-3xl font-extrabold text-accent mb-6'>{formatPrice(video.price)}</p>
+                          {purchaseError && (
+                            <p className='text-sm text-red-400 mb-4'>{purchaseError}</p>
+                          )}
+                          <button
+                            onClick={handlePurchase}
+                            disabled={purchasing}
+                            className='w-full btn-accent font-semibold py-3 px-6 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                          >
+                            {purchasing ? 'Đang xử lý...' : `Mua để xem - ${formatPrice(video.price)}`}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : streamUrl ? (
                     <video
                       src={streamUrl}
                       className='w-full h-full'
@@ -440,9 +499,17 @@ export default function WatchVideoPage() {
               </div>
 
               {/* Video Title */}
-              <h1 className='text-xl font-bold text-foreground'>
-                {video.title}
-              </h1>
+              <div className='flex items-center justify-between gap-3 flex-wrap'>
+                <h1 className='text-xl font-bold text-foreground'>
+                  {video.title}
+                </h1>
+                {video.price && video.price > 0 && (
+                  <span className='px-3 py-1 rounded-full bg-accent text-white text-sm font-semibold'>
+                    {formatPrice(video.price)}
+                    {video.isPurchased ? ' • Đã mua' : ''}
+                  </span>
+                )}
+              </div>
 
               {/* Action Bar */}
               <div className='flex items-center justify-between border-b border-accent border-opacity-20 pb-4'>

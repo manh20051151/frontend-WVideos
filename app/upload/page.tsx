@@ -30,6 +30,8 @@ export default function UploadVideoPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [priceOption, setPriceOption] = useState<string>('free'); // 'free' | số | 'custom'
+  const [customPrice, setCustomPrice] = useState<string>('');
 
   // Thêm tag khi nhấn Enter hoặc dấu phẩy
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
@@ -72,6 +74,22 @@ export default function UploadVideoPage() {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  // Giá video: 0 = miễn phí
+  const price =
+    priceOption === 'free'
+      ? 0
+      : priceOption === 'custom'
+        ? Number(customPrice) || 0
+        : Number(priceOption);
+
+  // Video có phí thì bắt buộc công khai (không cho tắt)
+  useEffect(() => {
+    if (price > 0 && !formData.isPublic) {
+      setFormData((prev) => ({ ...prev, isPublic: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price]);
 
   const loadCategories = async () => {
     setLoadingCategories(true);
@@ -210,7 +228,7 @@ export default function UploadVideoPage() {
         });
       }, 200);
 
-      const result = await videoApi.uploadVideo(file, formData);
+      const result = await videoApi.uploadVideo(file, { ...formData, price });
 
       clearInterval(progressInterval);
       const apiDuration = Date.now() - startApiTime;
@@ -505,6 +523,44 @@ export default function UploadVideoPage() {
               </p>
             </div>
 
+            {/* Giá video */}
+            <div>
+              <label htmlFor="price" className="block text-sm font-medium text-foreground mb-2">
+                Giá video
+              </label>
+              <select
+                id="price"
+                value={priceOption}
+                onChange={(e) => setPriceOption(e.target.value)}
+                className="auth-input"
+                disabled={uploading}
+              >
+                <option value="free">Miễn phí</option>
+                <option value="5000">5.000 VNĐ</option>
+                <option value="10000">10.000 VNĐ</option>
+                <option value="15000">15.000 VNĐ</option>
+                <option value="20000">20.000 VNĐ</option>
+                <option value="25000">25.000 VNĐ</option>
+                <option value="30000">30.000 VNĐ</option>
+                <option value="custom">Tùy chọn</option>
+              </select>
+              {priceOption === 'custom' && (
+                <input
+                  type="number"
+                  min={1000}
+                  step={1000}
+                  value={customPrice}
+                  onChange={(e) => setCustomPrice(e.target.value)}
+                  className="auth-input mt-2"
+                  placeholder="Nhập giá (VNĐ)"
+                  disabled={uploading}
+                />
+              )}
+              <p className="text-xs text-foreground opacity-50 mt-1">
+                Mặc định miễn phí. Video có giá sẽ không thể công khai.
+              </p>
+            </div>
+
             {/* Public/Private */}
             <div className="flex items-center">
               <input
@@ -513,10 +569,15 @@ export default function UploadVideoPage() {
                 checked={formData.isPublic}
                 onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
                 className="h-4 w-4 text-accent focus:ring-accent border-accent rounded"
-                disabled={uploading}
+                disabled={uploading || price > 0}
               />
-              <label htmlFor="isPublic" className="ml-2 block text-sm text-foreground">
-                Công khai video (mọi người có thể xem)
+              <label
+                htmlFor="isPublic"
+                className={`ml-2 block text-sm ${price > 0 ? 'text-foreground opacity-60' : 'text-foreground'}`}
+              >
+                {price > 0
+                  ? 'Công khai video (bắt buộc với video có phí - mọi người xem được, phải mua để xem)'
+                  : 'Công khai video (mọi người có thể xem)'}
               </label>
             </div>
 

@@ -69,6 +69,11 @@ const videoApi = {
     return await axiosClient.get(`/videos/${videoId}`);
   },
 
+  // Mua video có phí
+  purchaseVideo: async (videoId: string): Promise<VideoResponse> => {
+    return await axiosClient.post(`/videos/${videoId}/purchase`);
+  },
+
   // Update video
   updateVideo: async (videoId: string, data: { title?: string; description?: string; isPublic?: boolean; categoryIds?: string[]; thumbnailUrl?: string | null }): Promise<VideoResponse> => {
     return await axiosClient.put(`/videos/${videoId}`, data);

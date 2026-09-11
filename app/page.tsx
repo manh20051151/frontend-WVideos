@@ -105,6 +105,11 @@ const VideoCard = ({ video, isDark }: { video: any; isDark: boolean }) => {
               </svg>
             </div>
           )}
+          {video.price > 0 && (
+            <span className='absolute top-2 left-2 z-30 px-2 py-0.5 bg-accent text-white text-xs font-semibold rounded'>
+              {new Intl.NumberFormat('vi-VN').format(video.price)}đ
+            </span>
+          )}
         </div>
         <div className='p-4 flex flex-col flex-grow min-h-[80px]'>
           <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-accent transition-colors' style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
