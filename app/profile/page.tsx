@@ -11,11 +11,13 @@ import { uploadImageToImgbb } from '@/lib/utils/imgbb';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VideoCard from '@/components/video/VideoCard';
+import VideoCardLite from '@/components/video/VideoCardLite';
 import Pagination from '@/components/common/Pagination';
 
 const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   { id: 'my-videos', label: 'Video của tôi', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+  { id: 'liked', label: 'Video đã thích', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
   { id: 'password', label: 'Đổi mật khẩu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
 
@@ -74,14 +76,27 @@ function ProfileContent() {
 
   const myVideosTotalPages = myVideosData?.totalPages ?? 0;
 
+  const [likedVideosPage, setLikedVideosPage] = useState<number>(0);
+  const LIKED_VIDEOS_PAGE_SIZE = 12;
+
+  const { data: likedVideosData, isLoading: likedVideosLoading } = useQuery({
+    queryKey: ['likedVideos', likedVideosPage],
+    queryFn: () => videoApi.getLikedVideos(likedVideosPage, LIKED_VIDEOS_PAGE_SIZE),
+    enabled: selectedMenu === 'liked',
+  });
+
+  const likedVideosTotalPages = likedVideosData?.totalPages ?? 0;
+
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab && MENU_ITEMS.find(item => item.id === tab)) {
       setSelectedMenu(tab);
+      const pageParam = searchParams.get('page');
+      const page = pageParam ? Math.max(0, parseInt(pageParam, 10) || 0) : 0;
       if (tab === 'my-videos') {
-        const pageParam = searchParams.get('page');
-        const page = pageParam ? Math.max(0, parseInt(pageParam, 10) || 0) : 0;
         setMyVideosPage(page);
+      } else if (tab === 'liked') {
+        setLikedVideosPage(page);
       }
     }
   }, [searchParams]);
@@ -117,6 +132,7 @@ function ProfileContent() {
   const handleMenuClick = useCallback((menuId: string) => {
     setSelectedMenu(menuId);
     setMyVideosPage(0);
+    setLikedVideosPage(0);
     router.push(`/profile?tab=${menuId}`);
     setError('');
     setSuccess('');
@@ -126,6 +142,11 @@ function ProfileContent() {
   const goToMyVideosPage = useCallback((page: number) => {
     setMyVideosPage(page);
     router.push(`/profile?tab=my-videos&page=${page}`);
+  }, [router]);
+
+  const goToLikedVideosPage = useCallback((page: number) => {
+    setLikedVideosPage(page);
+    router.push(`/profile?tab=liked&page=${page}`);
   }, [router]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -790,6 +811,43 @@ function ProfileContent() {
                           currentPage={myVideosPage}
                           totalPages={myVideosTotalPages}
                           onPageChange={goToMyVideosPage}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {selectedMenu === 'liked' && (
+                    <div>
+                      {likedVideosLoading ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="aspect-video bg-gray-300 rounded-lg mb-2"></div>
+                              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : likedVideosData?.content && likedVideosData.content.length > 0 ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                          {likedVideosData.content.map((video: VideoResponse) => (
+                            <VideoCardLite key={video.id} video={video} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          <p className="text-lg font-medium">Chưa có video yêu thích</p>
+                          <p className="mt-1">Những video bạn thích sẽ xuất hiện ở đây!</p>
+                        </div>
+                      )}
+
+                      {likedVideosTotalPages > 1 && (
+                        <Pagination
+                          currentPage={likedVideosPage}
+                          totalPages={likedVideosTotalPages}
+                          onPageChange={goToLikedVideosPage}
                         />
                       )}
                     </div>

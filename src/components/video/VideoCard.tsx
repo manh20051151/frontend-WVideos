@@ -15,6 +15,7 @@ interface VideoCardProps {
   showUserInfo?: boolean;
   allowViewWhenDeleted?: boolean;
   showActions?: boolean;
+  showStatus?: boolean;
 }
 
 const getStatusBadge = (status: string) => {
@@ -78,7 +79,8 @@ const VideoCard = memo(function VideoCard({
   isDeleted, 
   showUserInfo = false,
   allowViewWhenDeleted = false,
-  showActions = true 
+  showActions = true,
+  showStatus = true
 }: VideoCardProps) {
   const { isDark } = useDarkMode();
   const handleEdit = () => onEdit(video);
@@ -126,7 +128,7 @@ const VideoCard = memo(function VideoCard({
                     </svg>
                   </div>
                 )}
-                {getStatusBadge(video.status)}
+                {showStatus && getStatusBadge(video.status)}
               </div>
             </Link>
           )}
