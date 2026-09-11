@@ -11,6 +11,7 @@ import { uploadImageToImgbb } from '@/lib/utils/imgbb';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VideoCard from '@/components/video/VideoCard';
+import Pagination from '@/components/common/Pagination';
 
 const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -62,17 +63,26 @@ function ProfileContent() {
   const [bankSearch, setBankSearch] = useState<string>('');
   const [avatarUploading, setAvatarUploading] = useState<boolean>(false);
   const [avatarError, setAvatarError] = useState<boolean>(false);
+  const [myVideosPage, setMyVideosPage] = useState<number>(0);
+  const MY_VIDEOS_PAGE_SIZE = 20;
 
   const { data: myVideosData, isLoading: myVideosLoading, refetch: refetchMyVideos } = useQuery({
-    queryKey: ['myVideos'],
-    queryFn: () => videoApi.getMyVideos(0, 20),
+    queryKey: ['myVideos', myVideosPage],
+    queryFn: () => videoApi.getMyVideos(myVideosPage, MY_VIDEOS_PAGE_SIZE),
     enabled: selectedMenu === 'my-videos',
   });
+
+  const myVideosTotalPages = myVideosData?.totalPages ?? 0;
 
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab && MENU_ITEMS.find(item => item.id === tab)) {
       setSelectedMenu(tab);
+      if (tab === 'my-videos') {
+        const pageParam = searchParams.get('page');
+        const page = pageParam ? Math.max(0, parseInt(pageParam, 10) || 0) : 0;
+        setMyVideosPage(page);
+      }
     }
   }, [searchParams]);
 
@@ -106,10 +116,16 @@ function ProfileContent() {
 
   const handleMenuClick = useCallback((menuId: string) => {
     setSelectedMenu(menuId);
+    setMyVideosPage(0);
     router.push(`/profile?tab=${menuId}`);
     setError('');
     setSuccess('');
     setIsEditing(false);
+  }, [router]);
+
+  const goToMyVideosPage = useCallback((page: number) => {
+    setMyVideosPage(page);
+    router.push(`/profile?tab=my-videos&page=${page}`);
   }, [router]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -767,6 +783,14 @@ function ProfileContent() {
                           <p className="text-lg font-medium">Chưa có video nào</p>
                           <p className="mt-1">Tải lên video đầu tiên của bạn ngay!</p>
                         </div>
+                      )}
+
+                      {myVideosTotalPages > 1 && (
+                        <Pagination
+                          currentPage={myVideosPage}
+                          totalPages={myVideosTotalPages}
+                          onPageChange={goToMyVideosPage}
+                        />
                       )}
                     </div>
                   )}
