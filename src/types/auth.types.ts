@@ -42,4 +42,7 @@ export interface UserResponse {
     bankName?: string;
     bankAccountHolderName?: string;
     bankAccountNumber?: string;
+    subscriberCount?: number;
+    balance?: number;
+    revenue?: number;
 }

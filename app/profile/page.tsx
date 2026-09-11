@@ -18,6 +18,13 @@ const MENU_ITEMS = [
   { id: 'password', label: 'Đổi mật khẩu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
 
+const formatCurrency = (value?: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value ?? 0);
+};
+
 function ProfileContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -308,7 +315,17 @@ function ProfileContent() {
                 <div className="p-4">
                   <div className="flex justify-between items-center py-2">
                     <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Số dư</span>
-                    <span className="font-semibold text-green-600">0 đ</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(user.balance)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Doanh thu</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(user.revenue)}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Người đăng ký</span>
+                    <span className="font-semibold text-foreground">
+                      {(user.subscriberCount ?? 0).toLocaleString('vi-VN')}
+                    </span>
                   </div>
                 </div>
               </div>
