@@ -32,6 +32,52 @@ export default function RootLayout({
                     }
                   }
                 } catch (e) {}
+
+                // Strip các attribute do extension trình duyệt chèn vào DOM
+                // (vd: bis_skin_checked, data-new-gr-c-s-check-loaded, ...)
+                // gây lỗi hydration mismatch. Chạy đồng bộ trước khi React hydrate.
+                try {
+                  var ATTRS = [
+                    "bis_skin_checked",
+                    "data-google-query-id",
+                    "data-new-gr-c-s-check-loaded",
+                    "data-gr-ext-installed",
+                    "data-lt-installed",
+                    "data-lt-tmp-id"
+                  ];
+                  function strip(root) {
+                    if (!root) return;
+                    for (var i = 0; i < ATTRS.length; i++) {
+                      if (root.removeAttribute) root.removeAttribute(ATTRS[i]);
+                    }
+                    if (root.querySelectorAll) {
+                      var nodes = root.querySelectorAll("*");
+                      for (var j = 0; j < nodes.length; j++) {
+                        for (var k = 0; k < ATTRS.length; k++) {
+                          nodes[j].removeAttribute(ATTRS[k]);
+                        }
+                      }
+                    }
+                  }
+                  strip(document.documentElement);
+                  if (typeof MutationObserver !== "undefined") {
+                    var obs = new MutationObserver(function(mutations) {
+                      for (var m = 0; m < mutations.length; m++) {
+                        var target = mutations[m].target;
+                        for (var a = 0; a < ATTRS.length; a++) {
+                          if (target.removeAttribute) target.removeAttribute(ATTRS[a]);
+                        }
+                      }
+                    });
+                    obs.observe(document.documentElement, {
+                      attributes: true,
+                      attributeFilter: ATTRS,
+                      subtree: true,
+                      childList: true
+                    });
+                    setTimeout(function() { obs.disconnect(); }, 5000);
+                  }
+                } catch (e) {}
               })();
             `,
           }}
