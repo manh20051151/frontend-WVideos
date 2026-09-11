@@ -15,6 +15,13 @@ interface UserDropdownProps {
 const DEFAULT_AVATAR =
     'https://res.cloudinary.com/dnvtmbmne/image/upload/v1744707484/et5vc9r9fejjgrjsvxyn.jpg';
 
+const formatCurrency = (value?: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(value ?? 0);
+};
+
 const MENU_ITEMS = [
     {
         href: '/profile',
@@ -83,8 +90,18 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
                     <div className='px-4 py-3 border-b border-accent'>
                         <p className='text-sm font-medium text-foreground'>{user.fullName || user.email}</p>
                         <p className='text-xs text-gray-500 dark:text-gray-400 truncate'>{user.email}</p>
+                        <div className='mt-2 space-y-0.5'>
+                            <div className='flex justify-between items-center'>
+                                <span className='text-xs text-gray-500 dark:text-gray-400'>Số dư</span>
+                                <span className='text-xs font-semibold text-green-600'>{formatCurrency(user.balance)}</span>
+                            </div>
+                            <div className='flex justify-between items-center'>
+                                <span className='text-xs text-gray-500 dark:text-gray-400'>Doanh thu</span>
+                                <span className='text-xs font-semibold text-foreground'>{formatCurrency(user.revenue)}</span>
+                            </div>
+                        </div>
                         {user.roles?.some(role => role.name === 'ADMIN') && (
-                            <span className='inline-block mt-1 px-2 py-1 text-xs bg-highlight text-white rounded-full'>
+                            <span className='inline-block mt-2 px-2 py-1 text-xs bg-highlight text-white rounded-full'>
                                 Admin
                             </span>
                         )}
