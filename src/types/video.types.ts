@@ -32,6 +32,7 @@ export interface ShortsResponse {
     price?: number;
     isPaid?: boolean;
     purchased?: boolean;
+    isOwner?: boolean;
     createdAt: string;
 }
 

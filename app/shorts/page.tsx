@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import videoApi from '@/lib/apis/video.api';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { openAuthModal } from '@/components/auth/AuthProvider';
 import type { ShortsResponse } from '@/types';
 
 const PAGE_SIZE = 10;
@@ -20,6 +22,8 @@ export default function ShortsPage() {
   const [paused, setPaused] = useState(false);
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
   const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -106,11 +110,12 @@ export default function ShortsPage() {
   // Khi chuyển sang video khác thì bỏ trạng thái tạm dừng
   useEffect(() => {
     setPaused(false);
+    setPurchaseError(null);
   }, [activeIndex]);
 
   // Play active, pause others (tôn trọng trạng thái paused của user)
   const activeVideo = videos.find((v) => v.id === activeId);
-  const activeLocked = !!activeVideo?.isPaid && !activeVideo?.purchased;
+  const activeLocked = !!activeVideo?.isPaid && !activeVideo?.purchased && !activeVideo?.isOwner;
 
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
@@ -140,12 +145,19 @@ export default function ShortsPage() {
     return () => clearTimeout(timer);
   }, [activeId, guestId, videos]);
 
-  // Mua video có phí
+  // Mua video có phí (yêu cầu đăng nhập)
   const handlePurchase = async (id: string) => {
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    setPurchaseError(null);
     try {
       await videoApi.purchaseVideo(id);
       setVideos((prev) => prev.map((x) => (x.id === id ? { ...x, purchased: true } : x)));
     } catch (e) {
+      const res = (e as { response?: { data?: { message?: string } } })?.response;
+      setPurchaseError(res?.data?.message || 'Mua video thất bại, vui lòng thử lại');
       console.error('Lỗi mua video:', e);
     }
   };
@@ -195,23 +207,39 @@ export default function ShortsPage() {
           data-index={index}
           className='relative h-[100dvh] w-full snap-start flex items-center justify-center bg-black'
         >
-          {v.isPaid && !v.purchased ? (
-            <div className='flex flex-col items-center justify-center text-white px-6 text-center'>
-              <div className='w-16 h-16 rounded-full bg-black/50 flex items-center justify-center mb-4'>
-                <svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2'>
-                  <rect x='5' y='11' width='14' height='9' rx='2' />
-                  <path d='M8 11V8a4 4 0 0 1 8 0v3' />
-                </svg>
+          {v.isPaid && !v.purchased && !v.isOwner ? (
+            <>
+              <img
+                src={v.thumbnailUrl || v.splashImageUrl}
+                alt=''
+                className='absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-60'
+              />
+              <div className='relative z-10 flex flex-col items-center justify-center text-white px-6 text-center'>
+                <div className='w-16 h-16 rounded-full bg-black/50 flex items-center justify-center mb-4'>
+                  <svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2'>
+                    <rect x='5' y='11' width='14' height='9' rx='2' />
+                    <path d='M8 11V8a4 4 0 0 1 8 0v3' />
+                  </svg>
+                </div>
+                <p className='text-lg font-semibold'>Video có phí</p>
+                <p className='opacity-80 mt-1'>{(v.price ?? 0).toLocaleString('vi-VN')} VNĐ</p>
+                {v.isOwner ? (
+                  <p className='mt-4 px-6 py-2 rounded-full bg-white/20'>Video của bạn</p>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handlePurchase(v.id)}
+                      className='mt-4 px-6 py-2 rounded-full bg-accent text-white font-medium hover:opacity-90 transition-opacity'
+                    >
+                      Mua ngay
+                    </button>
+                    {purchaseError && (
+                      <p className='mt-3 text-sm text-red-400'>{purchaseError}</p>
+                    )}
+                  </>
+                )}
               </div>
-              <p className='text-lg font-semibold'>Video có phí</p>
-              <p className='opacity-80 mt-1'>{(v.price ?? 0).toLocaleString('vi-VN')} VNĐ</p>
-              <button
-                onClick={() => handlePurchase(v.id)}
-                className='mt-4 px-6 py-2 rounded-full bg-accent text-white font-medium hover:opacity-90 transition-opacity'
-              >
-                Mua ngay
-              </button>
-            </div>
+            </>
           ) : v.streamUrl ? (
             <video
               ref={setVideoRef(index)}
