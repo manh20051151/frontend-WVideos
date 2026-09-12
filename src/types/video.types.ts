@@ -29,6 +29,9 @@ export interface ShortsResponse {
     views: number;
     likeCount?: number;
     isLiked?: boolean;
+    price?: number;
+    isPaid?: boolean;
+    purchased?: boolean;
     createdAt: string;
 }
 

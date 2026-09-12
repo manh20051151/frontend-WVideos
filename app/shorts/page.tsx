@@ -12,8 +12,10 @@ export default function ShortsPage() {
   const [videos, setVideos] = useState<ShortsResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [loopMode, setLoopMode] = useState(false); // false: lượt đầu loại trừ đã xem; true: lặp vô hạn
   const [lastCreatedAt, setLastCreatedAt] = useState<string | undefined>(undefined);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const activeId = activeIndex != null ? (videos[activeIndex]?.id ?? null) : null;
   const [muted, setMuted] = useState(true);
   const [paused, setPaused] = useState(false);
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
@@ -33,16 +35,22 @@ export default function ShortsPage() {
     setGuestId(id);
   }, []);
 
-  const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+  const loadMore = useCallback(async (opts: { reset?: boolean; loop?: boolean } = {}) => {
+    const reset = opts.reset ?? false;
+    const loop = opts.loop ?? loopMode;
+    if (loading) return;
+    if (!reset && !hasMore) return;
     setLoading(true);
     try {
+      const cursor = reset ? undefined : lastCreatedAt;
       const data = await videoApi.getShorts({
         size: PAGE_SIZE,
-        lastCreatedAt,
+        lastCreatedAt: cursor,
         guestId,
+        loop,
       });
       if (data.length < PAGE_SIZE) setHasMore(false);
+      else setHasMore(true);
       if (data.length > 0) {
         setLastCreatedAt(data[data.length - 1].createdAt);
       }
@@ -52,14 +60,27 @@ export default function ShortsPage() {
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, lastCreatedAt, guestId]);
+  }, [loading, hasMore, lastCreatedAt, guestId, loopMode]);
 
-  // Tải trang đầu
+  // Tải trang đầu (loại trừ đã xem). Chỉ chạy 1 lần.
+  const didInit = useRef(false);
   useEffect(() => {
-    if (guestId && videos.length === 0) {
+    if (guestId && !didInit.current) {
+      didInit.current = true;
       loadMore();
     }
-  }, [guestId, videos.length, loadMore]);
+  }, [guestId, loadMore]);
+
+  // Nếu lượt đầu (exclude) trả rỗng (đã xem hết từ trước) thì chuyển sang
+  // loopMode để hiện lại video đã xem, tránh màn hình "Chưa có video".
+  useEffect(() => {
+    if (!loading && videos.length === 0 && !loopMode) {
+      setLoopMode(true);
+      setHasMore(true);
+      setLastCreatedAt(undefined);
+      loadMore({ reset: true, loop: true });
+    }
+  }, [loading, videos.length, loopMode, loadMore]);
 
   // IntersectionObserver: xác định video đang active
   useEffect(() => {
@@ -70,8 +91,8 @@ export default function ShortsPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-            const id = (entry.target as HTMLElement).dataset.id;
-            if (id) setActiveId(id);
+            const idx = Number((entry.target as HTMLElement).dataset.index);
+            if (!Number.isNaN(idx)) setActiveIndex(idx);
           }
         });
       },
@@ -85,14 +106,17 @@ export default function ShortsPage() {
   // Khi chuyển sang video khác thì bỏ trạng thái tạm dừng
   useEffect(() => {
     setPaused(false);
-  }, [activeId]);
+  }, [activeIndex]);
 
   // Play active, pause others (tôn trọng trạng thái paused của user)
+  const activeVideo = videos.find((v) => v.id === activeId);
+  const activeLocked = !!activeVideo?.isPaid && !activeVideo?.purchased;
+
   useEffect(() => {
-    videoRefs.current.forEach((v) => {
+    videoRefs.current.forEach((v, i) => {
       if (!v) return;
-      const section = v.closest('[data-id]');
-      if (section && section.getAttribute('data-id') === activeId) {
+      const isActive = i === activeIndex;
+      if (isActive && !activeLocked) {
         if (paused) {
           v.pause();
         } else {
@@ -102,26 +126,45 @@ export default function ShortsPage() {
         v.pause();
       }
     });
-  }, [activeId, paused]);
+  }, [activeIndex, paused, activeLocked]);
 
-  // Đánh dấu đã xem + tăng view khi active đủ lâu
+  // Đánh dấu đã xem + tăng view khi active đủ lâu (bỏ qua video có phí chưa mua)
   useEffect(() => {
     if (!activeId) return;
+    const v = videos.find((x) => x.id === activeId);
+    if (v?.isPaid && !v?.purchased) return;
     const timer = setTimeout(() => {
       videoApi.markWatched(activeId, guestId);
       videoApi.incrementViews(activeId).catch(() => {});
     }, MARK_WATCHED_DELAY);
     return () => clearTimeout(timer);
-  }, [activeId, guestId]);
+  }, [activeId, guestId, videos]);
 
-  // Infinite scroll: khi gần cuối thì load thêm
-  useEffect(() => {
-    if (!activeId || !hasMore || loading) return;
-    const activeIndex = videos.findIndex((v) => v.id === activeId);
-    if (activeIndex >= 0 && activeIndex >= videos.length - 3) {
-      loadMore();
+  // Mua video có phí
+  const handlePurchase = async (id: string) => {
+    try {
+      await videoApi.purchaseVideo(id);
+      setVideos((prev) => prev.map((x) => (x.id === id ? { ...x, purchased: true } : x)));
+    } catch (e) {
+      console.error('Lỗi mua video:', e);
     }
-  }, [activeId, videos, hasMore, loading, loadMore]);
+  };
+
+  // Infinite scroll: khi gần cuối thì load thêm. Lượt đầu (loopMode=false) loại
+  // trừ video đã xem. Khi thực sự hết (hasMore=false) thì bật loopMode và quay
+  // vòng từ đầu để feed lặp vô hạn.
+  useEffect(() => {
+    if (activeIndex == null || loading) return;
+    if (activeIndex < videos.length - 3) return;
+    if (!hasMore) {
+      setLoopMode(true);
+      setHasMore(true);
+      setLastCreatedAt(undefined);
+      loadMore({ reset: true, loop: true });
+    } else {
+      loadMore({ loop: loopMode });
+    }
+  }, [activeIndex, videos, hasMore, loading, loadMore, loopMode]);
 
   const setVideoRef = (index: number) => (el: HTMLVideoElement | null) => {
     videoRefs.current[index] = el;
@@ -147,11 +190,29 @@ export default function ShortsPage() {
     <div className='h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide' ref={containerRef}>
       {videos.map((v, index) => (
         <section
-          key={v.id}
+          key={`${v.id}-${index}`}
           data-id={v.id}
+          data-index={index}
           className='relative h-[100dvh] w-full snap-start flex items-center justify-center bg-black'
         >
-          {v.streamUrl ? (
+          {v.isPaid && !v.purchased ? (
+            <div className='flex flex-col items-center justify-center text-white px-6 text-center'>
+              <div className='w-16 h-16 rounded-full bg-black/50 flex items-center justify-center mb-4'>
+                <svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2'>
+                  <rect x='5' y='11' width='14' height='9' rx='2' />
+                  <path d='M8 11V8a4 4 0 0 1 8 0v3' />
+                </svg>
+              </div>
+              <p className='text-lg font-semibold'>Video có phí</p>
+              <p className='opacity-80 mt-1'>{(v.price ?? 0).toLocaleString('vi-VN')} VNĐ</p>
+              <button
+                onClick={() => handlePurchase(v.id)}
+                className='mt-4 px-6 py-2 rounded-full bg-accent text-white font-medium hover:opacity-90 transition-opacity'
+              >
+                Mua ngay
+              </button>
+            </div>
+          ) : v.streamUrl ? (
             <video
               ref={setVideoRef(index)}
               src={v.streamUrl}
@@ -285,23 +346,7 @@ export default function ShortsPage() {
         </div>
       )}
 
-      {!hasMore && videos.length > 0 && (
-        <div className='h-[100dvh] w-full flex flex-col items-center justify-center bg-black text-white gap-3'>
-          <p className='opacity-70'>Bạn đã xem hết video 🎉</p>
-          <button
-            onClick={() => {
-              setVideos([]);
-              setLastCreatedAt(undefined);
-              setHasMore(true);
-            }}
-            className='px-4 py-2 rounded-full bg-accent text-white'
-          >
-            Xem lại từ đầu
-          </button>
-        </div>
-      )}
-
-      {!loading && videos.length === 0 && (
+      {!loading && videos.length === 0 && loopMode && (
         <div className='h-[100dvh] w-full flex flex-col items-center justify-center bg-black text-white gap-3'>
           <p className='opacity-70'>Chưa có video nào</p>
           <Link href='/' className='px-4 py-2 rounded-full bg-accent text-white'>

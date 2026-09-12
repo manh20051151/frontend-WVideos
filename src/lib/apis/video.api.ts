@@ -142,13 +142,15 @@ const videoApi = {
   },
 
   // Lấy shorts feed (TikTok style). Trả kèm streamUrl đã resolve.
+  // loop=true: không loại trừ video đã xem để feed lặp vô hạn.
   getShorts: async (params: {
     lastCreatedAt?: string;
     size?: number;
     guestId?: string;
+    loop?: boolean;
   } = {}): Promise<ShortsResponse[]> => {
     const response = await axiosClient.get('/videos/shorts', { params });
-    return (response as ShortsResponse[]) ?? [];
+    return (response as unknown as ShortsResponse[]) ?? [];
   },
 
   // Đánh dấu video đã xem (ẩn khỏi shorts feed sau này)
