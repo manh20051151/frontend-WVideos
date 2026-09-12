@@ -23,6 +23,7 @@ export default function ShortsPage() {
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
   const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [buffering, setBuffering] = useState(false);
   const { isAuthenticated } = useAuth();
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -111,6 +112,7 @@ export default function ShortsPage() {
   useEffect(() => {
     setPaused(false);
     setPurchaseError(null);
+    setBuffering(false);
   }, [activeIndex]);
 
   // Play active, pause others (tôn trọng trạng thái paused của user)
@@ -241,16 +243,28 @@ export default function ShortsPage() {
               </div>
             </>
           ) : v.streamUrl ? (
-            <video
-              ref={setVideoRef(index)}
-              src={v.streamUrl}
-              className='h-full w-full object-contain'
-              muted={muted}
-              loop
-              playsInline
-              preload='auto'
-              onClick={() => setPaused((p) => !p)}
-            />
+            <>
+              <video
+                ref={setVideoRef(index)}
+                src={v.streamUrl}
+                className='h-full w-full object-contain'
+                muted={muted}
+                loop
+                playsInline
+                preload='auto'
+                onClick={() => setPaused((p) => !p)}
+                onLoadStart={() => setBuffering(true)}
+                onWaiting={() => setBuffering(true)}
+                onPlaying={() => setBuffering(false)}
+                onCanPlay={() => setBuffering(false)}
+                onLoadedData={() => setBuffering(false)}
+              />
+              {buffering && activeId === v.id && (
+                <div className='absolute inset-0 flex items-center justify-center bg-black/60 z-[6]'>
+                  <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-accent' />
+                </div>
+              )}
+            </>
           ) : (
             <div className='flex flex-col items-center text-white'>
               <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-accent mb-3' />
