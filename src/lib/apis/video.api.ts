@@ -71,10 +71,10 @@ const videoApi = {
     });
   },
 
-  // Get trending videos (sorted by views) - hiển thị tất cả video (bao gồm private)
-  getTrendingVideos: async (page = 0, size = 8): Promise<PageResponse<VideoResponse>> => {
-    return await axiosClient.get('/videos/all', {
-      params: { page, size, sort: 'popular' },
+  // Get trending videos (lượt xem nhiều nhất trong 24h) - endpoint chuyên biệt
+  getTrendingVideos: async (page = 0, size = 8, hours = 24): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get('/videos/trending', {
+      params: { page, size, hours },
     });
   },
 

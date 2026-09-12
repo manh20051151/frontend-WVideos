@@ -117,7 +117,7 @@ export default function Home() {
     });
     queryClient.prefetchQuery({
       queryKey: ['latestVideos', 0, sortBy],
-      queryFn: () => videoApi.getAllVideos(0, 8, sortBy),
+      queryFn: () => videoApi.getAllVideos(0, 32, sortBy),
     });
   }, [queryClient, sortBy]);
 
@@ -130,7 +130,7 @@ export default function Home() {
 
   const { data: latestData, isLoading: loadingLatest } = useQuery({
     queryKey: ['latestVideos', latestPage, sortBy],
-    queryFn: () => videoApi.getAllVideos(latestPage, 8, sortBy),
+    queryFn: () => videoApi.getAllVideos(latestPage, 32, sortBy),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -214,7 +214,7 @@ export default function Home() {
 
             {loadingLatest ? (
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-                {[...Array(8)].map((_, i) => (
+                {[...Array(32)].map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
