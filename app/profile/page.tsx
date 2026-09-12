@@ -20,6 +20,7 @@ const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   { id: 'my-videos', label: 'Video của tôi', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
   { id: 'liked', label: 'Video đã thích', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+  { id: 'purchased', label: 'Video đã mua', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
   { id: 'channels', label: 'Kênh đã đăng ký', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 100-8 4 4 0 000 8z' },
   { id: 'password', label: 'Đổi mật khẩu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
@@ -96,6 +97,17 @@ function ProfileContent() {
     enabled: selectedMenu === 'channels',
   });
 
+  const [purchasedPage, setPurchasedPage] = useState<number>(0);
+  const PURCHASED_PAGE_SIZE = 12;
+
+  const { data: purchasedData, isLoading: purchasedLoading } = useQuery({
+    queryKey: ['purchasedVideos', purchasedPage],
+    queryFn: () => videoApi.getPurchasedVideos(purchasedPage, PURCHASED_PAGE_SIZE),
+    enabled: selectedMenu === 'purchased',
+  });
+
+  const purchasedTotalPages = purchasedData?.totalPages ?? 0;
+
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -107,6 +119,8 @@ function ProfileContent() {
         setMyVideosPage(page);
       } else if (tab === 'liked') {
         setLikedVideosPage(page);
+      } else if (tab === 'purchased') {
+        setPurchasedPage(page);
       }
     }
   }, [searchParams]);
@@ -143,6 +157,7 @@ function ProfileContent() {
     setSelectedMenu(menuId);
     setMyVideosPage(0);
     setLikedVideosPage(0);
+    setPurchasedPage(0);
     router.push(`/profile?tab=${menuId}`);
     setError('');
     setSuccess('');
@@ -157,6 +172,11 @@ function ProfileContent() {
   const goToLikedVideosPage = useCallback((page: number) => {
     setLikedVideosPage(page);
     router.push(`/profile?tab=liked&page=${page}`);
+  }, [router]);
+
+  const goToPurchasedPage = useCallback((page: number) => {
+    setPurchasedPage(page);
+    router.push(`/profile?tab=purchased&page=${page}`);
   }, [router]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -858,6 +878,43 @@ function ProfileContent() {
                           currentPage={likedVideosPage}
                           totalPages={likedVideosTotalPages}
                           onPageChange={goToLikedVideosPage}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {selectedMenu === 'purchased' && (
+                    <div>
+                      {purchasedLoading ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="aspect-video bg-gray-300 rounded-lg mb-2"></div>
+                              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : purchasedData?.content && purchasedData.content.length > 0 ? (
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                          {purchasedData.content.map((video: VideoResponse) => (
+                            <VideoCardLite key={video.id} video={video} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          <p className="text-lg font-medium">Chưa mua video nào</p>
+                          <p className="mt-1">Các video có phí bạn đã mua sẽ xuất hiện ở đây!</p>
+                        </div>
+                      )}
+
+                      {purchasedTotalPages > 1 && (
+                        <Pagination
+                          currentPage={purchasedPage}
+                          totalPages={purchasedTotalPages}
+                          onPageChange={goToPurchasedPage}
                         />
                       )}
                     </div>

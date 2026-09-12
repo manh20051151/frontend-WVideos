@@ -45,6 +45,13 @@ const videoApi = {
     });
   },
 
+  // Get purchased videos (video đã mua)
+  getPurchasedVideos: async (page = 0, size = 10): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get('/videos/purchased', {
+      params: { page, size },
+    });
+  },
+
   // Restore video
   restoreVideo: async (videoId: string): Promise<VideoResponse> => {
     return await axiosClient.post(`/videos/${videoId}/restore`);
