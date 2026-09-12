@@ -171,7 +171,9 @@ body {
   font-weight: 500;
   transition: all 0.2s ease-in-out;
   cursor: pointer;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   text-decoration: none;
 }
 
