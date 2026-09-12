@@ -10,6 +10,7 @@ import { userApi, type UserProfileResponse } from '@/lib/apis/user.api';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import ClientOnly from '@/components/common/ClientOnly';
+import type { VideoResponse, PageResponse } from '@/types';
 
 export default function ChannelPage() {
   const params = useParams();
@@ -21,7 +22,12 @@ export default function ChannelPage() {
   const [error, setError] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  
+
+  const [videos, setVideos] = useState<VideoResponse[]>([]);
+  const [videoPage, setVideoPage] = useState(0);
+  const [hasMoreVideos, setHasMoreVideos] = useState(true);
+  const [loadingVideos, setLoadingVideos] = useState(false);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -38,6 +44,30 @@ export default function ChannelPage() {
     
     if (userId) {
       fetchProfile();
+    }
+  }, [userId]);
+
+  const fetchChannelVideos = async (pageToLoad: number) => {
+    if (loadingVideos) return;
+    setLoadingVideos(true);
+    try {
+      const data = await userApi.getVideos(userId, { page: pageToLoad, size: 12 }) as unknown as PageResponse<VideoResponse>;
+      setVideos((prev) => (pageToLoad === 0 ? data.content : [...prev, ...data.content]));
+      setHasMoreVideos(pageToLoad + 1 < data.totalPages);
+      setVideoPage(pageToLoad);
+    } catch (err) {
+      console.error('Lỗi tải video kênh:', err);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      setVideos([]);
+      setVideoPage(0);
+      setHasMoreVideos(true);
+      fetchChannelVideos(0);
     }
   }, [userId]);
   
@@ -185,19 +215,38 @@ export default function ChannelPage() {
           </div>
           
           {/* Video Grid */}
-          {profile.videos && profile.videos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
-              {profile.videos.map((video) => (
-                <VideoCard 
-                  key={video.id} 
-                  video={video} 
-                  onEdit={() => {}} 
-                  onDelete={() => {}}
-                  showActions={false}
-                />
-              ))}
-            </div>
-          ) : (
+          {videos.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
+                {videos.map((video) => (
+                  <VideoCard 
+                    key={video.id} 
+                    video={video} 
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    showActions={false}
+                  />
+                ))}
+              </div>
+
+              {loadingVideos && (
+                <div className="flex justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+                </div>
+              )}
+
+              {hasMoreVideos && !loadingVideos && (
+                <div className="flex justify-center pb-12">
+                  <button
+                    onClick={() => fetchChannelVideos(videoPage + 1)}
+                    className="px-6 py-2 rounded-full bg-accent/10 text-accent font-medium hover:bg-accent/20 transition-colors"
+                  >
+                    Xem thêm
+                  </button>
+                </div>
+              )}
+            </>
+          ) : !loadingVideos ? (
             <div className="text-center py-12 text-foreground/60">
               <p className="text-lg">Chưa có video nào</p>
               {isOwnChannel && (
@@ -208,6 +257,10 @@ export default function ChannelPage() {
                   Tải video lên
                 </Link>
               )}
+            </div>
+          ) : (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
             </div>
           )}
         </div>
