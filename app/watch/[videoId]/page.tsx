@@ -15,6 +15,7 @@ import AuthModal from '@/components/auth/AuthModal';
 import LoginRequiredModal from '@/components/common/LoginRequiredModal';
 import CommentSection from '@/components/video/CommentSection';
 import RelatedVideosSection from '@/components/video/RelatedVideosSection';
+import VideoPlayer from '@/components/common/VideoPlayer';
 
 export default function WatchVideoPage() {
   const params = useParams();
@@ -451,14 +452,12 @@ export default function WatchVideoPage() {
                       </div>
                     </>
                   ) : streamUrl ? (
-                    <video
+                    <VideoPlayer
                       src={streamUrl}
-                      className='w-full h-full'
-                      controls
-                      playsInline
                       poster={video.splashImageUrl || video.thumbnailUrl || undefined}
                       title={video.title}
                       onError={handleVideoError}
+                      className='w-full h-full'
                     />
                   ) : isStreamtape && !streamFailed ? (
                     <div className='w-full h-full flex items-center justify-center text-white bg-black'>
