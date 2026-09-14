@@ -37,4 +37,14 @@ export const subscriptionApi = {
   getMyChannels: (): Promise<UserResponse[]> => {
     return axiosClient.get('/subscriptions/my-channels');
   },
+
+  // Tắt tiếng thông báo từ kênh
+  muteChannel: (channelId: string): Promise<void> => {
+    return axiosClient.post(`/subscriptions/${channelId}/mute`);
+  },
+
+  // Bật lại thông báo từ kênh
+  unmuteChannel: (channelId: string): Promise<void> => {
+    return axiosClient.delete(`/subscriptions/${channelId}/mute`);
+  },
 };

@@ -1,16 +1,262 @@
 'use client';
 
-import { useState } from 'react';
-import { useNotifications } from '@/lib/hooks/useNotifications';
+import { useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { useNotifications, type AppNotification } from '@/lib/hooks/useNotifications';
+import { subscriptionApi } from '@/lib/apis/subscription.api';
+
+const svgProps = {
+  width: 16,
+  height: 16,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+const TYPE_ICON: Record<AppNotification['type'], ReactNode> = {
+  COMMENT: (
+    <svg {...svgProps}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
+  SUBSCRIBE: (
+    <svg {...svgProps}>
+      <path d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3.75 19.5h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
+    </svg>
+  ),
+  PURCHASE: (
+    <svg {...svgProps}>
+      <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 8v1m-6 4h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+    </svg>
+  ),
+  LIKE: (
+    <svg {...svgProps}>
+      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+    </svg>
+  ),
+  NEW_VIDEO: (
+    <svg {...svgProps}>
+      <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      <path d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
+    </svg>
+  ),
+};
+
+const formatRelativeTime = (iso?: string): string => {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return 'vừa xong';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} giờ trước`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} ngày trước`;
+  const wk = Math.floor(day / 7);
+  if (wk < 5) return `${wk} tuần trước`;
+  const mo = Math.floor(day / 30);
+  if (mo < 12) return `${mo} tháng trước`;
+  return `${Math.floor(day / 365)} năm trước`;
+};
+
+const isVideoType = (t: AppNotification['type']) =>
+  t === 'NEW_VIDEO' || t === 'COMMENT' || t === 'PURCHASE' || t === 'LIKE';
+
+type Filter = 'all' | 'unread';
+
+function NotificationAvatar({ n }: { n: AppNotification }) {
+  const [avatarError, setAvatarError] = useState(false);
+
+  return n.avatarUrl && !avatarError ? (
+    <img
+      src={n.avatarUrl}
+      alt=''
+      onError={() => setAvatarError(true)}
+      className='w-10 h-10 rounded-full object-cover bg-secondary shrink-0'
+    />
+  ) : (
+    <span className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground shrink-0'>
+      {TYPE_ICON[n.type]}
+    </span>
+  );
+}
+
+function NotificationThumb({ n }: { n: AppNotification }) {
+  const [thumbError, setThumbError] = useState(false);
+
+  if (!n.thumbnailUrl || thumbError) return null;
+
+  return (
+    <img
+      src={n.thumbnailUrl}
+      alt=''
+      onError={() => setThumbError(true)}
+      className='w-[100px] h-[56px] rounded-lg object-cover bg-secondary shrink-0'
+    />
+  );
+}
+
+const KebabIcon = () => (
+  <svg className='w-5 h-5' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+    <circle cx='12' cy='5' r='1.8' />
+    <circle cx='12' cy='12' r='1.8' />
+    <circle cx='12' cy='19' r='1.8' />
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg {...svgProps} className='w-[18px] h-[18px] shrink-0'>
+    <path d='M9.88 9.88a3 3 0 1 0 4.24 4.24' />
+    <path d='M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68' />
+    <path d='M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61' />
+    <path d='M2 2l20 20' />
+  </svg>
+);
+
+const BellOffIcon = () => (
+  <svg {...svgProps} className='w-[18px] h-[18px] shrink-0'>
+    <path d='M8.7 3A6 6 0 0 1 18 8c0 7 3 9 3 9H6s-2-1.5-2-3' />
+    <path d='M13.73 21a2 2 0 0 1-3.46 0' />
+    <path d='M2 2l20 20' />
+  </svg>
+);
+
+type MenuAction = (n: AppNotification) => void;
+
+function NotificationMenu({
+  n,
+  open,
+  onToggle,
+  onClose,
+  onHide,
+  onMuteChannel,
+  onMuteAll,
+}: {
+  n: AppNotification;
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+  onHide: MenuAction;
+  onMuteChannel: MenuAction;
+  onMuteAll: MenuAction;
+}) {
+  const isChannel = n.type === 'NEW_VIDEO' && !!n.actorId;
+
+  return (
+    <div className='relative shrink-0' onClick={(e) => e.stopPropagation()}>
+      <button
+        type='button'
+        onClick={onToggle}
+        className='p-1.5 rounded-full text-gray-400 hover:text-foreground hover:bg-secondary/70 transition-colors'
+        aria-label='Tùy chọn thông báo'
+        aria-haspopup='menu'
+        aria-expanded={open}
+      >
+        <KebabIcon />
+      </button>
+
+      {open && (
+        <>
+          <div className='fixed inset-0 z-[55]' onClick={onClose} />
+          <div
+            role='menu'
+            className='absolute left-0 top-full mt-1 w-72 bg-primary border border-secondary rounded-xl shadow-2xl z-[60] py-1'
+          >
+            <button
+              type='button'
+              role='menuitem'
+              onClick={() => {
+                onHide(n);
+                onClose();
+              }}
+              className='flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-secondary/60 text-left transition-colors'
+            >
+              <EyeOffIcon />
+              <span>Ẩn thông báo này</span>
+            </button>
+
+            {isChannel && (
+              <>
+                <button
+                  type='button'
+                  role='menuitem'
+                  onClick={() => {
+                    onMuteChannel(n);
+                    onClose();
+                  }}
+                  className='flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-secondary/60 text-left transition-colors'
+                >
+                  <BellOffIcon />
+                  <span>
+                    Tắt bớt thông báo của kênh <span className='font-medium'>{n.actorName}</span>
+                  </span>
+                </button>
+                <button
+                  type='button'
+                  role='menuitem'
+                  onClick={() => {
+                    onMuteAll(n);
+                    onClose();
+                  }}
+                  className='flex items-center gap-3 w-full px-4 py-2.5 text-sm text-foreground hover:bg-secondary/60 text-left transition-colors'
+                >
+                  <BellOffIcon />
+                  <span>
+                    Tắt tất cả thông báo từ <span className='font-medium'>{n.actorName}</span>
+                  </span>
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function NotificationBell() {
-  const { unreadCount, notifications } = useNotifications();
+  const { unreadCount, notifications, markAsRead, markAllAsRead, hideNotification, hideAllFromActor } =
+    useNotifications();
   const [open, setOpen] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>('all');
+  const router = useRouter();
+
+  const visible = filter === 'unread' ? notifications.filter((n) => !n.read) : notifications;
+
+  const handleOpen = () => setOpen((o) => !o);
+
+  const closePopup = () => {
+    setOpen(false);
+    setMenuOpenId(null);
+  };
+
+  const handleClick = (n: AppNotification) => {
+    if (!n.read) markAsRead(n.id);
+    if (isVideoType(n.type) && n.relatedId) router.push(`/watch/${n.relatedId}`);
+    closePopup();
+  };
+
+  const handleHide = (n: AppNotification) => hideNotification(n.id);
+
+  const handleMuteChannel = (n: AppNotification) => {
+    if (n.actorId) subscriptionApi.muteChannel(n.actorId);
+  };
+
+  const handleMuteAll = (n: AppNotification) => {
+    if (!n.actorId) return;
+    subscriptionApi.muteChannel(n.actorId);
+    hideAllFromActor(n.actorId);
+  };
 
   return (
     <div className='relative'>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         className='p-2 text-foreground hover:text-accent transition-colors relative'
         aria-label='Thông báo'
       >
@@ -23,7 +269,7 @@ export default function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className='absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none'>
+          <span className='absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#cc0000] text-white text-[10px] font-bold leading-none'>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -31,28 +277,101 @@ export default function NotificationBell() {
 
       {open && (
         <>
-          <div className='fixed inset-0 z-40' onClick={() => setOpen(false)} />
-          <div className='absolute right-0 mt-2 w-72 bg-primary border border-secondary rounded-md shadow-lg z-50'>
-            <div className='px-4 py-2 border-b border-secondary font-semibold text-foreground'>
-              Thông báo
+          <div className='fixed inset-0 z-40' onClick={() => closePopup()} />
+          <div className='absolute right-0 mt-3 w-[400px] bg-primary border border-secondary rounded-2xl shadow-2xl z-50 overflow-hidden'>
+            {/* Header */}
+            <div className='flex items-center justify-between px-4 py-3'>
+              <h3 className='text-xl font-bold text-foreground'>Thông báo</h3>
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => markAllAsRead()}
+                  className='text-sm text-accent hover:underline'
+                >
+                  Đánh dấu tất cả đã đọc
+                </button>
+              )}
             </div>
-            {notifications.length === 0 ? (
-              <div className='px-4 py-6 text-center text-sm text-gray-400'>
-                Chưa có thông báo
+
+            {/* Tabs */}
+            <div className='flex gap-2 px-4 pb-3'>
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  filter === 'all'
+                    ? 'bg-secondary text-foreground font-medium'
+                    : 'text-gray-500 hover:bg-secondary/60'
+                }`}
+              >
+                Tất cả
+              </button>
+              <button
+                onClick={() => setFilter('unread')}
+                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  filter === 'unread'
+                    ? 'bg-secondary text-foreground font-medium'
+                    : 'text-gray-500 hover:bg-secondary/60'
+                }`}
+              >
+                Chưa đọc
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className='h-px bg-secondary' />
+
+            {/* List */}
+            {visible.length === 0 ? (
+              <div className='px-4 py-12 text-center text-sm text-gray-500'>
+                Không có thông báo nào
               </div>
             ) : (
-              <ul className='max-h-80 overflow-y-auto'>
-                {notifications.map((n) => (
+              <ul className='max-h-[70vh] overflow-y-auto'>
+                {visible.map((n) => (
                   <li
                     key={n.id}
-                    className='px-4 py-3 border-b border-secondary last:border-0 text-sm text-foreground'
+                    onClick={() => handleClick(n)}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                      n.read ? 'hover:bg-secondary/50' : 'bg-secondary/30 hover:bg-secondary/50'
+                    }`}
                   >
-                    <div className='font-medium'>{n.title}</div>
-                    <div className='text-gray-400 text-xs mt-1'>{n.content}</div>
+                    <NotificationMenu
+                      n={n}
+                      open={menuOpenId === n.id}
+                      onToggle={() => setMenuOpenId(menuOpenId === n.id ? null : n.id)}
+                      onClose={() => setMenuOpenId(null)}
+                      onHide={handleHide}
+                      onMuteChannel={handleMuteChannel}
+                      onMuteAll={handleMuteAll}
+                    />
+                    <NotificationAvatar n={n} />
+                    <div className='min-w-0 flex-1'>
+                      <p
+                        className={`text-sm leading-snug line-clamp-2 ${
+                          n.read ? 'text-gray-500' : 'text-foreground font-medium'
+                        }`}
+                      >
+                        {n.content}
+                      </p>
+                      <p className='text-xs text-gray-500 mt-1'>
+                        {formatRelativeTime(n.createdAt)}
+                      </p>
+                    </div>
+                    <NotificationThumb n={n} />
+                    {!n.read && (
+                      <span className='self-center w-2 h-2 rounded-full bg-[#065fd4] shrink-0' />
+                    )}
                   </li>
                 ))}
               </ul>
             )}
+
+            {/* Footer */}
+            <button
+              onClick={() => closePopup()}
+              className='w-full text-center px-4 py-3 text-sm text-accent font-medium hover:bg-secondary/40 border-t border-secondary'
+            >
+              Xem tất cả
+            </button>
           </div>
         </>
       )}
