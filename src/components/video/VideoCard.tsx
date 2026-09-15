@@ -130,6 +130,11 @@ const VideoCard = memo(function VideoCard({
                 )}
                 {showStatus && getStatusBadge(video.status)}
               </div>
+              {video.price && video.price > 0 && (
+                <span className='absolute top-2 left-2 z-30 px-2 py-0.5 bg-accent text-white text-xs font-semibold rounded'>
+                  {video.price.toLocaleString('vi-VN')}đ
+                </span>
+              )}
             </Link>
           )}
         </div>

@@ -61,6 +61,8 @@ export interface VideoResponse {
     fileSize: number;
     duration: number;
     views: number;
+    favoritesCount?: number;
+    commentsCount?: number;
     likeCount?: number;
     dislikeCount?: number;
     userReaction?: VideoReactionType;
