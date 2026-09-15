@@ -275,6 +275,14 @@ export default function AdminDashboardPage() {
                 <span className='text-xl'>🗂️</span>
                 <span className='font-medium text-foreground'>Danh mục tin tức</span>
               </button>
+
+              <button
+                onClick={() => router.push('/admin/nav-items')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
+              >
+                <span className='text-xl'>🧭</span>
+                <span className='font-medium text-foreground'>Menu điều hướng</span>
+              </button>
             </div>
           </div>
         </div>
