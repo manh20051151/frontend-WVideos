@@ -28,6 +28,7 @@ export default function ShortsPage() {
   const [followState, setFollowState] = useState<Record<string, boolean>>({});
   const [commentVideoId, setCommentVideoId] = useState<string | null>(null);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   // Lấy số lượng bình luận của video đang active để hiển thị trên nút
   useEffect(() => {
@@ -269,6 +270,33 @@ export default function ShortsPage() {
     }
   };
 
+  // Chia sẻ video: dùng Web Share API nếu có, ngược lại copy link
+  const handleShare = async (video: ShortsResponse) => {
+    const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/watch/${video.id}`;
+    const shareData = {
+      title: video.title || 'Xem video trên WVideos',
+      text: video.title || '',
+      url: shareUrl,
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // Người dùng huỷ hoặc không hỗ trợ -> fallback copy link
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareFeedback('Đã sao chép link chia sẻ!');
+    } catch {
+      setShareFeedback('Không thể sao chép link');
+    }
+    setTimeout(() => setShareFeedback(null), 2000);
+  };
+
   return (
     <div className='h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide' ref={containerRef}>
       {videos.map((v, index) => (
@@ -406,11 +434,11 @@ export default function ShortsPage() {
             </button>
 
             {/* Share */}
-            <button className='flex flex-col items-center gap-1'>
+            <button onClick={() => handleShare(v)} className='flex flex-col items-center gap-1'>
               <svg width='30' height='30' viewBox='0 0 48 48' fill='white'>
                 <path d='M23.82 3.5A2 2 0 0 0 20.5 5v10.06C8.7 15.96 1 25.32 1 37a2 2 0 0 0 3.41 1.41c4.14-4.13 10.4-5.6 16.09-5.88v9.97a2 2 0 0 0 3.3 1.52l21.5-18.5a2 2 0 0 0 .02-3.02z' />
               </svg>
-              <span className='text-xs font-semibold'>0</span>
+              <span className='text-xs font-semibold'>Chia sẻ</span>
             </button>
 
             {/* Music disc */}
@@ -488,6 +516,13 @@ export default function ShortsPage() {
           <div className='flex-1 overflow-y-auto p-4'>
             <CommentSection videoId={commentVideoId} />
           </div>
+        </div>
+      )}
+
+      {/* Toast thông báo chia sẻ */}
+      {shareFeedback && (
+        <div className='fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-black/85 text-white px-5 py-2.5 rounded-full text-sm shadow-lg'>
+          {shareFeedback}
         </div>
       )}
     </div>
