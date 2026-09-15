@@ -207,7 +207,8 @@ export default function ShortsPage() {
   };
 
   const toggleLike = async (id: string) => {
-    if (!isAuthenticated) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
       openAuthModal('login');
       return;
     }
@@ -247,7 +248,8 @@ export default function ShortsPage() {
   // Theo dõi / bỏ theo dõi kênh
   const handleFollow = async (channelId: string) => {
     if (!channelId) return;
-    if (!isAuthenticated) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
       openAuthModal('login');
       return;
     }
