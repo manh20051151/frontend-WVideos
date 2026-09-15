@@ -8,6 +8,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+    { href: '/news', label: 'Tin tức 📰' },
     { href: '/shorts', label: 'Shorts 📱' },
     { href: '/cap-sao-moi-nhat', label: 'Cập Sao Mới Nhất 🔥' },
     { href: '/clip-sao-tao-noi-dung', label: 'Clip Sao Tạo Nội Dung 🎬' },

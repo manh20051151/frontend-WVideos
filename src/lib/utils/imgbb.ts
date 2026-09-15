@@ -120,6 +120,56 @@ export async function uploadImageToImgbb(
     // Chuyển sang base64
     const base64Image = await fileToBase64(fileToUpload);
 
+    return await uploadBase64ToImgbb(base64Image, name || file.name);
+  } catch (error) {
+    console.error('Error preparing image for imgbb:', error);
+    return {
+      success: false,
+      error: 'Có lỗi xảy ra khi xử lý ảnh',
+    };
+  }
+}
+
+/**
+ * Upload ảnh (từ blob/base64) lên imgbb - dùng cho TinyMCE images_upload_handler
+ * @param blob - Blob ảnh (hoặc File)
+ * @param name - Tên file (optional)
+ * @returns ImgbbUploadResult
+ */
+export async function uploadImageToImgbbFromBlob(
+  blob: Blob,
+  name?: string
+): Promise<ImgbbUploadResult> {
+  try {
+    if (!blob.type.startsWith('image/')) {
+      return { success: false, error: 'File không phải ảnh hợp lệ' };
+    }
+
+    let blobToUpload: Blob = blob;
+    if (blob.size > MAX_FILE_SIZE) {
+      blobToUpload = await resizeImage(blob as File);
+    }
+
+    const base64Image = await fileToBase64(blobToUpload);
+    return await uploadBase64ToImgbb(base64Image, name);
+  } catch (error) {
+    console.error('Error uploading blob to imgbb:', error);
+    return {
+      success: false,
+      error: 'Có lỗi xảy ra khi xử lý ảnh',
+    };
+  }
+}
+
+/**
+ * Gửi base64 image lên imgbb
+ */
+async function uploadBase64ToImgbb(
+  base64Image: string,
+  name?: string
+): Promise<ImgbbUploadResult> {
+  try {
+
     // Tạo FormData
     const formData = new FormData();
     formData.append('key', IMGBB_API_KEY);
