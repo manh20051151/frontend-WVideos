@@ -10,6 +10,7 @@ import { userApi, type UserProfileResponse } from '@/lib/apis/user.api';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import ClientOnly from '@/components/common/ClientOnly';
+import { ChannelNotificationBell } from '@/components/channel';
 import type { VideoResponse, PageResponse } from '@/types';
 
 export default function ChannelPage() {
@@ -177,28 +178,36 @@ export default function ChannelPage() {
                 <p className="text-sm text-foreground/60 mb-4">{profile.email}</p>
                 
                 {/* Subscribe Button */}
-                {!isOwnChannel && currentUser && (
-                  <button 
-                    onClick={handleSubscribe}
-                    disabled={subscribing}
-                    className={`px-8 py-2 rounded-full font-medium transition-colors ${
-                      profile.isSubscribed 
-                        ? 'bg-gray-500 hover:bg-gray-600 text-white' 
-                        : 'bg-red-600 hover:bg-red-700 text-white'
-                    }`}
-                  >
-                    {subscribing ? 'Đang xử lý...' : (profile.isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
-                  </button>
-                )}
-                
-                {!currentUser && (
-                  <button 
-                    onClick={() => window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'register' } }))}
-                    className="inline-block px-8 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
-                  >
-                    Đăng ký
-                  </button>
-                )}
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <ChannelNotificationBell
+                    channelId={profile.id}
+                    channelName={profile.fullName || profile.email}
+                    isSubscribed={!!profile.isSubscribed}
+                  />
+
+                  {!isOwnChannel && currentUser && (
+                    <button 
+                      onClick={handleSubscribe}
+                      disabled={subscribing}
+                      className={`px-8 py-2 rounded-full font-medium transition-colors ${
+                        profile.isSubscribed 
+                          ? 'bg-gray-500 hover:bg-gray-600 text-white' 
+                          : 'bg-red-600 hover:bg-red-700 text-white'
+                      }`}
+                    >
+                      {subscribing ? 'Đang xử lý...' : (profile.isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
+                    </button>
+                  )}
+
+                  {!currentUser && (
+                    <button 
+                      onClick={() => window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'register' } }))}
+                      className="inline-block px-8 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+                    >
+                      Đăng ký
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

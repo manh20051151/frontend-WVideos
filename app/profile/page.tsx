@@ -14,7 +14,23 @@ import VideoCard from '@/components/video/VideoCard';
 import VideoCardLite from '@/components/video/VideoCardLite';
 import Pagination from '@/components/common/Pagination';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
+import notificationApi from '@/lib/apis/notification.api';
+import NotificationMenu from '@/components/notification/NotificationMenu';
+import type { AppNotification } from '@/lib/hooks/useNotifications';
 import Link from 'next/link';
+
+const formatNotifTime = (iso?: string): string => {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'vừa xong';
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} giờ trước`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} ngày trước`;
+  return new Date(iso).toLocaleDateString('vi-VN');
+};
 
 const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -22,6 +38,7 @@ const MENU_ITEMS = [
   { id: 'liked', label: 'Video đã thích', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
   { id: 'purchased', label: 'Video đã mua', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
   { id: 'channels', label: 'Kênh đã đăng ký', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 0a4 4 0 100-8 4 4 0 000 8z' },
+  { id: 'notifications', label: 'Thông báo', icon: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' },
   { id: 'password', label: 'Đổi mật khẩu', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
 
@@ -108,6 +125,25 @@ function ProfileContent() {
 
   const purchasedTotalPages = purchasedData?.totalPages ?? 0;
 
+  const [notifPage, setNotifPage] = useState<number>(0);
+  const NOTIF_PAGE_SIZE = 15;
+  const [notifItems, setNotifItems] = useState<AppNotification[]>([]);
+  const [notifTotalPages, setNotifTotalPages] = useState<number>(0);
+  const [menuOpenNotifId, setMenuOpenNotifId] = useState<string | null>(null);
+
+  const { data: notifData, isLoading: notifLoading } = useQuery({
+    queryKey: ['notifications-page', notifPage],
+    queryFn: () => notificationApi.getNotifications(notifPage, NOTIF_PAGE_SIZE),
+    enabled: selectedMenu === 'notifications',
+  });
+
+  useEffect(() => {
+    if (notifData) {
+      setNotifItems(notifData.content ?? []);
+      setNotifTotalPages(notifData.totalPages ?? 0);
+    }
+  }, [notifData]);
+
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -121,6 +157,8 @@ function ProfileContent() {
         setLikedVideosPage(page);
       } else if (tab === 'purchased') {
         setPurchasedPage(page);
+      } else if (tab === 'notifications') {
+        setNotifPage(page);
       }
     }
   }, [searchParams]);
@@ -158,6 +196,7 @@ function ProfileContent() {
     setMyVideosPage(0);
     setLikedVideosPage(0);
     setPurchasedPage(0);
+    setNotifPage(0);
     router.push(`/profile?tab=${menuId}`);
     setError('');
     setSuccess('');
@@ -178,6 +217,43 @@ function ProfileContent() {
     setPurchasedPage(page);
     router.push(`/profile?tab=purchased&page=${page}`);
   }, [router]);
+
+  const goToNotifPage = useCallback((page: number) => {
+    setNotifPage(page);
+    router.push(`/profile?tab=notifications&page=${page}`);
+  }, [router]);
+
+  const handleNotifClick = useCallback(async (n: AppNotification) => {
+    if (!n.read) {
+      setNotifItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
+      try { await notificationApi.markAsRead(n.id); } catch { /* ignore */ }
+    }
+    const isVideoType = n.type === 'NEW_VIDEO' || n.type === 'COMMENT' || n.type === 'PURCHASE' || n.type === 'LIKE';
+    if (isVideoType && n.relatedId) {
+      router.push(`/watch/${n.relatedId}`);
+    }
+  }, [router]);
+
+  const handleNotifHide = useCallback(async (n: AppNotification) => {
+    setNotifItems((prev) => prev.filter((x) => x.id !== n.id));
+    try { await notificationApi.hideNotification(n.id); } catch { /* ignore */ }
+  }, []);
+
+  const handleNotifMuteChannel = useCallback((n: AppNotification) => {
+    if (n.actorId) subscriptionApi.muteChannel(n.actorId).catch(() => { /* ignore */ });
+  }, []);
+
+  const handleNotifMuteAll = useCallback(async (n: AppNotification) => {
+    if (!n.actorId) return;
+    subscriptionApi.muteChannel(n.actorId).catch(() => { /* ignore */ });
+    setNotifItems((prev) => prev.filter((x) => x.actorId !== n.actorId));
+    try { await notificationApi.hideAllFromActor(n.actorId); } catch { /* ignore */ }
+  }, []);
+
+  const handleNotifMarkAllRead = useCallback(async () => {
+    setNotifItems((prev) => prev.map((x) => ({ ...x, read: true })));
+    try { await notificationApi.markAllAsRead(); } catch { /* ignore */ }
+  }, []);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -970,6 +1046,83 @@ function ProfileContent() {
                         </div>
                       )}
     </div>
+                  )}
+
+                  {selectedMenu === 'notifications' && (
+                    <div>
+                      <div className='flex justify-between items-center mb-4'>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {notifItems.filter((n) => !n.read).length} chưa đọc
+                        </p>
+                        {notifItems.some((n) => !n.read) && (
+                          <button onClick={handleNotifMarkAllRead} className='text-sm text-accent hover:underline'>
+                            Đánh dấu tất cả đã đọc
+                          </button>
+                        )}
+                      </div>
+
+                      {notifLoading ? (
+                        <div className='space-y-2'>
+                          {[...Array(6)].map((_, i) => (
+                            <div key={i} className='animate-pulse h-20 rounded-xl bg-secondary' />
+                          ))}
+                        </div>
+                      ) : notifItems.length > 0 ? (
+                        <ul className='space-y-2'>
+                          {notifItems.map((n) => (
+                            <li
+                              key={n.id}
+                              onClick={() => handleNotifClick(n)}
+                              className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors border ${
+                                n.read
+                                  ? isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                                  : isDark ? 'bg-gray-800 border-accent/40' : 'bg-accent/5 border-accent/30'
+                              } hover:bg-secondary/50`}
+                            >
+                              <NotificationMenu
+                                n={n}
+                                open={menuOpenNotifId === n.id}
+                                onToggle={() => setMenuOpenNotifId(menuOpenNotifId === n.id ? null : n.id)}
+                                onClose={() => setMenuOpenNotifId(null)}
+                                onHide={handleNotifHide}
+                                onMuteChannel={handleNotifMuteChannel}
+                                onMuteAll={handleNotifMuteAll}
+                              />
+                              {n.avatarUrl ? (
+                                <img src={n.avatarUrl} alt='' className='w-10 h-10 rounded-full object-cover bg-secondary shrink-0' />
+                              ) : (
+                                <span className='w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground shrink-0'>
+                                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' />
+                                  </svg>
+                                </span>
+                              )}
+                              <div className='min-w-0 flex-1'>
+                                <p className={`text-sm leading-snug line-clamp-2 ${n.read ? 'text-gray-500' : 'text-foreground font-medium'}`}>
+                                  {n.content}
+                                </p>
+                                <p className='text-xs text-gray-500 mt-1'>{formatNotifTime(n.createdAt)}</p>
+                              </div>
+                              {n.thumbnailUrl && (
+                                <img src={n.thumbnailUrl} alt='' className='w-[100px] h-[56px] rounded-lg object-cover bg-secondary shrink-0' />
+                              )}
+                              {!n.read && <span className='self-center w-2 h-2 rounded-full bg-[#065fd4] shrink-0' />}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} d='M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9' />
+                          </svg>
+                          <p className='text-lg font-medium'>Chưa có thông báo nào</p>
+                        </div>
+                      )}
+
+                      {notifTotalPages > 1 && (
+                        <Pagination currentPage={notifPage} totalPages={notifTotalPages} onPageChange={goToNotifPage} />
+                      )}
+                    </div>
                   )}
               </div>
             </div>

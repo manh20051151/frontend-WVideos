@@ -37,7 +37,7 @@ export default function VideoCardLite({ video }: VideoCardLiteProps) {
       <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 h-full flex flex-col ${
         isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
       }`}>
-        <div className='relative w-full pb-[56.25%] flex-shrink-0'>
+        <div className='relative w-full aspect-video flex-shrink-0'>
           <div className='absolute inset-0'>
             <HoverThumbnail
               thumbnailUrl={video.thumbnailUrl}

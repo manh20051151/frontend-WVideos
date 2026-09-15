@@ -16,6 +16,7 @@ import LoginRequiredModal from '@/components/common/LoginRequiredModal';
 import CommentSection from '@/components/video/CommentSection';
 import RelatedVideosSection from '@/components/video/RelatedVideosSection';
 import VideoPlayer from '@/components/common/VideoPlayer';
+import { ChannelNotificationBell } from '@/components/channel';
 
 export default function WatchVideoPage() {
   const params = useParams();
@@ -413,7 +414,7 @@ export default function WatchVideoPage() {
     <>
       <Header />
       <div className='min-h-screen bg-primary'>
-        <div className='px-40 py-6'>
+        <div className='px-10 py-6'>
           <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
             {/* Left Column - Video + Info */}
             <div className='lg:col-span-4 space-y-4'>
@@ -591,32 +592,40 @@ export default function WatchVideoPage() {
                     </p>
                   </div>
                 </Link>
-                {currentUser && currentUser.id !== video.userId && (
-                  <button 
-                    onClick={handleSubscribe}
-                    disabled={subscribing}
-                    className={`font-medium py-2 px-6 rounded-full transition-colors ${
-                      isSubscribed 
-                        ? 'bg-gray-500 hover:bg-gray-600 text-white' 
-                        : 'bg-red-600 hover:bg-red-700 text-white'
-                    }`}
-                  >
-                    {subscribing ? 'Đang xử lý...' : (isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
-                  </button>
-                )}
-                {currentUser && currentUser.id === video.userId && (
-                  <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
-                    Kênh của bạn
-                  </button>
-                )}
-                {!currentUser && (
-                  <button 
-                    onClick={() => setShowLoginRequired(true)}
-                    className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'
-                  >
-                    Đăng ký
-                  </button>
-                )}
+                <div className='flex items-center gap-2'>
+                  <ChannelNotificationBell
+                    channelId={video.userId}
+                    channelName={video.userFullName || 'Kênh'}
+                    isSubscribed={!!isSubscribed}
+                  />
+
+                  {currentUser && currentUser.id !== video.userId && (
+                    <button 
+                      onClick={handleSubscribe}
+                      disabled={subscribing}
+                      className={`font-medium py-2 px-6 rounded-full transition-colors ${
+                        isSubscribed 
+                          ? 'bg-gray-500 hover:bg-gray-600 text-white' 
+                          : 'bg-red-600 hover:bg-red-700 text-white'
+                      }`}
+                    >
+                      {subscribing ? 'Đang xử lý...' : (isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
+                    </button>
+                  )}
+                  {currentUser && currentUser.id === video.userId && (
+                    <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
+                      Kênh của bạn
+                    </button>
+                  )}
+                  {!currentUser && (
+                    <button 
+                      onClick={() => setShowLoginRequired(true)}
+                      className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'
+                    >
+                      Đăng ký
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Description */}

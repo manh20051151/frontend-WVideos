@@ -91,7 +91,7 @@ const VideoCard = memo(function VideoCard({
     <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 h-full flex flex-col ${
       isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
     } ${isDeleted ? 'opacity-75' : ''}`}>
-      <div className='relative w-full pb-[56.25%] flex-shrink-0'>
+      <div className='relative w-full aspect-video flex-shrink-0'>
         <div className='absolute inset-0'>
           {isDeleted && !allowViewWhenDeleted ? (
             <div className='block cursor-not-allowed w-full h-full'>
