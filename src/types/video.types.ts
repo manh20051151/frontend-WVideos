@@ -24,6 +24,7 @@ export interface ShortsResponse {
     thumbnailUrl: string;
     splashImageUrl: string;
     userFullName: string;
+    userId?: string; // ID tác giả (dùng để theo dõi kênh)
     avatarUrl?: string; // ảnh đại diện người đăng
     duration: number;
     views: number;

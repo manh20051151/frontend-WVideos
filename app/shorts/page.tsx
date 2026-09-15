@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import videoApi from '@/lib/apis/video.api';
+import { subscriptionApi } from '@/lib/apis/subscription.api';
+import commentApi from '@/lib/apis/comment.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { openAuthModal } from '@/components/auth/AuthProvider';
+import CommentSection from '@/components/video/CommentSection';
 import type { ShortsResponse } from '@/types';
 
 const PAGE_SIZE = 10;
@@ -22,6 +25,18 @@ export default function ShortsPage() {
   const [paused, setPaused] = useState(false);
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
   const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
+  const [followState, setFollowState] = useState<Record<string, boolean>>({});
+  const [commentVideoId, setCommentVideoId] = useState<string | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+
+  // Lấy số lượng bình luận của video đang active để hiển thị trên nút
+  useEffect(() => {
+    if (!activeId || commentCounts[activeId] !== undefined) return;
+    commentApi
+      .getVideoComments(activeId, 0, 1)
+      .then((data) => setCommentCounts((prev) => ({ ...prev, [activeId]: data.totalElements ?? 0 })))
+      .catch(() => {});
+  }, [activeId, commentCounts]);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [buffering, setBuffering] = useState(false);
   const { isAuthenticated } = useAuth();
@@ -191,13 +206,65 @@ export default function ShortsPage() {
     return String(n);
   };
 
-  const toggleLike = (id: string) => {
-    setLikeState((prev) => {
-      const v = videos.find((x) => x.id === id);
-      const base = prev[id] ?? { liked: !!v?.isLiked, count: v?.likeCount ?? 0 };
-      const liked = !base.liked;
-      return { ...prev, [id]: { liked, count: base.count + (liked ? 1 : -1) } };
-    });
+  const toggleLike = async (id: string) => {
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    const v = videos.find((x) => x.id === id);
+    const base = likeState[id] ?? { liked: !!v?.isLiked, count: v?.likeCount ?? 0 };
+    const willLike = !base.liked;
+
+    // Cập nhật tối ưu (optimistic)
+    setLikeState((prev) => ({ ...prev, [id]: { liked: willLike, count: base.count + (willLike ? 1 : -1) } }));
+
+    try {
+      const res = await videoApi.toggleReaction(id, 'LIKE');
+      // Đồng bộ với dữ liệu thực từ server
+      setLikeState((prev) => ({ ...prev, [id]: { liked: res.userReaction === 'LIKE', count: res.likeCount } }));
+    } catch (e) {
+      // Hoàn tác nếu lỗi
+      setLikeState((prev) => ({ ...prev, [id]: base }));
+      console.error('Lỗi thích video:', e);
+    }
+  };
+
+  // Lấy danh sách kênh đã theo dõi để hiển thị trạng thái nút Theo dõi
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    subscriptionApi
+      .getMySubscriptions()
+      .then((ids) => {
+        const map: Record<string, boolean> = {};
+        ids.forEach((id) => {
+          map[id] = true;
+        });
+        setFollowState(map);
+      })
+      .catch(() => {});
+  }, [isAuthenticated]);
+
+  // Theo dõi / bỏ theo dõi kênh
+  const handleFollow = async (channelId: string) => {
+    if (!channelId) return;
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    const currentlyFollowing = !!followState[channelId];
+    // Cập nhật tối ưu (optimistic)
+    setFollowState((prev) => ({ ...prev, [channelId]: !currentlyFollowing }));
+    try {
+      if (currentlyFollowing) {
+        await subscriptionApi.unsubscribe(channelId);
+      } else {
+        await subscriptionApi.subscribe(channelId);
+      }
+    } catch (e) {
+      // Hoàn tác nếu lỗi
+      setFollowState((prev) => ({ ...prev, [channelId]: currentlyFollowing }));
+      console.error('Lỗi theo dõi kênh:', e);
+    }
   };
 
   return (
@@ -296,12 +363,16 @@ export default function ShortsPage() {
                 alt={v.userFullName}
                 className='w-12 h-12 rounded-full object-cover border-2 border-white'
               />
-              <button
-                className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-sm leading-none'
-                aria-label='Theo dõi'
-              >
-                +
-              </button>
+              {!v.isOwner && v.userId && (
+                <button
+                  onClick={() => handleFollow(v.userId!)}
+                  className='absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-sm leading-none'
+                  aria-label={followState[v.userId] ? 'Bỏ theo dõi' : 'Theo dõi'}
+                  title={followState[v.userId] ? 'Bỏ theo dõi' : 'Theo dõi'}
+                >
+                  {followState[v.userId] ? '✓' : '+'}
+                </button>
+              )}
             </div>
 
             {/* Like */}
@@ -322,19 +393,14 @@ export default function ShortsPage() {
             </button>
 
             {/* Comment */}
-            <button className='flex flex-col items-center gap-1'>
+            <button
+              onClick={() => setCommentVideoId((prev) => (prev === v.id ? null : v.id))}
+              className={`flex flex-col items-center gap-1 ${commentVideoId === v.id ? 'opacity-100' : 'opacity-90'}`}
+            >
               <svg width='30' height='30' viewBox='0 0 48 48' fill='white'>
                 <path fillRule='evenodd' clipRule='evenodd' d='M2 21.5c0-10.22 9.88-18 22-18s22 7.78 22 18c0 5.63-3.19 10.74-7.32 14.8a43.55 43.55 0 0 1-14.14 9.1A1.5 1.5 0 0 1 22.5 44v-5.04C11.13 38.4 2 31.34 2 21.5ZM14 25a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm13-3a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' />
               </svg>
-              <span className='text-xs font-semibold'>0</span>
-            </button>
-
-            {/* Favorite (bookmark) */}
-            <button className='flex flex-col items-center gap-1'>
-              <svg width='30' height='30' viewBox='0 0 48 48' fill='white'>
-                <path d='M13 4a5 5 0 0 0-5 5v32.8a2 2 0 0 0 3.26 1.55l12.1-9.84a1 1 0 0 1 1.27 0l12.1 9.84A2 2 0 0 0 40 41.8V9a5 5 0 0 0-5-5H13Z' />
-              </svg>
-              <span className='text-xs font-semibold'>0</span>
+              <span className='text-xs font-semibold'>{commentCounts[v.id] ?? 0}</span>
             </button>
 
             {/* Share */}
@@ -394,6 +460,32 @@ export default function ShortsPage() {
           <Link href='/' className='px-4 py-2 rounded-full bg-accent text-white'>
             Về trang chủ
           </Link>
+        </div>
+      )}
+
+      {/* Panel bình luận bên phải */}
+      {commentVideoId && (
+        <div className='fixed top-0 right-0 z-50 h-[100dvh] w-full sm:w-[400px] bg-primary border-l border-accent shadow-2xl flex flex-col'>
+          <div className='flex items-center justify-between p-4 border-b border-accent shrink-0'>
+            <h3 className='font-semibold text-foreground'>Bình luận</h3>
+            <button
+              onClick={() => {
+                setCommentCounts((prev) => {
+                  const next = { ...prev };
+                  delete next[commentVideoId];
+                  return next;
+                });
+                setCommentVideoId(null);
+              }}
+              className='w-8 h-8 rounded-full flex items-center justify-center text-foreground/70 hover:text-foreground hover:bg-secondary transition-colors'
+              aria-label='Đóng'
+            >
+              ✕
+            </button>
+          </div>
+          <div className='flex-1 overflow-y-auto p-4'>
+            <CommentSection videoId={commentVideoId} />
+          </div>
         </div>
       )}
     </div>
