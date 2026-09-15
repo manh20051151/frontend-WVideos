@@ -45,4 +45,18 @@ export const userApi = {
   getUserProfile: (userId: string): Promise<UserProfileResponse> => {
     return axiosClient.get(`/users/${userId}/profile`);
   },
+
+  search: (
+    keyword: string,
+    page = 0,
+    size = 10,
+  ): Promise<{
+    content: Array<{ id: string; fullName?: string; email: string; avatar?: string }>;
+    totalPages: number;
+    totalElements: number;
+    number: number;
+    size: number;
+  }> => {
+    return axiosClient.get('/users/search', { params: { keyword, page, size } });
+  },
 };

@@ -213,6 +213,7 @@ export default function WatchVideoPage() {
       setShowLoginRequired(true);
       return;
     }
+    if (!video) return;
 
     try {
       setSubscribing(true);
@@ -242,6 +243,7 @@ export default function WatchVideoPage() {
     if (currentUser.id === video?.userId) {
       return;
     }
+    if (!video) return;
 
     try {
       setReacting(true);
