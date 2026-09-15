@@ -43,6 +43,7 @@ export default function WatchVideoPage() {
   const STREAM_MAX_RETRY = 1;
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -179,9 +180,30 @@ export default function WatchVideoPage() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert('Đã sao chép link!');
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: video?.title || 'Xem video trên WVideos',
+      text: video?.title || '',
+      url: shareUrl,
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        // Người dùng huỷ hoặc không hỗ trợ -> fallback copy link
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareFeedback('Đã sao chép link chia sẻ!');
+    } catch {
+      setShareFeedback('Không thể sao chép link');
+    }
+    setTimeout(() => setShareFeedback(null), 2000);
   };
 
   const formatPrice = (price?: number) => {
@@ -553,7 +575,7 @@ export default function WatchVideoPage() {
                   </button>
 
                   <button 
-                    onClick={copyLink}
+                    onClick={handleShare}
                     className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
                   >
                     <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -707,6 +729,13 @@ export default function WatchVideoPage() {
           window.location.reload();
         }}
       />
+
+      {/* Toast thông báo chia sẻ */}
+      {shareFeedback && (
+        <div className='fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-black/85 text-white px-5 py-2.5 rounded-full text-sm shadow-lg'>
+          {shareFeedback}
+        </div>
+      )}
     </>
   );
 }
