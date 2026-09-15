@@ -64,9 +64,9 @@ export default function NewsDetailPage() {
   return (
     <>
       <Header />
-      <div className='min-h-screen bg-primary py-8 px-4 sm:px-6 lg:px-8'>
+      <div className='min-h-screen bg-primary py-8 container mx-auto px-4'>
         <div className='mx-auto'>
-          <Link href='/news' className='inline-flex items-center gap-1 text-sm text-foreground opacity-60 hover:opacity-100 transition-opacity'>
+          <Link href='/news' className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-accent/30 text-sm font-medium text-foreground opacity-80 hover:opacity-100 hover:bg-accent hover:text-white hover:border-accent transition-all'>
             <svg className='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
               <polyline points='15 18 9 12 15 6' />
             </svg>
