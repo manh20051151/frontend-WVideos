@@ -17,6 +17,7 @@ import { subscriptionApi } from '@/lib/apis/subscription.api';
 import notificationApi from '@/lib/apis/notification.api';
 import NotificationMenu from '@/components/notification/NotificationMenu';
 import FinanceTab from '@/components/profile/FinanceTab';
+import AnalyticsTab from '@/components/profile/AnalyticsTab';
 import type { AppNotification } from '@/lib/hooks/useNotifications';
 import Link from 'next/link';
 
@@ -36,6 +37,7 @@ const formatNotifTime = (iso?: string): string => {
 const MENU_ITEMS = [
   { id: 'personal', label: 'Thông tin cá nhân', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
   { id: 'my-videos', label: 'Video của tôi', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+  { id: 'analytics', label: 'Thống kê kênh', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
   { id: 'liked', label: 'Video đã thích', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
   { id: 'purchased', label: 'Video đã mua', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
   { id: 'finance', label: 'Tài chính', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
@@ -883,6 +885,8 @@ function ProfileContent() {
                   )}
 
                   {selectedMenu === 'finance' && <FinanceTab isDark={isDark} />}
+
+                  {selectedMenu === 'analytics' && <AnalyticsTab isDark={isDark} />}
 
                   {selectedMenu === 'my-videos' && (
                     <div>
