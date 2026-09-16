@@ -34,7 +34,8 @@ export interface ChannelAnalytics {
 }
 
 export const analyticsApi = {
-  getMyChannelAnalytics: (): Promise<ChannelAnalytics> => {
-    return axiosClient.get('videos/my-channel-analytics');
+  // trend: "7" | "30" | số ngày bất kỳ | "all" (toàn bộ thời gian, backend giới hạn 3 năm)
+  getMyChannelAnalytics: (trend: string = '30'): Promise<ChannelAnalytics> => {
+    return axiosClient.get('videos/my-channel-analytics', { params: { trend } });
   },
 };

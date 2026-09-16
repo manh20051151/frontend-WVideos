@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { analyticsApi, type DailyPoint } from '@/lib/apis/analytics.api';
 
 const formatNumber = (v?: number) => new Intl.NumberFormat('vi-VN').format(v ?? 0);
@@ -168,20 +168,21 @@ function StatCard({
 }
 
 export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
+  const [series, setSeries] = useState<'views' | 'subscribers'>('views');
+  const [trend, setTrend] = useState<'7' | '30' | 'all'>('30');
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['channelAnalytics'],
-    queryFn: analyticsApi.getMyChannelAnalytics,
+    queryKey: ['channelAnalytics', trend],
+    queryFn: () => analyticsApi.getMyChannelAnalytics(trend),
+    placeholderData: keepPreviousData,
     staleTime: 2 * 60 * 1000,
   });
-
-  const [series, setSeries] = useState<'views' | 'subscribers'>('views');
-  const [rangeDays, setRangeDays] = useState<7 | 30>(30);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-          {[...Array(6)].map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+          {[...Array(5)].map((_, i) => (
             <div key={i} className={`animate-pulse rounded-xl h-24 ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`} />
           ))}
         </div>
@@ -198,7 +199,7 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
     );
   }
 
-  const points = (series === 'views' ? data.viewTrend : data.subscriberTrend).slice(-rangeDays);
+  const points = series === 'views' ? data.viewTrend : data.subscriberTrend;
   const statusTotal = Object.values(data.statusBreakdown).reduce((a, b) => a + b, 0);
 
   return (
@@ -233,17 +234,14 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
           iconPath="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           iconClass="bg-amber-500/15 text-amber-500"
         />
-        <StatCard
-          isDark={isDark} label="Lượt lưu" value={formatNumber(data.totalFavorites)}
-          iconPath="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-          iconClass="bg-purple-500/15 text-purple-500"
-        />
       </div>
 
       {/* Biểu đồ xu hướng */}
       <div className={`rounded-xl border p-4 sm:p-5 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-          <h3 className="text-sm font-semibold text-foreground">Xu hướng 30 ngày gần nhất</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            Xu hướng {trend === 'all' ? 'toàn bộ thời gian' : `${trend} ngày gần nhất`}
+          </h3>
           <div className="flex items-center gap-3">
             <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
               {([
@@ -265,18 +263,22 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
               ))}
             </div>
             <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              {([7, 30] as const).map((d) => (
+              {([
+                { key: '7', label: '7N' },
+                { key: '30', label: '30N' },
+                { key: 'all', label: 'Tất cả' },
+              ] as const).map((o) => (
                 <button
-                  key={d}
-                  onClick={() => setRangeDays(d)}
-                  aria-pressed={rangeDays === d}
+                  key={o.key}
+                  onClick={() => setTrend(o.key)}
+                  aria-pressed={trend === o.key}
                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    rangeDays === d
+                    trend === o.key
                       ? 'bg-accent text-[var(--btn-accent-text)]'
                       : isDark ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {d}N
+                  {o.label}
                 </button>
               ))}
             </div>
