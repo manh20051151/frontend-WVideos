@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { getMyFinancialHistory, type FinancialEvent, type MonthlyStat } from '@/lib/apis/wallet.api';
+import WithdrawalSection from './WithdrawalSection';
 
 type IconProps = { className?: string };
 
@@ -455,6 +456,8 @@ export default function FinanceTab({ isDark }: { isDark?: boolean }) {
           </p>
         )}
       </div>
+
+      <WithdrawalSection isDark={isDark} />
     </div>
   );
 }

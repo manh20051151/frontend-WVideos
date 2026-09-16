@@ -245,6 +245,14 @@ export default function AdminDashboardPage() {
               </button>
 
               <button
+                onClick={() => router.push('/admin/withdrawals')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
+              >
+                <span className='text-xl'>💰</span>
+                <span className='font-medium text-foreground'>Yêu cầu rút tiền</span>
+              </button>
+
+              <button
                 onClick={() => router.push('/admin/trash')}
                 className='flex items-center space-x-2 p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors'
               >
