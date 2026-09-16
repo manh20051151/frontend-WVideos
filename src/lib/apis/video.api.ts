@@ -89,7 +89,7 @@ const videoApi = {
   },
 
   // Update video
-  updateVideo: async (videoId: string, data: { title?: string; description?: string; isPublic?: boolean; categoryIds?: string[]; thumbnailUrl?: string | null }): Promise<VideoResponse> => {
+  updateVideo: async (videoId: string, data: { title?: string; description?: string; isPublic?: boolean; categoryIds?: string[]; thumbnailUrl?: string; price?: number }): Promise<VideoResponse> => {
     return await axiosClient.put(`/videos/${videoId}`, data);
   },
 

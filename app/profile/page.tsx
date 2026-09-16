@@ -435,7 +435,7 @@ function ProfileContent() {
   return (
     <div className="min-h-screen bg-primary">
       {deleteModal}
-      <div className="px-40 py-12 w-full">
+      <div className="px-10 py-12 w-full">
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Left Sidebar */}

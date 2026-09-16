@@ -11,6 +11,26 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ThumbnailSelector from '@/components/video/ThumbnailSelector';
 
+type IconProps = { className?: string };
+
+const PencilIcon = ({ className = 'w-6 h-6' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+);
+
+const VideoCameraIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  </svg>
+);
+
+const ImageIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
 export default function EditVideoPage() {
   const router = useRouter();
   const params = useParams();
@@ -32,6 +52,24 @@ export default function EditVideoPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [priceOption, setPriceOption] = useState<string>('free'); // 'free' | số | 'custom'
+  const [customPrice, setCustomPrice] = useState<string>('');
+
+  // Giá video: 0 = miễn phí
+  const price =
+    priceOption === 'free'
+      ? 0
+      : priceOption === 'custom'
+        ? Number(customPrice) || 0
+        : Number(priceOption);
+
+  // Video có phí thì bắt buộc công khai (không cho tắt) - giống trang upload
+  useEffect(() => {
+    if (price > 0 && !formData.isPublic) {
+      setFormData((prev) => ({ ...prev, isPublic: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price]);
 
   // Load video data on mount
   useEffect(() => {
@@ -50,6 +88,18 @@ export default function EditVideoPage() {
         });
         if (data.thumbnailUrl) {
           setPreview(data.thumbnailUrl);
+        }
+        // Khởi tạo giá hiện tại của video vào form (giống các select giá trên trang upload)
+        const currentPrice = data.price ?? 0;
+        const presetPrices = [5000, 10000, 15000, 20000, 25000, 30000];
+        if (currentPrice > 0 && presetPrices.includes(currentPrice)) {
+          setPriceOption(String(currentPrice));
+        } else if (currentPrice > 0) {
+          setPriceOption('custom');
+          setCustomPrice(String(currentPrice));
+        } else {
+          setPriceOption('free');
+          setCustomPrice('');
         }
       } catch (err) {
         console.error('Failed to load video:', err);
@@ -141,6 +191,11 @@ export default function EditVideoPage() {
       return;
     }
 
+    if (price < 0) {
+      setError('Giá video không hợp lệ');
+      return;
+    }
+
     try {
       setSaving(true);
       setError('');
@@ -151,6 +206,7 @@ export default function EditVideoPage() {
         isPublic: formData.isPublic,
         categoryIds: formData.categoryIds,
         thumbnailUrl: formData.thumbnailUrl,
+        price,
       });
 
       router.push('/profile?tab=my-videos');
@@ -257,8 +313,10 @@ export default function EditVideoPage() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-secondary shadow-lg rounded-lg overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-accent to-highlight px-6 py-8">
-              <h1 className="text-3xl font-bold text-foreground">✏️ Chỉnh sửa Video</h1>
+            <div className="bg-accent px-6 py-8">
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                <PencilIcon /> Chỉnh sửa Video
+              </h1>
               <p className="mt-2 text-foreground opacity-80">Cập nhật thông tin video của bạn</p>
             </div>
 
@@ -268,8 +326,8 @@ export default function EditVideoPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 {/* Video Preview Section */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    📹 Video hiện tại
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                    <VideoCameraIcon /> Video hiện tại
                   </label>
                   {preview ? (
                     <div className="space-y-3">
@@ -311,8 +369,8 @@ export default function EditVideoPage() {
 
                 {/* Thumbnail Section */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    🖼️ Thumbnail (tùy chọn)
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                    <ImageIcon /> Thumbnail (tùy chọn)
                   </label>
                   <ThumbnailSelector
                     thumbnailUrl={formData.thumbnailUrl || null}
@@ -456,6 +514,44 @@ export default function EditVideoPage() {
                 </p>
               </div>
 
+              {/* Giá video - giống trang upload */}
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-foreground mb-2">
+                  Giá video
+                </label>
+                <select
+                  id="price"
+                  value={priceOption}
+                  onChange={(e) => setPriceOption(e.target.value)}
+                  className="auth-input"
+                  disabled={saving}
+                >
+                  <option value="free">Miễn phí</option>
+                  <option value="5000">5.000 VNĐ</option>
+                  <option value="10000">10.000 VNĐ</option>
+                  <option value="15000">15.000 VNĐ</option>
+                  <option value="20000">20.000 VNĐ</option>
+                  <option value="25000">25.000 VNĐ</option>
+                  <option value="30000">30.000 VNĐ</option>
+                  <option value="custom">Tùy chọn</option>
+                </select>
+                {priceOption === 'custom' && (
+                  <input
+                    type="number"
+                    min={1000}
+                    step={1000}
+                    value={customPrice}
+                    onChange={(e) => setCustomPrice(e.target.value)}
+                    className="auth-input mt-2"
+                    placeholder="Nhập giá (VNĐ)"
+                    disabled={saving}
+                  />
+                )}
+                <p className="text-xs text-foreground opacity-50 mt-1">
+                  Miễn phí = 0đ. Video có giá sẽ tự động bắt buộc công khai và người xem phải mua để xem.
+                </p>
+              </div>
+
               {/* Public/Private */}
               <div className="flex items-center">
                 <input
@@ -464,10 +560,15 @@ export default function EditVideoPage() {
                   checked={formData.isPublic}
                   onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
                   className="h-4 w-4 text-accent focus:ring-accent border-accent rounded"
-                  disabled={saving}
+                  disabled={saving || price > 0}
                 />
-                <label htmlFor="isPublic" className="ml-2 block text-sm text-foreground">
-                  Công khai video (mọi người có thể xem)
+                <label
+                  htmlFor="isPublic"
+                  className={`ml-2 block text-sm ${price > 0 ? 'text-foreground opacity-60' : 'text-foreground'}`}
+                >
+                  {price > 0
+                    ? 'Công khai video (bắt buộc với video có phí - mọi người xem được, phải mua để xem)'
+                    : 'Công khai video (mọi người có thể xem)'}
                 </label>
               </div>
 

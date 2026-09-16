@@ -12,6 +12,26 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ThumbnailSelector from '@/components/video/ThumbnailSelector';
 
+type IconProps = { className?: string };
+
+const VideoCameraIcon = ({ className = 'w-6 h-6' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  </svg>
+);
+
+const ImageIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
+const LightBulbIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+  </svg>
+);
+
 export default function UploadVideoPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -258,8 +278,10 @@ export default function UploadVideoPage() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-secondary shadow-lg rounded-lg overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-accent to-highlight px-6 py-8">
-              <h1 className="text-3xl font-bold text-foreground">📹 Upload Video</h1>
+            <div className="bg-accent px-6 py-8">
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+                <VideoCameraIcon /> Upload Video
+              </h1>
               <p className="mt-2 text-foreground opacity-80">Chia sẻ video của bạn với cộng đồng</p>
             </div>
 
@@ -269,8 +291,8 @@ export default function UploadVideoPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               {/* Video Upload Section */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  📹 Chọn video *
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <VideoCameraIcon className="w-4 h-4" /> Chọn video *
                 </label>
                 {preview ? (
                   <div className="space-y-3">
@@ -364,8 +386,8 @@ export default function UploadVideoPage() {
 
               {/* Thumbnail Section */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  🖼️ Thumbnail (tùy chọn)
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                  <ImageIcon /> Thumbnail (tùy chọn)
                 </label>
                 {file ? (
                   <ThumbnailSelector
@@ -557,7 +579,7 @@ export default function UploadVideoPage() {
                 />
               )}
               <p className="text-xs text-foreground opacity-50 mt-1">
-                Mặc định miễn phí. Video có giá sẽ không thể công khai.
+                Mặc định miễn phí. Video có giá sẽ bắt buộc công khai và người xem phải mua để xem.
               </p>
             </div>
 
@@ -627,7 +649,9 @@ export default function UploadVideoPage() {
 
         {/* Tips */}
         <div className="mt-6 bg-secondary border border-accent rounded-lg p-3 max-w-3xl mx-auto">
-          <h3 className="text-sm font-medium text-foreground mb-1">💡 Lưu ý:</h3>
+          <h3 className="text-sm font-medium text-foreground mb-1 flex items-center gap-1.5">
+            <LightBulbIcon /> Lưu ý:
+          </h3>
           <ul className="text-xs text-foreground opacity-70 space-y-0.5 list-disc list-inside">
             <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
             <li>Video sẽ được xử lý sau khi upload</li>

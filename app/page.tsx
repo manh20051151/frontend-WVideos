@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -95,6 +95,9 @@ export default function Home() {
   const [latestPage, setLatestPage] = useState(Math.max(1, initialPage) - 1);
   const [sortBy, setSortBy] = useState<SortOption>(initialSort || 'newest');
 
+  // Ref tới section "Video mới nhất" để cuộn tới đầu section khi đổi trang
+  const latestSectionRef = useRef<HTMLDivElement>(null);
+
   // Sync URL params with state
   useEffect(() => {
     const params = new URLSearchParams();
@@ -108,6 +111,7 @@ export default function Home() {
 
   const goToPage = (page: number) => {
     setLatestPage(Math.max(0, Math.min(page, latestTotalPages - 1)));
+    latestSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   useEffect(() => {
@@ -176,7 +180,7 @@ export default function Home() {
           </div>
 
           {/* Section: Video mới nhất */}
-          <div>
+          <div ref={latestSectionRef} className='scroll-mt-20'>
             <div className='flex items-center justify-between mb-6'>
               <div className='flex items-center gap-3'>
                 <div className='p-2 bg-blue-500/20 rounded-lg'>
