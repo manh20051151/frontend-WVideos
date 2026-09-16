@@ -27,6 +27,41 @@ export const getFinancialInfo = async () => {
   return axiosClient.get(`${WALLET_ENDPOINT}/${userId}/financial-info`);
 };
 
+// ===== Lịch sử biến động tài chính cá nhân =====
+export interface FinancialEvent {
+  id: string;
+  type: 'TOPUP' | 'VIDEO_PURCHASE' | 'CREATOR_REVENUE';
+  title: string;
+  description?: string;
+  amount: number;      // giá trị tuyệt đối (VND)
+  direction: 'IN' | 'OUT';
+  occurredAt?: string; // ISO datetime
+  videoId?: string;
+}
+
+export interface MonthlyStat {
+  month: string;      // yyyy-MM
+  deposits: number;
+  spending: number;
+  earnings: number;
+}
+
+export interface FinancialHistory {
+  balance: number;
+  revenue: number;
+  totalDeposited: number;
+  totalSpent: number;
+  deposited30d: number;
+  spent30d: number;
+  revenue30d: number;
+  events: FinancialEvent[];
+  monthlyStats: MonthlyStat[];
+}
+
+export const getMyFinancialHistory = async (): Promise<FinancialHistory> => {
+  return axiosClient.get(`${WALLET_ENDPOINT}/my-financial-history`);
+};
+
 export const checkTransactionWithAmount = async (description: string, amount: number, limit = 20) => {
   return axiosClient.post('sepay/check-transaction-with-amount', {
     description,
