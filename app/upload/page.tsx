@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import videoApi from '@/lib/apis/video.api';
@@ -20,7 +21,7 @@ const VideoCameraIcon = ({ className = 'w-6 h-6' }: IconProps) => (
   </svg>
 );
 
-const ImageIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+const ImageIcon = ({ className = 'w-5 h-5' }: IconProps) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
@@ -31,6 +32,101 @@ const LightBulbIcon = ({ className = 'w-4 h-4' }: IconProps) => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
   </svg>
 );
+
+const CloudUploadIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+  </svg>
+);
+
+const InfoIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const FolderIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+  </svg>
+);
+
+const GlobeIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const LockIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  </svg>
+);
+
+const MoneyIcon = ({ className = 'w-5 h-5' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const CheckIcon = ({ className = 'w-4 h-4' }: IconProps) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+// Đầu mục chung cho từng section của form
+function SectionHeader({ icon, title, desc }: { icon: ReactNode; title: string; desc?: string }) {
+  return (
+    <div className="flex items-start gap-3 mb-5 pb-4 border-b border-accent/15">
+      <div className="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        {desc && <p className="text-xs text-foreground/60 mt-0.5">{desc}</p>}
+      </div>
+    </div>
+  );
+}
+
+// Thẻ lựa chọn chế độ hiển thị (Công khai / Riêng tư)
+function VisibilityOption({
+  selected,
+  disabled,
+  onClick,
+  icon,
+  title,
+  desc,
+}: {
+  selected: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={selected}
+      className={`rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed ${
+        selected
+          ? 'border-accent bg-accent/10'
+          : 'border-accent/20 enabled:hover:border-accent/50'
+      } ${disabled && selected ? 'opacity-60' : ''}`}
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-accent">{icon}</span>
+        <span className="text-sm font-semibold text-foreground">{title}</span>
+        {selected && <CheckIcon className="w-4 h-4 text-accent ml-auto" />}
+      </div>
+      <p className="text-xs text-foreground/60 mt-1">{desc}</p>
+    </button>
+  );
+}
 
 export default function UploadVideoPage() {
   const router = useRouter();
@@ -64,19 +160,19 @@ export default function UploadVideoPage() {
   const addTag = () => {
     const trimmed = tagInput.trim().toLowerCase();
     if (!trimmed) return;
-    
+
     // Tối đa 10 tags
     if ((formData.tags?.length || 0) >= 10) {
       setError('Tối đa 10 tags');
       return;
     }
-    
+
     // Không trùng lặp
     if (formData.tags?.includes(trimmed)) {
       setTagInput('');
       return;
     }
-    
+
     setFormData(prev => ({
       ...prev,
       tags: [...(prev.tags || []), trimmed],
@@ -128,27 +224,15 @@ export default function UploadVideoPage() {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-primary flex items-center justify-center px-4">
-          <div className="max-w-md w-full bg-secondary rounded-lg shadow-lg p-8 text-center">
-            <div className="mb-6">
-              <svg
-                className="mx-auto h-16 w-16 text-accent"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
+        <main className="min-h-screen bg-secondary flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-primary rounded-xl shadow-sm p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-accent/15 flex items-center justify-center">
+              <LockIcon className="w-8 h-8 text-accent" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-4">
               Yêu cầu đăng nhập
             </h2>
-            <p className="text-foreground opacity-70 mb-6">
+            <p className="text-foreground/60 mb-6">
               Bạn cần đăng nhập để upload video
             </p>
             <div className="space-y-3">
@@ -160,13 +244,13 @@ export default function UploadVideoPage() {
               </Link>
               <button
                 onClick={() => router.back()}
-                className="block w-full border border-accent text-foreground font-medium py-3 px-6 rounded-lg hover:bg-accent hover:bg-opacity-20 transition-colors"
+                className="block w-full py-3 px-6 rounded-lg text-sm font-medium text-foreground/70 hover:bg-accent/10 transition-colors"
               >
                 Quay lại
               </button>
             </div>
           </div>
-        </div>
+        </main>
         <Footer />
       </>
     );
@@ -205,6 +289,26 @@ export default function UploadVideoPage() {
       };
       probe.src = videoUrl;
     }
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    const selected = formData.categoryIds.includes(categoryId);
+    if (selected) {
+      setFormData({
+        ...formData,
+        categoryIds: formData.categoryIds.filter((id) => id !== categoryId),
+      });
+      return;
+    }
+    if (formData.categoryIds.length >= 10) {
+      setError('Chỉ được chọn tối đa 10 thể loại');
+      return;
+    }
+    setFormData({
+      ...formData,
+      categoryIds: [...formData.categoryIds, categoryId],
+    });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -274,393 +378,386 @@ export default function UploadVideoPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-secondary shadow-lg rounded-lg overflow-hidden">
-            {/* Header */}
-            <div className="bg-accent px-6 py-8">
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                <VideoCameraIcon /> Upload Video
-              </h1>
-              <p className="mt-2 text-foreground opacity-80">Chia sẻ video của bạn với cộng đồng</p>
+      <main className="min-h-screen bg-secondary py-10 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Page header */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center shrink-0">
+              <VideoCameraIcon className="w-6 h-6 text-[var(--btn-accent-text)]" />
             </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Upload Video</h1>
+              <p className="text-sm text-foreground/60">Chia sẻ video của bạn với cộng đồng</p>
+            </div>
+          </div>
 
-            {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* File Upload & Thumbnail - 2 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              {/* Video Upload Section */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                  <VideoCameraIcon className="w-4 h-4" /> Chọn video *
-                </label>
-                {preview ? (
-                  <div className="space-y-3">
-                    {/* Video Player */}
-                    <div className="relative rounded-xl overflow-hidden bg-black border-2 border-accent shadow-lg">
-                      <video
-                        src={preview}
-                        controls
-                        className="w-full aspect-video"
-                      />
-                    </div>
-                    
-                    {/* File Info Card */}
-                    <div className="bg-primary border border-accent rounded-lg p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-accent bg-opacity-20 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate" title={file?.name}>
-                            {file?.name}
-                          </p>
-                          <p className="text-xs text-foreground opacity-60">
-                            {formatFileSize(file?.size || 0)}
-                          </p>
-                        </div>
-                      </div>
-                      <label className="cursor-pointer flex-shrink-0">
-                        <span className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-accent text-white rounded-lg hover:bg-highlight transition-colors">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
-                          Đổi video
-                        </span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="video/*"
-                          onChange={handleFileChange}
-                          disabled={uploading}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Section 1: Tệp video & ảnh thu nhỏ */}
+            <section className="bg-primary shadow-sm rounded-xl p-5 sm:p-6">
+              <SectionHeader
+                icon={<CloudUploadIcon />}
+                title="Tệp video & ảnh thu nhỏ"
+                desc="Hỗ trợ MP4, AVI, MOV, WMV — dung lượng tối đa 2GB"
+              />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                {/* Video Upload */}
+                <div>
+                  {preview ? (
+                    <div className="space-y-3">
+                      {/* Video Player */}
+                      <div className="relative rounded-xl overflow-hidden bg-black border border-accent/20 shadow-sm">
+                        <video
+                          src={preview}
+                          controls
+                          className="w-full aspect-video"
                         />
-                      </label>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="relative block group cursor-pointer">
-                    <div className="border-2 border-dashed border-accent rounded-xl p-8 text-center transition-all group-hover:border-highlight  group-hover:bg-opacity-5 h-[280px] flex flex-col justify-center">
-                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent bg-opacity-10 flex items-center justify-center group-hover:bg-opacity-20 transition-colors">
-                        <svg
-                          className="w-10 h-10 "
-                          stroke="currentColor"
-                          fill="none"
-                          viewBox="0 0 48 48"
-                        >
-                          <path
-                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                            strokeWidth={2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
                       </div>
-                      <p className="text-lg font-medium text-foreground mb-1">
-                        Click hoặc kéo thả video vào đây
-                      </p>
-                      <p className="text-sm text-foreground opacity-60 mb-4">
-                        Hỗ trợ MP4, AVI, MOV, WMV
-                      </p>
-                      <span className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent text-white font-medium rounded-lg group-hover:bg-highlight transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Chọn video từ máy
-                      </span>
+
+                      {/* File Info Card */}
+                      <div className="bg-secondary rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-lg bg-accent/15 text-accent flex items-center justify-center flex-shrink-0">
+                            <VideoCameraIcon className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate" title={file?.name}>
+                              {file?.name}
+                            </p>
+                            <p className="text-xs text-foreground/60">
+                              {formatFileSize(file?.size || 0)}
+                              {formData.duration ? ` · ${Math.round(formData.duration / 60)} phút` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <label className="cursor-pointer flex-shrink-0 btn-accent inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+                          <CloudUploadIcon className="w-4 h-4" />
+                          Đổi video
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="video/*"
+                            onChange={handleFileChange}
+                            disabled={uploading}
+                          />
+                        </label>
+                      </div>
                     </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="video/*"
-                      onChange={handleFileChange}
+                  ) : (
+                    <label className="relative block group cursor-pointer">
+                      <div className="border-2 border-dashed border-accent/40 rounded-xl p-8 text-center transition-colors group-hover:border-accent bg-secondary/50 group-hover:bg-accent/5 h-[280px] flex flex-col justify-center">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                          <CloudUploadIcon className="w-10 h-10 text-accent" />
+                        </div>
+                        <p className="text-lg font-medium text-foreground mb-1">
+                          Click hoặc kéo thả video vào đây
+                        </p>
+                        <p className="text-sm text-foreground/60 mb-4">
+                          Hỗ trợ MP4, AVI, MOV, WMV
+                        </p>
+                        <span className="inline-flex items-center gap-2 px-6 py-2.5 btn-accent font-medium rounded-lg hover:opacity-90 transition-opacity">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Chọn video từ máy
+                        </span>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="video/*"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Thumbnail */}
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                    <ImageIcon className="w-4 h-4 text-accent" />
+                    Thumbnail (tùy chọn)
+                  </div>
+                  {file ? (
+                    <ThumbnailSelector
+                      thumbnailUrl={formData.thumbnailUrl || null}
+                      onThumbnailChange={(url) => setFormData({ ...formData, thumbnailUrl: url || undefined })}
                       disabled={uploading}
                     />
-                  </label>
-                )}
-                <p className="text-xs text-foreground opacity-50 mt-2">
-                  * Tối đa 2GB. Video sẽ được xử lý sau khi upload.
-                </p>
+                  ) : (
+                    <div className="border-2 border-dashed border-accent/25 rounded-xl p-8 text-center bg-secondary/50 h-[280px] flex flex-col justify-center">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent/10 flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-accent/50" />
+                      </div>
+                      <p className="text-sm text-foreground/50">
+                        Chọn video trước để lấy ảnh thu nhỏ
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
+            </section>
 
-              {/* Thumbnail Section */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                  <ImageIcon /> Thumbnail (tùy chọn)
-                </label>
-                {file ? (
-                  <ThumbnailSelector
-                    thumbnailUrl={formData.thumbnailUrl || null}
-                    onThumbnailChange={(url) => setFormData({ ...formData, thumbnailUrl: url || undefined })}
+            {/* Section 2: Thông tin video */}
+            <section className="bg-primary shadow-sm rounded-xl p-5 sm:p-6">
+              <SectionHeader
+                icon={<InfoIcon />}
+                title="Thông tin video"
+                desc="Tiêu đề và mô tả rõ ràng giúp video dễ được tìm thấy hơn"
+              />
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
+                    Tiêu đề <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="auth-input"
+                    placeholder="Nhập tiêu đề video"
+                    disabled={uploading}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+                    Mô tả
+                  </label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={4}
+                    className="auth-input resize-none"
+                    placeholder="Mô tả về video của bạn..."
                     disabled={uploading}
                   />
-                ) : (
-                  <div className="border-2 border-dashed border-accent border-opacity-30 rounded-xl p-8 text-center bg-primary bg-opacity-50 h-[280px] flex flex-col justify-center">
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-accent bg-opacity-10 flex items-center justify-center">
-                      <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-foreground opacity-50">
-                      Chọn video trước để upload thumbnail
-                    </p>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Title */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
-                Tiêu đề *
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="auth-input"
-                placeholder="Nhập tiêu đề video"
-                disabled={uploading}
-                required
+            {/* Section 3: Thể loại & Tags */}
+            <section className="bg-primary shadow-sm rounded-xl p-5 sm:p-6">
+              <SectionHeader
+                icon={<FolderIcon />}
+                title="Thể loại & tags"
+                desc="Chọn từ 1 đến 10 thể loại và tối đa 10 tags"
               />
-            </div>
 
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
-                Mô tả
-              </label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                className="auth-input resize-none"
-                placeholder="Mô tả về video của bạn..."
-                disabled={uploading}
-              />
-            </div>
-
-            {/* Category - Multi-select với checkboxes */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Thể loại * (chọn từ 1-10 thể loại)
-              </label>
-              <div className="bg-secondary border border-accent rounded-lg p-4 max-h-60 overflow-y-auto">
-                {loadingCategories ? (
-                  <div className="text-sm text-foreground opacity-70 text-center py-4">
-                    Đang tải danh sách thể loại...
-                  </div>
-                ) : categories.length === 0 ? (
-                  <div className="text-sm text-foreground opacity-70 text-center py-4">
-                    Không có thể loại nào
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {categories.map((category) => (
-                      <label
-                        key={category.id}
-                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          formData.categoryIds.includes(category.id)
-                            ? 'border-highlight bg-highlight bg-opacity-10 text-black dark:text-white'
-                            : 'border-transparent bg-primary hover:border-accent hover:border-opacity-50 text-accent'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={formData.categoryIds.includes(category.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              // Kiểm tra không vượt quá 10
-                              if (formData.categoryIds.length >= 10) {
-                                setError('Chỉ được chọn tối đa 10 thể loại');
-                                return;
-                              }
-                              setFormData({
-                                ...formData,
-                                categoryIds: [...formData.categoryIds, category.id],
-                              });
-                              setError('');
-                            } else {
-                              setFormData({
-                                ...formData,
-                                categoryIds: formData.categoryIds.filter((id) => id !== category.id),
-                              });
-                            }
-                          }}
-                          className="h-4 w-4 text-accent focus:ring-accent border-accent rounded mr-3"
-                          disabled={uploading}
-                        />
-                        <span className="text-sm font-medium">
-                          {category.icon} {category.name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="text-xs text-foreground opacity-70 mt-2">
-                Đã chọn: {formData.categoryIds.length}/10 (tối thiểu 1, tối đa 10)
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
-                Tags (tối đa 10)
-              </label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.tags?.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-accent text-white"
-                  >
-                    #{tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 hover:text-red-200"
-                      disabled={uploading}
-                    >
-                      ×
-                    </button>
+              {/* Category - chips multi-select */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Thể loại <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-xs text-foreground/60">
+                    Đã chọn {formData.categoryIds.length}/10
                   </span>
-                ))}
+                </div>
+                {loadingCategories ? (
+                  <p className="text-sm text-foreground/60 py-4 text-center">Đang tải danh sách thể loại...</p>
+                ) : categories.length === 0 ? (
+                  <p className="text-sm text-foreground/60 py-4 text-center">Không có thể loại nào</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) => {
+                      const selected = formData.categoryIds.includes(category.id);
+                      return (
+                        <button
+                          type="button"
+                          key={category.id}
+                          onClick={() => toggleCategory(category.id)}
+                          disabled={uploading}
+                          aria-pressed={selected}
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                            selected
+                              ? 'bg-accent border-accent text-[var(--btn-accent-text)]'
+                              : 'bg-secondary border-transparent text-foreground/80 hover:border-accent/50'
+                          }`}
+                        >
+                          <span>{category.icon}</span>
+                          <span>{category.name}</span>
+                          {selected && <CheckIcon className="w-3.5 h-3.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              <input
-                type="text"
-                id="tags"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-                onBlur={addTag}
-                className="auth-input"
-                placeholder="Nhập tag và nhấn Enter (ví dụ: gaming, tutorial)"
-                disabled={uploading}
-              />
-              <p className="text-xs text-foreground opacity-50 mt-1">
-                Nhấn Enter hoặc dấu phẩy để thêm tag. Tối đa 10 tags.
-              </p>
-            </div>
 
-            {/* Giá video */}
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-foreground mb-2">
-                Giá video
-              </label>
-              <select
-                id="price"
-                value={priceOption}
-                onChange={(e) => setPriceOption(e.target.value)}
-                className="auth-input"
-                disabled={uploading}
-              >
-                <option value="free">Miễn phí</option>
-                <option value="5000">5.000 VNĐ</option>
-                <option value="10000">10.000 VNĐ</option>
-                <option value="15000">15.000 VNĐ</option>
-                <option value="20000">20.000 VNĐ</option>
-                <option value="25000">25.000 VNĐ</option>
-                <option value="30000">30.000 VNĐ</option>
-                <option value="custom">Tùy chọn</option>
-              </select>
-              {priceOption === 'custom' && (
+              {/* Tags */}
+              <div className="mt-5">
+                <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
+                  Tags <span className="text-foreground/40 font-normal">(tối đa 10)</span>
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formData.tags?.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm bg-accent/15 text-accent"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="hover:opacity-70 leading-none"
+                        disabled={uploading}
+                        aria-label={`Xóa tag ${tag}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
                 <input
-                  type="number"
-                  min={1000}
-                  step={1000}
-                  value={customPrice}
-                  onChange={(e) => setCustomPrice(e.target.value)}
-                  className="auth-input mt-2"
-                  placeholder="Nhập giá (VNĐ)"
+                  type="text"
+                  id="tags"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  onBlur={addTag}
+                  className="auth-input"
+                  placeholder="Nhập tag và nhấn Enter (ví dụ: gaming, tutorial)"
                   disabled={uploading}
                 />
-              )}
-              <p className="text-xs text-foreground opacity-50 mt-1">
-                Mặc định miễn phí. Video có giá sẽ bắt buộc công khai và người xem phải mua để xem.
-              </p>
-            </div>
+                <p className="text-xs text-foreground/50 mt-1">
+                  Nhấn Enter hoặc dấu phẩy để thêm tag.
+                </p>
+              </div>
+            </section>
 
-            {/* Public/Private */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isPublic"
-                checked={formData.isPublic}
-                onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
-                className="h-4 w-4 text-accent focus:ring-accent border-accent rounded"
-                disabled={uploading || price > 0}
+            {/* Section 4: Khả năng hiển thị & giá bán */}
+            <section className="bg-primary shadow-sm rounded-xl p-5 sm:p-6">
+              <SectionHeader
+                icon={<GlobeIcon />}
+                title="Khả năng hiển thị & giá bán"
+                desc="Quyết định ai có thể xem video và có mất phí hay không"
               />
-              <label
-                htmlFor="isPublic"
-                className={`ml-2 block text-sm ${price > 0 ? 'text-foreground opacity-60' : 'text-foreground'}`}
-              >
-                {price > 0
-                  ? 'Công khai video (bắt buộc với video có phí - mọi người xem được, phải mua để xem)'
-                  : 'Công khai video (mọi người có thể xem)'}
-              </label>
-            </div>
 
-            {/* Progress Bar */}
-            {uploading && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-foreground opacity-70">
-                  <span>Đang upload...</span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="w-full bg-primary rounded-full h-2.5">
-                  <div
-                    className="bg-accent h-2.5 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <VisibilityOption
+                  selected={formData.isPublic === true}
+                  disabled={uploading}
+                  onClick={() => setFormData({ ...formData, isPublic: true })}
+                  icon={<GlobeIcon className="w-5 h-5" />}
+                  title="Công khai"
+                  desc={price > 0 ? 'Mọi người xem được, phải mua để xem' : 'Mọi người đều có thể tìm và xem video'}
+                />
+                <VisibilityOption
+                  selected={formData.isPublic === false}
+                  disabled={uploading || price > 0}
+                  onClick={() => setFormData({ ...formData, isPublic: false })}
+                  icon={<LockIcon className="w-5 h-5" />}
+                  title="Riêng tư"
+                  desc={price > 0 ? 'Video có giá bắt buộc phải công khai' : 'Chỉ mình bạn có thể xem video'}
+                />
               </div>
-            )}
 
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="mt-5">
+                <label htmlFor="price" className="flex items-center gap-2 block text-sm font-medium text-foreground mb-2">
+                  <MoneyIcon className="w-4 h-4 text-accent" /> Giá video
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <select
+                    id="price"
+                    value={priceOption}
+                    onChange={(e) => setPriceOption(e.target.value)}
+                    className="auth-input"
+                    disabled={uploading}
+                  >
+                    <option value="free">Miễn phí</option>
+                    <option value="5000">5.000 VNĐ</option>
+                    <option value="10000">10.000 VNĐ</option>
+                    <option value="15000">15.000 VNĐ</option>
+                    <option value="20000">20.000 VNĐ</option>
+                    <option value="25000">25.000 VNĐ</option>
+                    <option value="30000">30.000 VNĐ</option>
+                    <option value="custom">Tùy chọn</option>
+                  </select>
+                  {priceOption === 'custom' && (
+                    <input
+                      type="number"
+                      min={1000}
+                      step={1000}
+                      value={customPrice}
+                      onChange={(e) => setCustomPrice(e.target.value)}
+                      className="auth-input"
+                      placeholder="Nhập giá (VNĐ)"
+                      disabled={uploading}
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-foreground/50 mt-2">
+                  Mặc định miễn phí. Video có giá sẽ bắt buộc công khai và người xem phải mua để xem.
+                </p>
               </div>
-            )}
+            </section>
 
-            {/* Buttons */}
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                disabled={uploading || !file || formData.categoryIds.length < 1 || formData.categoryIds.length > 10}
-                className="flex-1 btn-accent font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {uploading ? 'Đang upload...' : 'Upload Video'}
-              </button>
-              <button
-                type="button"
-                onClick={() => router.back()}
-                disabled={uploading}
-                className="px-6 py-3 border border-accent rounded-lg text-foreground hover:bg-accent hover:bg-opacity-20 transition-colors disabled:cursor-not-allowed"
-              >
-                Hủy
-              </button>
+            {/* Action */}
+            <div className="space-y-4">
+              {/* Progress Bar */}
+              {uploading && (
+                <div className="bg-primary shadow-sm rounded-xl p-5 sm:p-6 space-y-2">
+                  <div className="flex justify-between text-sm text-foreground/70">
+                    <span className="flex items-center gap-2">
+                      <CloudUploadIcon className="w-4 h-4 text-accent" /> Đang upload...
+                    </span>
+                    <span className="font-medium">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-accent/15 rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div role="alert" className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3">
+                  <p className="text-sm text-red-500">{error}</p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  disabled={uploading}
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium text-foreground/70 hover:bg-accent/10 transition-colors disabled:cursor-not-allowed"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading || !file || formData.categoryIds.length < 1 || formData.categoryIds.length > 10}
+                  className="btn-accent inline-flex items-center gap-2 font-medium py-2.5 px-6 rounded-lg transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-90"
+                >
+                  <CloudUploadIcon className="w-5 h-5" />
+                  {uploading ? 'Đang upload...' : 'Upload Video'}
+                </button>
+              </div>
             </div>
           </form>
-        </div>
 
-        {/* Tips */}
-        <div className="mt-6 bg-secondary border border-accent rounded-lg p-3 max-w-3xl mx-auto">
-          <h3 className="text-sm font-medium text-foreground mb-1 flex items-center gap-1.5">
-            <LightBulbIcon /> Lưu ý:
-          </h3>
-          <ul className="text-xs text-foreground opacity-70 space-y-0.5 list-disc list-inside">
-            <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
-            <li>Video sẽ được xử lý sau khi upload</li>
-            <li>Phải chọn từ 1 đến 10 thể loại cho video</li>
-            <li>Có thể thêm tối đa 10 tags để dễ tìm kiếm</li>
-          </ul>
+          {/* Tips */}
+          <div className="mt-5 rounded-xl bg-accent/10 border border-accent/20 p-4">
+            <h3 className="text-sm font-semibold text-foreground mb-1.5 flex items-center gap-2">
+              <LightBulbIcon /> Lưu ý khi tải video lên
+            </h3>
+            <ul className="text-xs text-foreground/70 space-y-1 list-disc list-inside">
+              <li>Tối đa 2GB, hỗ trợ MP4, AVI, MOV, WMV</li>
+              <li>Video sẽ được xử lý sau khi upload</li>
+              <li>Phải chọn từ 1 đến 10 thể loại cho video</li>
+              <li>Có thể thêm tối đa 10 tags để dễ tìm kiếm</li>
+            </ul>
+          </div>
         </div>
-      </div>
-      </div>
+      </main>
       <Footer />
     </>
   );
