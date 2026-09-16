@@ -113,7 +113,7 @@ export default function Home() {
   useEffect(() => {
     queryClient.prefetchQuery({
       queryKey: ['trendingVideos'],
-      queryFn: () => videoApi.getTrendingVideos(0, 8),
+      queryFn: () => videoApi.getTrendingVideos(0, 16),
     });
     queryClient.prefetchQuery({
       queryKey: ['latestVideos', 0, sortBy],
@@ -123,7 +123,7 @@ export default function Home() {
 
   const { data: trendingData, isLoading: loadingTrending } = useQuery({
     queryKey: ['trendingVideos'],
-    queryFn: () => videoApi.getTrendingVideos(0, 8),
+    queryFn: () => videoApi.getTrendingVideos(0, 16),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
