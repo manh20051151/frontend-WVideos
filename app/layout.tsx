@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
+import { Roboto } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+
+// Font chuẩn YouTube - Roboto, hỗ trợ tiếng Việt
+const roboto = Roboto({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['300', '400', '500', '700', '900'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'WVideos - Nền tảng chia sẻ video',
@@ -83,7 +91,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className='antialiased min-h-screen flex flex-col' suppressHydrationWarning>
+      <body className={`${roboto.className} antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
             {children}

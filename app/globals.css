@@ -39,7 +39,7 @@
   --color-white: var(--color-white);
   
   /* Fonts */
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-roboto), Roboto, Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -72,8 +72,9 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-roboto), Roboto, Arial, sans-serif;
 }
+/* Toàn dự án dùng font YouTube (Roboto) - chặn các phần tử override thừa */
 
 /* Utility classes cho custom colors */
 .bg-primary {
