@@ -76,6 +76,7 @@ export interface VideoResponse {
     tags?: string[];
     userId: string;
     userFullName: string;
+    userAvatar?: string;
     subscriberCount?: number;
     isSubscribed?: boolean;
     createdAt: string;

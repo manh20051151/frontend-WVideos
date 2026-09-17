@@ -603,9 +603,17 @@ export default function WatchVideoPage() {
               {/* Channel Bar */}
               <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
                 <Link href={`/channel/${video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
-                  <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
-                    {video.userFullName?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  {video.userAvatar ? (
+                    <img
+                      src={video.userAvatar}
+                      alt={video.userFullName || 'Kênh'}
+                      className='w-12 h-12 rounded-full object-cover'
+                    />
+                  ) : (
+                    <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
+                      {video.userFullName?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                  )}
                   <div>
                     <h3 className='font-semibold text-foreground'>{video.userFullName}</h3>
                     <p className='text-sm text-foreground opacity-60'>

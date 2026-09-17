@@ -149,9 +149,17 @@ const VideoCard = memo(function VideoCard({
 
         {showUserInfo && video.userFullName && (
           <div className='flex items-center gap-2 mb-2 p-2 bg-accent/10 rounded-lg'>
-            <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-white'>
-              {video.userFullName.charAt(0).toUpperCase()}
-            </div>
+            {video.userAvatar ? (
+              <img
+                src={video.userAvatar}
+                alt={video.userFullName}
+                className='w-6 h-6 rounded-full object-cover'
+              />
+            ) : (
+              <div className='w-6 h-6 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-white'>
+                {video.userFullName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <span className='text-sm text-foreground font-medium'>
               {video.userFullName}
             </span>
