@@ -215,7 +215,7 @@ export default function NotificationBell() {
                 Không có thông báo nào
               </div>
             ) : (
-              <ul className='max-h-[70vh] overflow-y-auto'>
+              <ul className='max-h-[70vh] overflow-y-auto scrollbar-thin pr-1'>
                 {visible.map((n) => (
                   <li
                     key={n.id}
