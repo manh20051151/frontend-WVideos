@@ -1,5 +1,7 @@
 import axiosClient from './axiosClient';
-import { CommentResponse, CommentRequest, CommentModerationRequest, Page } from '@/types/comment.types';
+import type { CommentResponse, CommentRequest, CommentModerationRequest, CommentReactionResponse, Page } from '@/types/comment.types';
+
+type CommentReactionType = 'LIKE' | 'DISLIKE';
 
 const commentApi = {
   // ==================== USER APIs ====================
@@ -17,15 +19,34 @@ const commentApi = {
   ): Promise<Page<CommentResponse>> => {
     return axiosClient.get(`/videos/${videoId}/comments?page=${page}&size=${size}`);
   },
+
+  /**
+   * Tổng số comments của video (bao gồm cả trả lời, loại comments đã xóa)
+   */
+  getVideoCommentsCount: async (videoId: string): Promise<number> => {
+    return axiosClient.get(`/videos/${videoId}/comments/count`);
+  },
   
   /**
-   * Tạo comment mới (status = PENDING)
+   * Tạo comment mới (status = APPROVED)
    */
   createComment: async (
     videoId: string, 
     content: string
   ): Promise<CommentResponse> => {
     const request: CommentRequest = { content };
+    return axiosClient.post(`/videos/${videoId}/comments`, request);
+  },
+  
+  /**
+   * Trả lời một bình luận
+   */
+  createReply: async (
+    videoId: string,
+    parentId: string,
+    content: string
+  ): Promise<CommentResponse> => {
+    const request: CommentRequest = { content, parentId };
     return axiosClient.post(`/videos/${videoId}/comments`, request);
   },
   
@@ -40,7 +61,7 @@ const commentApi = {
   },
   
   /**
-   * Sửa comment khi đang PENDING
+   * Sửa comment khi đang PENDING/APPROVED
    */
   editComment: async (
     videoId: string, 
@@ -48,6 +69,17 @@ const commentApi = {
     content: string
   ): Promise<CommentResponse> => {
     return axiosClient.put(`/videos/${videoId}/comments/${commentId}`, { content });
+  },
+
+  /**
+   * Like/dislike comment (gọi lại cùng loại sẽ bỏ phản ứng)
+   * Comment có điểm cao (like - dislike) sẽ xếp lên đầu
+   */
+  reactToComment: async (
+    commentId: string,
+    reactionType: CommentReactionType
+  ): Promise<CommentReactionResponse> => {
+    return axiosClient.post(`/comments/${commentId}/reactions`, { reactionType });
   },
   
   // ==================== ADMIN APIs ====================

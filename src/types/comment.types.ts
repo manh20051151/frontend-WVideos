@@ -17,7 +17,13 @@ export interface CommentResponse {
   replies: CommentResponse[];
   createdAt: string;
   isDeleted: boolean;
-  
+  isEdited?: boolean; // Bình luận đã được chỉnh sửa
+
+  // Reactions
+  likeCount?: number;
+  dislikeCount?: number;
+  userReaction?: 'LIKE' | 'DISLIKE' | null;
+
   // Moderation fields
   status: CommentStatus;
   moderatedById?: string;
@@ -27,8 +33,15 @@ export interface CommentResponse {
   canView: boolean;  // Frontend dùng để quyết định hiện/ẩn content
 }
 
+export interface CommentReactionResponse {
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: 'LIKE' | 'DISLIKE' | null;
+}
+
 export interface CommentRequest {
   content: string;
+  parentId?: string; // Id comment cha nếu là trả lời
 }
 
 export interface CommentModerationRequest {
