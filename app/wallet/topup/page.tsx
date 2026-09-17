@@ -246,8 +246,8 @@ export default function TopUpPage() {
       return false;
     }
     
-    if (numAmount < 2000) {
-      setError('Số tiền nạp tối thiểu là 10.000 VNĐ');
+    if (numAmount < 50000) {
+      setError('Số tiền nạp tối thiểu là 50.000 VNĐ');
       return false;
     }
     
@@ -452,7 +452,7 @@ export default function TopUpPage() {
                   </div>
                 </div>
 
-                {amount && parseInt(amount) >= 2000 && (
+                {amount && parseInt(amount) >= 50000 && (
                   <div className={`p-4 mb-6 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <h3 className='text-base font-semibold text-foreground mb-3'>Tóm tắt giao dịch</h3>
                     <div className='flex justify-between mb-2'>
@@ -472,7 +472,7 @@ export default function TopUpPage() {
 
                 <button
                   onClick={handleTopUp}
-                  disabled={!amount || parseInt(amount) < 2000 || loading}
+                  disabled={!amount || parseInt(amount) < 50000 || loading}
                   className='w-full py-3 px-6 bg-gradient-to-r from-teal-600 to-teal-500 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2'
                 >
                   <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
