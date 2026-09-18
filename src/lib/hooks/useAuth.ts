@@ -55,9 +55,16 @@ export const useAuth = () => {
       }
     } catch (error: unknown) {
       console.error('Failed to fetch profile:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
+      // Chỉ logout khi lỗi xác thực (401/403). Không xóa token khi gặp lỗi
+      // mạng/server tạm thời (timeout, 5xx, backend đang restart) để tránh
+      // mất trạng thái đăng nhập âm thầm khi reload -> mất highlight like/dislike.
+      // Lỗi 401 đã được axiosClient xử lý riêng (refresh token hoặc logout).
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 401 || status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CommentResponse, CommentStatus } from '@/types/comment.types';
 import Image from 'next/image';
 
@@ -105,6 +105,18 @@ export default function CommentItem({
   const [likeCount, setLikeCount] = useState(comment.likeCount ?? 0);
   const [dislikeCount, setDislikeCount] = useState(comment.dislikeCount ?? 0);
   const [reacting, setReacting] = useState(false);
+
+  // Đồng bộ số đếm với dữ liệu mới nhất từ server sau khi refetch
+  // (tránh số đếm optimistic bị lệch với server - đặc biệt khi toggle reply đã like).
+  // Highlight reaction giữ theo click của user; chỉ nhận lại từ server khi server có
+  // giá trị cụ thể (tránh việc userReaction null của reply làm mất highlight sau refetch).
+  useEffect(() => {
+    setLikeCount(comment.likeCount ?? 0);
+    setDislikeCount(comment.dislikeCount ?? 0);
+    if (comment.userReaction) {
+      setReaction(comment.userReaction);
+    }
+  }, [comment.id, comment.userReaction, comment.likeCount, comment.dislikeCount]);
 
   const avatarSize = compact ? 32 : 40;
   const isOwner = !!currentUserId && comment.userId === currentUserId;
