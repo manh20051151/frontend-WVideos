@@ -345,7 +345,7 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
               {data.topVideos.map((v, idx) => (
                 <li key={v.id}>
                   <Link
-                    href={`/watch/${v.id}`}
+                    href={`/watch/${v.slug || v.id}`}
                     className={`flex items-center gap-3 p-2 rounded-xl transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                   >
                     <span className={`w-6 text-center text-sm font-bold tabular-nums ${idx < 3 ? 'text-accent' : isDark ? 'text-gray-500' : 'text-gray-400'}`}>

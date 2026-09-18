@@ -9,6 +9,7 @@ export interface DailyPoint {
 export interface TopVideoStat {
   id: string;
   title: string;
+  slug?: string; // Slug URL-friendly cho link /watch/{slug}
   thumbnailUrl?: string;
   views: number;
   likes: number;

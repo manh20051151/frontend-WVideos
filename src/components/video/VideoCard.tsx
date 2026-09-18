@@ -86,6 +86,7 @@ const VideoCard = memo(function VideoCard({
   const handleEdit = () => onEdit(video);
   const handleDelete = () => onDelete(video.id);
   const handleRestore = () => onRestore?.(video.id);
+  const videoUrl = video.slug ? `/watch/${video.slug}` : `/watch/${video.id}`;
 
   return (
     <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 h-full flex flex-col ${
@@ -107,7 +108,7 @@ const VideoCard = memo(function VideoCard({
               </div>
             </div>
           ) : (
-            <Link href={`/watch/${video.id}`} className='block w-full h-full'>
+            <Link href={videoUrl} className='block w-full h-full'>
               <HoverThumbnail
                 thumbnailUrl={video.thumbnailUrl}
                 splashImageUrl={video.splashImageUrl}
@@ -141,7 +142,7 @@ const VideoCard = memo(function VideoCard({
       </div>
 
       <div className='p-4 flex flex-col flex-grow min-h-[120px]'>
-        <Link href={`/watch/${video.id}`} className='block group/link'>
+        <Link href={videoUrl} className='block group/link'>
           <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover/link:text-accent transition-colors' style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {video.title}
           </h3>

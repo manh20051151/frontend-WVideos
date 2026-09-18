@@ -31,9 +31,10 @@ const formatDate = (dateString?: string) => {
 
 export default function VideoCardLite({ video }: VideoCardLiteProps) {
   const { isDark } = useDarkMode();
+  const videoUrl = video.slug ? `/watch/${video.slug}` : `/watch/${video.id}`;
 
   return (
-    <Link href={`/watch/${video.id}`} className='group block'>
+    <Link href={videoUrl} className='group block'>
       <div className={`rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 h-full flex flex-col ${
         isDark ? 'bg-gray-800 shadow-black/50' : 'bg-white shadow-lg shadow-gray-200/50'
       }`}>

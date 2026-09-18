@@ -75,7 +75,7 @@ export default function RelatedVideosSection({ currentVideoId, size = 15 }: Rela
         relatedVideosData.content.map((relatedVideo) => (
           <Link
             key={relatedVideo.id}
-            href={`/watch/${relatedVideo.id}`}
+            href={relatedVideo.slug ? `/watch/${relatedVideo.slug}` : `/watch/${relatedVideo.id}`}
             className='block group'
           >
             <div className='bg-secondary rounded-lg p-4 hover:bg-accent/10 transition-colors'>

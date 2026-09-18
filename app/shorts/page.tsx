@@ -272,7 +272,7 @@ export default function ShortsPage() {
 
   // Chia sẻ video: dùng Web Share API nếu có, ngược lại copy link
   const handleShare = async (video: ShortsResponse) => {
-    const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/watch/${video.id}`;
+    const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/watch/${video.slug || video.id}`;
     const shareData = {
       title: video.title || 'Xem video trên WVideos',
       text: video.title || '',

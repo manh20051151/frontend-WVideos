@@ -704,7 +704,7 @@ export default function WatchVideoPage() {
 
               {/* Comments Section */}
               <div className='bg-secondary rounded-xl p-6'>
-                <CommentSection videoId={videoId} />
+                <CommentSection videoId={video?.id || videoId} />
               </div>
             </div>
 
@@ -713,7 +713,7 @@ export default function WatchVideoPage() {
               <h3 className='font-bold text-lg text-foreground'>Video liên quan</h3>
 
               {video && (
-                <RelatedVideosSection currentVideoId={videoId} />
+                <RelatedVideosSection currentVideoId={video.id || videoId} />
               )}
             </div>
           </div>

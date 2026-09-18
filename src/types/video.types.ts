@@ -20,6 +20,7 @@ export interface VideoUploadData {
 export interface ShortsResponse {
     id: string;
     title: string;
+    slug?: string; // Slug URL-friendly cho link /watch/{slug}
     streamUrl: string | null; // direct mp4 URL đã resolve
     thumbnailUrl: string;
     splashImageUrl: string;
@@ -53,6 +54,7 @@ export type VideoReactionType = 'LIKE' | 'DISLIKE' | null;
 export interface VideoResponse {
     id: string;
     title: string;
+    slug?: string; // Slug URL-friendly cho link /watch/{slug}
     description?: string;
     fileCode: string;
     downloadUrl: string;
