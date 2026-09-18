@@ -291,6 +291,14 @@ export default function AdminDashboardPage() {
                 <span className='text-xl'>🧭</span>
                 <span className='font-medium text-foreground'>Menu điều hướng</span>
               </button>
+
+              <button
+                onClick={() => router.push('/admin/footer')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
+              >
+                <span className='text-xl'>🦶</span>
+                <span className='font-medium text-foreground'>Quản lý Footer</span>
+              </button>
             </div>
           </div>
         </div>
