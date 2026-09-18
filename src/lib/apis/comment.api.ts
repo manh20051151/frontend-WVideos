@@ -1,5 +1,5 @@
 import axiosClient from './axiosClient';
-import type { CommentResponse, CommentRequest, CommentModerationRequest, CommentReactionResponse, Page } from '@/types/comment.types';
+import type { CommentResponse, CommentRequest, CommentModerationRequest, CommentReactionResponse, CommentStatus, Page } from '@/types/comment.types';
 
 type CommentReactionType = 'LIKE' | 'DISLIKE';
 
@@ -105,13 +105,27 @@ const commentApi = {
   },
   
   /**
-   * Admin: Lấy tất cả comments
+   * Admin: Lấy tất cả comments (tìm kiếm + lọc theo trạng thái)
    */
   getAllComments: async (
-    page: number = 0, 
-    size: number = 20
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+    status?: CommentStatus
   ): Promise<Page<CommentResponse>> => {
-    return axiosClient.get(`/admin/comments?page=${page}&size=${size}`);
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    if (search) params.append('search', search);
+    if (status) params.append('status', status);
+    return axiosClient.get(`/admin/comments?${params.toString()}`);
+  },
+
+  /**
+   * Admin: Xóa comment (kèm toàn bộ reply và reaction)
+   */
+  adminDeleteComment: async (commentId: string): Promise<void> => {
+    return axiosClient.delete(`/admin/comments/${commentId}`);
   },
   
   /**

@@ -414,7 +414,7 @@ export default function FinanceTab({ isDark }: { isDark?: boolean }) {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">
                       {e.videoId ? (
-                        <Link href={`/watch/${e.videoId}`} className="hover:text-accent transition-colors">
+                        <Link href={`/watch/${e.videoSlug || e.videoId}`} className="hover:text-accent transition-colors">
                           {e.description || meta.label}
                         </Link>
                       ) : (

@@ -1,8 +1,9 @@
-import axiosClient from './axiosClient';
+﻿import axiosClient from './axiosClient';
 import type { VideoResponse } from '@/types';
 
 export interface UserProfileResponse {
   id: string;
+  slug?: string; // Slug kênh cho link /channel/{slug}
   email: string;
   fullName: string;
   avatar: string;

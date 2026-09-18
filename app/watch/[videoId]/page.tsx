@@ -602,7 +602,7 @@ export default function WatchVideoPage() {
 
               {/* Channel Bar */}
               <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
-                <Link href={`/channel/${video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
+                <Link href={`/channel/${video.userSlug || video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
                   {video.userAvatar ? (
                     <img
                       src={video.userAvatar}

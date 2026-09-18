@@ -13,6 +13,8 @@ export interface CommentResponse {
   userFullName: string;
   userAvatar?: string;
   videoId: string;
+  videoTitle?: string; // Tiêu đề video (cho trang admin)
+  videoSlug?: string;  // Slug video cho link /watch/{slug}
   parentId?: string;
   replies: CommentResponse[];
   createdAt: string;

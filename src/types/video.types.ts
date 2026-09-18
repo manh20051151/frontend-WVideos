@@ -79,6 +79,7 @@ export interface VideoResponse {
     userId: string;
     userFullName: string;
     userAvatar?: string;
+    userSlug?: string; // Slug kênh cho link /channel/{slug}
     subscriberCount?: number;
     isSubscribed?: boolean;
     createdAt: string;

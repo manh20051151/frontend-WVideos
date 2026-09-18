@@ -29,6 +29,7 @@ export interface AuthResponse {
  */
 export interface UserResponse {
     id: string;
+    slug?: string; // Slug kênh cho link /channel/{slug}
     email: string;
     fullName: string;
     numberPhone: string;

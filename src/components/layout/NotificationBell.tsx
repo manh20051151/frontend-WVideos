@@ -127,7 +127,7 @@ export default function NotificationBell() {
 
   const handleClick = (n: AppNotification) => {
     if (!n.read) markAsRead(n.id);
-    if (isVideoType(n.type) && n.relatedId) router.push(`/watch/${n.relatedId}`);
+    if (isVideoType(n.type) && n.relatedId) router.push(`/watch/${n.videoSlug || n.relatedId}`);
     closePopup();
   };
 

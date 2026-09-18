@@ -7,6 +7,7 @@ export interface AppNotification {
   content: string;
   read: boolean;
   relatedId?: string;
+  videoSlug?: string; // Slug video cho link /watch/{slug}
   actorId?: string;
   actorName?: string;
   avatarUrl?: string;

@@ -234,7 +234,7 @@ function ProfileContent() {
     }
     const isVideoType = n.type === 'NEW_VIDEO' || n.type === 'COMMENT' || n.type === 'PURCHASE' || n.type === 'LIKE';
     if (isVideoType && n.relatedId) {
-      router.push(`/watch/${n.relatedId}`);
+      router.push(`/watch/${n.videoSlug || n.relatedId}`);
     }
   }, [router]);
 
@@ -1003,7 +1003,7 @@ function ProfileContent() {
                           {channelsData.map((channel) => (
                             <Link
                               key={channel.id}
-                              href={`/channel/${channel.id}`}
+                              href={`/channel/${channel.slug || channel.id}`}
                               className={`flex items-center gap-3 p-4 rounded-xl transition-all hover:-translate-y-0.5 ${
                                 isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white shadow-lg shadow-gray-200/50 hover:shadow-xl'
                               }`}

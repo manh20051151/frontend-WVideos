@@ -37,6 +37,7 @@ export interface FinancialEvent {
   direction: 'IN' | 'OUT';
   occurredAt?: string; // ISO datetime
   videoId?: string;
+  videoSlug?: string; // Slug video cho link /watch/{slug}
 }
 
 export interface MonthlyStat {
