@@ -31,6 +31,9 @@ export default function CommentModeration() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<CommentStatus | ''>('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [banningUser, setBanningUser] = useState<CommentResponse | null>(null);
+  const [banHours, setBanHours] = useState(24);
+  const [banReason, setBanReason] = useState('');
   const queryClient = useQueryClient();
 
   // Lấy danh sách pending comments
@@ -82,6 +85,27 @@ export default function CommentModeration() {
     },
   });
 
+  // Mutation khóa bình luận user
+  const banMutation = useMutation({
+    mutationFn: ({ userId, hours, reason }: { userId: string; hours: number; reason: string }) =>
+      commentApi.banUserCommenting(userId, hours, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingComments'] });
+      queryClient.invalidateQueries({ queryKey: ['allComments'] });
+      setBanningUser(null);
+      setBanReason('');
+    },
+  });
+
+  // Mutation mở khóa bình luận user
+  const unbanMutation = useMutation({
+    mutationFn: (userId: string) => commentApi.removeCommentBan(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingComments'] });
+      queryClient.invalidateQueries({ queryKey: ['allComments'] });
+    },
+  });
+
   // Reset về trang đầu khi đổi tab/search/filter
   const switchTab = (tab: AdminTab) => {
     setActiveTab(tab);
@@ -118,6 +142,33 @@ export default function CommentModeration() {
     if (!confirm(`Xóa bình luận của "${comment.userFullName}"? Toàn bộ reply và reaction cũng sẽ bị xóa.`)) return;
     setDeletingId(comment.id);
     deleteMutation.mutate(comment.id);
+  };
+
+  // Mở khóa bình luận
+  const handleUnban = (comment: CommentResponse) => {
+    if (!confirm(`Mở khóa bình luận cho "${comment.userFullName}"?`)) return;
+    unbanMutation.mutate(comment.userId);
+  };
+
+  // Xác nhận khóa bình luận
+  const handleConfirmBan = () => {
+    if (!banningUser || !banReason.trim()) return;
+    banMutation.mutate({ userId: banningUser.userId, hours: banHours, reason: banReason.trim() });
+  };
+
+  // Kiểm tra user còn bị khóa hay không
+  const isCommentBanned = (comment: CommentResponse) =>
+    !!comment.commentBannedUntil && new Date(comment.commentBannedUntil).getTime() > new Date().getTime();
+
+  const formatBannedUntil = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   // Bắt đầu edit
@@ -279,9 +330,19 @@ export default function CommentModeration() {
                   <p className="font-semibold text-foreground">{comment.userFullName}</p>
                   <p className="text-sm text-foreground opacity-60">{formatTimeAgo(comment.createdAt)}</p>
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_STYLES[comment.status]}`}>
-                  {STATUS_LABELS[comment.status]}
-                </span>
+                <div className="flex items-center gap-2">
+                  {isCommentBanned(comment) && (
+                    <span
+                      title={comment.commentBanReason ? `Lý do: ${comment.commentBanReason}` : undefined}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
+                    >
+                      🔒 Khóa BL đến {formatBannedUntil(comment.commentBannedUntil!)}
+                    </span>
+                  )}
+                  <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-full ${STATUS_STYLES[comment.status]}`}>
+                    {STATUS_LABELS[comment.status]}
+                  </span>
+                </div>
               </div>
 
               {/* Video info */}
@@ -406,6 +467,25 @@ export default function CommentModeration() {
                       Lưu nội dung
                     </button>
                   )}
+                  {isCommentBanned(comment) ? (
+                    <button
+                      onClick={() => handleUnban(comment)}
+                      disabled={unbanMutation.isPending}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-all"
+                    >
+                      🔓 Mở khóa bình luận
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setBanningUser(comment); setBanHours(24); setBanReason(''); }}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-all"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Khóa bình luận
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(comment)}
                     disabled={deleteMutation.isPending || deletingId === comment.id}
@@ -443,6 +523,113 @@ export default function CommentModeration() {
           >
             Sau →
           </button>
+        </div>
+      )}
+
+      {/* Modal khóa bình luận */}
+      {banningUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-primary rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-accent">
+              <h3 className="text-lg font-semibold text-foreground">
+                🔒 Khóa bình luận
+              </h3>
+              <button
+                onClick={() => setBanningUser(null)}
+                className="text-foreground opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-foreground opacity-70">
+                Khóa quyền bình luận của <span className="font-semibold text-foreground">{banningUser.userFullName}</span> (mọi video, bao gồm trả lời).
+              </p>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Thời gian khóa
+                </label>
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                  {[1, 6, 24, 72].map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => setBanHours(h)}
+                      className={`px-2 py-2 text-sm rounded-lg border transition-all ${
+                        banHours === h
+                          ? 'bg-accent text-white border-accent font-semibold'
+                          : 'bg-secondary text-foreground border-accent hover:bg-primary'
+                      }`}
+                    >
+                      {h} giờ
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[168, 720, 2160, 8760].map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => setBanHours(h)}
+                      className={`px-2 py-2 text-sm rounded-lg border transition-all ${
+                        banHours === h
+                          ? 'bg-accent text-white border-accent font-semibold'
+                          : 'bg-secondary text-foreground border-accent hover:bg-primary'
+                      }`}
+                    >
+                      {h === 720 ? '30 ngày' : h === 2160 ? '90 ngày' : h === 8760 ? '1 năm' : '7 ngày'}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-foreground opacity-50">
+                  Hoặc nhập số giờ tùy chỉnh
+                </p>
+                <input
+                  type="number"
+                  min={1}
+                  max={8760}
+                  value={banHours}
+                  onChange={(e) => setBanHours(Math.max(1, Math.min(8760, parseInt(e.target.value) || 1)))}
+                  className="mt-1 w-full px-4 py-3 bg-secondary border border-accent rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Lý do khóa *
+                </label>
+                <textarea
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  placeholder="VD: Spam bình luận, nội dung không phù hợp..."
+                  rows={3}
+                  maxLength={255}
+                  className="w-full px-4 py-3 bg-secondary border border-accent rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                />
+                <p className="mt-1 text-xs text-foreground opacity-50">{banReason.length}/255</p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setBanningUser(null)}
+                  className="flex-1 px-4 py-2 border border-accent text-foreground rounded-lg hover:bg-secondary transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleConfirmBan}
+                  disabled={!banReason.trim() || banMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg disabled:opacity-50 transition-all"
+                >
+                  {banMutation.isPending ? 'Đang khóa...' : 'Xác nhận khóa'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -119,6 +119,28 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
   const commentCount = totalCount ?? commentsData?.totalElements ?? 0;
   const nearLimit = content.length > MAX_CHARS * 0.9;
 
+  // Kiểm tra user có bị khóa bình luận không (dữ liệu từ /users/my-info - luôn mới khi load trang)
+  const bannedUntil = user?.commentBannedUntil;
+  const isCommentBanned = !!bannedUntil && new Date(bannedUntil).getTime() > new Date().getTime();
+  const banReason = user?.commentBanReason;
+
+  const formatBannedUntil = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  // Trích xuất message lỗi từ server
+  const getErrorMessage = (error: unknown) => {
+    const err = error as { response?: { data?: { message?: string } }; message?: string };
+    return err?.response?.data?.message || err?.message || 'Lỗi khi gửi bình luận. Vui lòng thử lại.';
+  };
+
   return (
     <section className="mt-10">
       {/* Header */}
@@ -139,8 +161,28 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
         </span>
       </h3>
 
+      {/* Thông báo khóa bình luận */}
+      {isCommentBanned && (
+        <div className="mb-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-3">
+          <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <div>
+            <p className="font-semibold text-red-700 dark:text-red-300">
+              Bạn đã bị khóa quyền bình luận
+            </p>
+            <p className="text-sm text-red-600 dark:text-red-400 mt-0.5">
+              Khóa đến: <span className="font-medium">{bannedUntil ? formatBannedUntil(bannedUntil) : ''}</span>
+              {banReason && (
+                <> · Lý do: <span className="font-medium">{banReason}</span></>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Form thêm comment */}
-      {isAuthenticated ? (
+      {isAuthenticated && !isCommentBanned ? (
         <form onSubmit={handleSubmit} className="mb-2">
           <div className="flex gap-3">
             <div className="flex-shrink-0 pt-0.5">
@@ -215,8 +257,8 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
               </div>
 
               {createMutation.isError && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -224,7 +266,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
                       d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                     />
                   </svg>
-                  Lỗi khi gửi bình luận. Vui lòng thử lại.
+                  {getErrorMessage(createMutation.error)}
                 </p>
               )}
             </div>
@@ -244,7 +286,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
             </p>
           )}
         </form>
-      ) : (
+      ) : isCommentBanned ? null : (
         <div className="mb-6 flex items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-5 text-sm text-foreground/70">
           <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

@@ -127,6 +127,24 @@ const commentApi = {
   adminDeleteComment: async (commentId: string): Promise<void> => {
     return axiosClient.delete(`/admin/comments/${commentId}`);
   },
+
+  /**
+   * Admin: Khóa bình luận của user trong X giờ
+   */
+  banUserCommenting: async (
+    userId: string,
+    hours: number,
+    reason: string
+  ): Promise<import('@/types/auth.types').UserResponse> => {
+    return axiosClient.post(`/users/${userId}/comment-ban`, { hours, reason });
+  },
+
+  /**
+   * Admin: Mở khóa bình luận cho user
+   */
+  removeCommentBan: async (userId: string): Promise<import('@/types/auth.types').UserResponse> => {
+    return axiosClient.delete(`/users/${userId}/comment-ban`);
+  },
   
   /**
    * Admin: Đếm số pending comments

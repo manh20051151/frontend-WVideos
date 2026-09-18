@@ -46,4 +46,8 @@ export interface UserResponse {
     subscriberCount?: number;
     balance?: number;
     revenue?: number;
+
+    // Khóa bình luận (admin)
+    commentBannedUntil?: string;
+    commentBanReason?: string;
 }

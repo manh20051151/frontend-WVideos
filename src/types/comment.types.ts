@@ -12,6 +12,8 @@ export interface CommentResponse {
   userId: string;
   userFullName: string;
   userAvatar?: string;
+  commentBannedUntil?: string; // Khóa bình luận của tác giả (admin xem)
+  commentBanReason?: string;   // Lý do khóa bình luận
   videoId: string;
   videoTitle?: string; // Tiêu đề video (cho trang admin)
   videoSlug?: string;  // Slug video cho link /watch/{slug}

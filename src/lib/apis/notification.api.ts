@@ -2,7 +2,7 @@ import axiosClient from './axiosClient';
 
 export interface AppNotification {
   id: string;
-  type: 'COMMENT' | 'SUBSCRIBE' | 'PURCHASE' | 'LIKE' | 'NEW_VIDEO' | 'ANNOUNCEMENT';
+  type: 'COMMENT' | 'SUBSCRIBE' | 'PURCHASE' | 'LIKE' | 'NEW_VIDEO' | 'ANNOUNCEMENT' | 'COMMENT_BANNED';
   title: string;
   content: string;
   read: boolean;

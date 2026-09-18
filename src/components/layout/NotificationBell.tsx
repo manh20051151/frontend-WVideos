@@ -49,6 +49,11 @@ const TYPE_ICON: Record<AppNotification['type'], ReactNode> = {
       <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
     </svg>
   ),
+  COMMENT_BANNED: (
+    <svg {...svgProps}>
+      <path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z" />
+    </svg>
+  ),
 };
 
 const formatRelativeTime = (iso?: string): string => {
