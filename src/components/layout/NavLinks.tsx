@@ -62,12 +62,22 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
     }, []);
 
     const renderLink = (item: LocalNavItem, className: string) => {
+        const isShorts = item.href === '/shorts';
         const content = (
             <>
                 {item.icon && <span className='mr-1'>{item.icon}</span>}
                 {item.label}
+                {isShorts && (
+                    <span className='ml-1.5 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-white text-accent rounded-full'>
+                        Mới
+                    </span>
+                )}
             </>
         );
+
+        const linkClassName = isShorts
+            ? 'relative inline-flex items-center gap-1.5 bg-accent text-white px-4 py-1.5 rounded-full font-semibold shadow-lg shadow-accent/30 transition-all duration-300 hover:scale-105 animate-shorts-glow animate-shorts-bg shorts-shine'
+            : className;
 
         if (item.openNewTab) {
             return (
@@ -75,7 +85,7 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
                     href={item.href}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className={className}
+                    className={linkClassName}
                     onClick={onLinkClick}
                 >
                     {content}
@@ -84,7 +94,7 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
         }
 
         return (
-            <Link href={item.href} className={className} onClick={onLinkClick}>
+            <Link href={item.href} className={linkClassName} onClick={onLinkClick}>
                 {content}
             </Link>
         );

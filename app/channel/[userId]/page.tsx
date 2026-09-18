@@ -175,8 +175,6 @@ export default function ChannelPage() {
                   <span>{formatViews(profile.totalViews)} lượt xem</span>
                 </div>
                 
-                <p className="text-sm text-foreground/60 mb-4">{profile.email}</p>
-                
                 {/* Subscribe Button */}
                 <div className="flex items-center justify-center md:justify-start gap-2">
                   <ChannelNotificationBell
@@ -234,6 +232,7 @@ export default function ChannelPage() {
                     onEdit={() => {}}
                     onDelete={() => {}}
                     showActions={false}
+                    showStatus={false}
                   />
                 ))}
               </div>

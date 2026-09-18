@@ -377,3 +377,52 @@ iframe .own-file {
 }
 .article-content pre code { background: none; padding: 0; }
 .article-content hr { border: none; border-top: 1px solid rgba(128, 128, 128, 0.25); margin: 2rem 0; }
+
+/* Animation phát sáng cho link nổi bật (VD: Shorts trên menu) */
+@keyframes shorts-glow {
+  0%, 100% {
+    box-shadow: 0 0 6px 0 rgba(0, 150, 136, 0.45);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(0, 150, 136, 0.75);
+    transform: scale(1.04);
+  }
+}
+
+.animate-shorts-glow {
+  animation: shorts-glow 1.6s ease-in-out infinite;
+}
+
+/* Chuyển màu nền nhẹ nhàng (accent -> highlight -> accent) */
+@keyframes shorts-bg {
+  0%, 100% { background-color: var(--color-accent); }
+  50% { background-color: var(--color-highlight); }
+}
+
+.animate-shorts-bg {
+  animation: shorts-bg 2.4s ease-in-out infinite;
+}
+
+/* Vệt sáng quét ngang qua link */
+.shorts-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.shorts-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  animation: shorts-shine-sweep 2.6s ease-in-out infinite;
+}
+
+@keyframes shorts-shine-sweep {
+  0% { left: -60%; }
+  55%, 100% { left: 130%; }
+}
