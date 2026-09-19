@@ -351,22 +351,12 @@ export default function TopUpPage() {
       <Header />
       <div className='min-h-screen bg-primary py-12 px-4 sm:px-6 lg:px-8'>
         <div className='max-w-5xl mx-auto'>
-          <button
-            onClick={() => router.back()}
-            className='mb-4 flex items-center gap-2 text-foreground opacity-70 hover:opacity-100 transition-opacity'
-          >
-            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
-            </svg>
-            Quay lại
-          </button>
-
           <div className='flex items-center gap-3 mb-8'>
             <svg className='w-10 h-10 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' />
             </svg>
             <div>
-              <h1 className='text-3xl font-bold text-foreground'>Nạp tiền vào ví</h1>
+              <h1 className='text-2xl sm:text-3xl font-bold text-foreground'>Nạp tiền vào ví</h1>
               <p className='text-foreground opacity-70'>Nạp tiền nhanh chóng và an toàn bằng QR Code</p>
             </div>
           </div>
@@ -379,7 +369,7 @@ export default function TopUpPage() {
                   {balanceLoading ? (
                     <div className='animate-pulse h-10 bg-white/20 rounded w-48 mx-auto'></div>
                   ) : (
-                    <p className='text-3xl font-bold'>{formatCurrency(balance)}</p>
+                    <p className='text-2xl sm:text-3xl font-bold'>{formatCurrency(balance)}</p>
                   )}
                   {balanceError && (
                     <div className='mt-2'>

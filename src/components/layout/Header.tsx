@@ -113,11 +113,11 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Dark mode toggle */}
+            {/* Dark mode toggle - ẩn trên màn hình < 400px (đã có trong drawer menu) */}
             {darkModeReady && (
               <button
                 onClick={toggleDarkMode}
-                className='p-2 rounded-full text-foreground hover:bg-secondary transition-colors'
+                className='p-2 rounded-full text-foreground hover:bg-secondary transition-colors max-[400px]:hidden'
                 aria-label='Toggle dark mode'
               >
                 {isDark ? (

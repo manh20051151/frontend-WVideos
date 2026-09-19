@@ -229,7 +229,7 @@ export default function UploadVideoPage() {
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-accent/15 flex items-center justify-center">
               <LockIcon className="w-8 h-8 text-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
               Yêu cầu đăng nhập
             </h2>
             <p className="text-foreground/60 mb-6">
@@ -386,7 +386,7 @@ export default function UploadVideoPage() {
               <VideoCameraIcon className="w-6 h-6 text-[var(--btn-accent-text)]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Upload Video</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Upload Video</h1>
               <p className="text-sm text-foreground/60">Chia sẻ video của bạn với cộng đồng</p>
             </div>
           </div>
@@ -448,7 +448,7 @@ export default function UploadVideoPage() {
                         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
                           <CloudUploadIcon className="w-10 h-10 text-accent" />
                         </div>
-                        <p className="text-lg font-medium text-foreground mb-1">
+                        <p className="text-base sm:text-lg font-medium text-foreground mb-1">
                           Click hoặc kéo thả video vào đây
                         </p>
                         <p className="text-sm text-foreground/60 mb-4">

@@ -426,3 +426,13 @@ iframe .own-file {
   0% { left: -60%; }
   55%, 100% { left: 130%; }
 }
+
+/* Điều chỉnh cỡ chữ heading trên mobile (< 640px) cho cân đối với màn hình nhỏ.
+   Áp dụng toàn cục cho mọi trang; desktop giữ nguyên kích thước mặc định. */
+@media (max-width: 639px) {
+  .text-5xl { font-size: 1.75rem; }  /* 48px  -> 28px */
+  .text-4xl { font-size: 1.5rem; }   /* 36px  -> 24px */
+  .text-3xl { font-size: 1.375rem; } /* 30px  -> 22px */
+  .text-2xl { font-size: 1.25rem; }  /* 24px  -> 20px */
+  .text-xl  { font-size: 1.125rem; } /* 20px  -> 18px */
+}
