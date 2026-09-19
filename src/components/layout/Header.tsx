@@ -8,13 +8,13 @@ import AuthModal from '@/components/auth/AuthModal';
 import UserDropdown from './UserDropdown';
 import NavLinks from './NavLinks';
 import NotificationBell from './NotificationBell';
+import HeaderSearch from './HeaderSearch';
 
 type AuthTab = 'login' | 'register';
 
 export default function Header() {
   const { user, logout, mounted, refreshProfile } = useAuth();
   const { isDark, toggleDarkMode, mounted: darkModeReady } = useDarkMode();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -24,12 +24,6 @@ export default function Header() {
   const openAuthModal = (tab: AuthTab) => {
     setAuthModalTab(tab);
     setIsAuthModalOpen(true);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    console.log('Search:', searchQuery);
   };
 
   const closeDrawer = () => setIsMobileMenuOpen(false);
@@ -80,25 +74,9 @@ export default function Header() {
           </div>
 
           {/* Search bar - desktop */}
-          <form onSubmit={handleSearch} className='hidden lg:flex flex-1 max-w-2xl mx-8'>
-            <div className='relative flex-1'>
-              <input
-                type='text'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Tìm kiếm...'
-                className='w-full px-4 py-2 bg-secondary text-foreground placeholder-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-accent'
-              />
-              <button
-                type='submit'
-                className='absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1 rounded hover:bg-opacity-90'
-              >
-                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-                </svg>
-              </button>
-            </div>
-          </form>
+          <div className='hidden lg:flex flex-1 max-w-2xl mx-8'>
+            <HeaderSearch />
+          </div>
 
           {/* Actions */}
           <div className='flex items-center gap-0.5 sm:gap-1.5'>
@@ -197,10 +175,10 @@ export default function Header() {
         {/* Mobile search bar - mở rộng khi bấm icon search */}
         {isSearchOpen && (
           <div className='lg:hidden pb-3'>
-            <form onSubmit={handleSearch} className='flex items-center gap-2'>
+            <div className='flex items-center gap-2'>
               <button
                 type='button'
-                onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                onClick={() => setIsSearchOpen(false)}
                 className='p-2 rounded-full text-foreground hover:bg-secondary transition-colors'
                 aria-label='Đóng tìm kiếm'
               >
@@ -208,25 +186,8 @@ export default function Header() {
                   <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
                 </svg>
               </button>
-              <div className='relative flex-1'>
-                <input
-                  type='text'
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder='Tìm kiếm video, kênh...'
-                  autoFocus
-                  className='w-full px-4 py-2.5 bg-secondary text-foreground placeholder-gray-400 rounded-full focus:outline-none focus:ring-2 focus:ring-accent'
-                />
-                <button
-                  type='submit'
-                  className='absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-opacity-90'
-                >
-                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-                  </svg>
-                </button>
-              </div>
-            </form>
+              <HeaderSearch autoFocus rounded />
+            </div>
           </div>
         )}
 

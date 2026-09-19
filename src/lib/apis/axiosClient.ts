@@ -21,6 +21,7 @@ const PUBLIC_GET_PATHS = [
   '/videos/shorts',
   '/news',
   '/news-categories',
+  '/search',
 ];
 
 // Kiểm tra path có thuộc danh sách public không (so khớp tiền tố)
