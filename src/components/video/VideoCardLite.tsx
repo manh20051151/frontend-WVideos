@@ -29,6 +29,21 @@ const formatDate = (dateString?: string) => {
   return date.toLocaleDateString('vi-VN');
 };
 
+// Định dạng lượt xem gọn: 24 lượt xem, 12 N lượt xem, 1,5 triệu lượt xem
+const formatViews = (views?: number) => {
+  const v = views || 0;
+  if (v >= 1000000000) {
+    return `${(v / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} tỷ lượt xem`;
+  }
+  if (v >= 1000000) {
+    return `${(v / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu lượt xem`;
+  }
+  if (v >= 1000) {
+    return `${(v / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} N lượt xem`;
+  }
+  return `${v} lượt xem`;
+};
+
 export default function VideoCardLite({ video }: VideoCardLiteProps) {
   const { isDark } = useDarkMode();
   const videoUrl = video.slug ? `/watch/${video.slug}` : `/watch/${video.id}`;
@@ -70,9 +85,9 @@ export default function VideoCardLite({ video }: VideoCardLiteProps) {
           <h3 className='font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-accent transition-colors' style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {video.title}
           </h3>
-          <div className='mt-auto flex items-center justify-between text-sm text-foreground/60'>
-            <span>{video.views?.toLocaleString() || 0} lượt xem</span>
-            <span>{video.createdAt && formatDate(video.createdAt)}</span>
+          <div className='mt-auto flex items-center justify-between gap-1.5 text-xs sm:text-sm text-foreground/60 max-[418px]:flex-col max-[418px]:items-start max-[418px]:gap-1'>
+            <span className='whitespace-nowrap'>{formatViews(video.views)}</span>
+            <span className='whitespace-nowrap'>{video.createdAt && formatDate(video.createdAt)}</span>
           </div>
         </div>
       </div>
