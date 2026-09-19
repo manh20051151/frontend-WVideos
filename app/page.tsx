@@ -222,7 +222,7 @@ export default function Home() {
             </div>
 
             {loadingLatest ? (
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
                 {[...Array(32)].map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
@@ -245,7 +245,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 h-full'>
+<div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-full'>
                   {latestVideos.map((video: any) => (
                   <VideoCardLite key={video.id} video={video} />
                   ))}
