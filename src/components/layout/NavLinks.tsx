@@ -97,13 +97,6 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
     if (vertical) {
         return (
             <div className='flex flex-col gap-3'>
-                <Link
-                    href='/'
-                    className='text-foreground hover:text-accent transition-colors py-2'
-                    onClick={onLinkClick}
-                >
-                    Trang chủ
-                </Link>
                 {navItems.map((item) => (
                     <span key={item.href}>
                         {renderLink(
@@ -112,13 +105,6 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
                         )}
                     </span>
                 ))}
-                <Link
-                    href='/dang-clip'
-                    className='text-foreground hover:text-accent transition-colors py-2'
-                    onClick={onLinkClick}
-                >
-                    Đăng Clip / Hình Ảnh 📤
-                </Link>
             </div>
         );
     }
