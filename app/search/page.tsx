@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import searchApi, { ChannelSearchResult } from '@/lib/apis/search.api';
+import { useAuth } from '@/lib/hooks/useAuth';
 import type { VideoResponse } from '@/types';
 import type { NewsResponse } from '@/lib/apis/news.api';
 
@@ -34,6 +35,7 @@ function formatDuration(seconds?: number): string {
 
 function SearchPageContent() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const q = (searchParams.get('q') || '').trim();
   const tabParam = searchParams.get('tab') as Tab | null;
@@ -100,6 +102,26 @@ function SearchPageContent() {
   useEffect(() => {
     setPage(0);
   }, [q, tab]);
+
+  // Lưu từ khóa vào lịch sử tìm kiếm khi đến trang kết quả
+  // (user đăng nhập: server; khách: localStorage - cùng logic với HeaderSearch)
+  useEffect(() => {
+    if (!q) return;
+    if (isAuthenticated) {
+      searchApi.saveHistory(q).catch(() => {});
+    } else if (typeof window !== 'undefined') {
+      try {
+        const key = 'searchHistory';
+        const arr = JSON.parse(localStorage.getItem(key) || '[]');
+        const rest = (Array.isArray(arr) ? arr : []).filter(
+          (x: unknown) => typeof x === 'string' && x.toLowerCase() !== q.toLowerCase()
+        );
+        localStorage.setItem(key, JSON.stringify([q, ...rest].slice(0, 10)));
+      } catch {
+        // bỏ qua lỗi parse localStorage
+      }
+    }
+  }, [q, isAuthenticated]);
 
   const switchTab = (next: Tab) => {
     router.push(`/search?q=${encodeURIComponent(q)}${next !== 'video' ? `&tab=${next}` : ''}`);
