@@ -181,38 +181,43 @@ export default function Home() {
 
           {/* Section: Video mới nhất */}
           <div ref={latestSectionRef} className='scroll-mt-20'>
-            <div className='flex items-center justify-between mb-6'>
+            <div className='flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6'>
+              {/* Tiêu đề */}
               <div className='flex items-center gap-3'>
-                <div className='p-2 bg-blue-500/20 rounded-lg'>
+                <div className='p-2.5 bg-accent/10 text-accent rounded-xl'>
                   <ClockIcon />
                 </div>
                 <div>
-                  <h2 className='text-2xl font-bold text-foreground'>Video mới nhất</h2>
+                  <h2 className='text-xl sm:text-2xl font-bold text-foreground'>Video mới nhất</h2>
                   <p className='text-sm text-foreground/60'>Cập nhật liên tục</p>
                 </div>
               </div>
 
-              {/* Sort Options */}
-              <div className='flex items-center gap-1 p-1 rounded-xl bg-secondary'>
-                {sortOptions.map((option) => (
-                  <button
-                    key={option.key}
-                    onClick={() => {
-                      setSortBy(option.key);
-                      setLatestPage(0);
-                    }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
-                      sortBy === option.key
-                        ? 'bg-accent text-white shadow'
-                        : isDark
-                          ? 'text-gray-300 hover:text-white hover:bg-gray-700'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    {option.icon}
-                    <span className='hidden sm:inline'>{option.label}</span>
-                  </button>
-                ))}
+              {/* Sort Options - chip cuộn ngang, mép phải mờ để gợi ý lướt */}
+              <div className='relative -mx-4 px-4 lg:mx-0 lg:px-0'>
+                <div className='overflow-x-auto scrollbar-hide'>
+                  <div className='flex items-center gap-2 w-max lg:w-auto py-0.5'>
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.key}
+                        onClick={() => {
+                          setSortBy(option.key);
+                          setLatestPage(0);
+                        }}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                          sortBy === option.key
+                            ? 'bg-accent text-white shadow-md shadow-accent/25'
+                            : 'bg-secondary text-foreground/70 hover:text-foreground hover:bg-primary border border-accent/25'
+                        }`}
+                      >
+                        {option.icon}
+                        <span>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Mờ mép phải: gợi ý còn chip để lướt ngang */}
+                <div className='pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-primary via-primary/70 to-transparent lg:hidden' />
               </div>
             </div>
 
