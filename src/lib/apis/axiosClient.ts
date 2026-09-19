@@ -8,6 +8,25 @@ const axiosClient = axios.create({
   withCredentials: false,
 });
 
+// Các endpoint công khai (tương ứng PUBLIC_ENDPOINTS_GET trong SecurityConfig backend).
+// Nếu token cũ hết hạn, backend vẫn trả 401 vì oauth2ResourceServer xử lý mọi Authorization header.
+// Với các endpoint này: thử lại KHÔNG kèm token thay vì logout người dùng.
+const PUBLIC_GET_PATHS = [
+  '/nav-items',
+  '/footer',
+  '/categories',
+  '/videos/public',
+  '/videos/all',
+  '/videos/trending',
+  '/videos/shorts',
+  '/news',
+  '/news-categories',
+];
+
+// Kiểm tra path có thuộc danh sách public không (so khớp tiền tố)
+const isPublicPath = (url: string) =>
+  PUBLIC_GET_PATHS.some((p) => url === p || url.startsWith(p + '/'));
+
 // Flag để tránh multiple refresh requests
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -69,6 +88,13 @@ axiosClient.interceptors.response.use(
     // Nếu lỗi 401 nhưng KHÔNG phải token expired -> logout ngay (token invalid, revoked,...)
     // CHỈ hiển thị modal nếu có token (người dùng đã đăng nhập trước đó)
     if (error.response?.status === 401 && !isTokenExpired && !originalRequest._retry && hasToken) {
+      // Endpoint công khai: token cũ hết hạn làm backend trả 401 -> thử lại không kèm token,
+      // không logout người dùng (token vẫn dùng được cho các endpoint cần xác thực khác)
+      if (isPublicPath(originalRequest.url || '')) {
+        originalRequest._retry = true;
+        delete originalRequest.headers.Authorization;
+        return axiosClient(originalRequest);
+      }
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.dispatchEvent(new CustomEvent('show-auth-modal', { detail: { tab: 'login' } }));

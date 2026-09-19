@@ -110,7 +110,7 @@ export default function UserDropdown({ user, isOpen, onToggle, onClose, onLogout
             </button>
 
             {isOpen && (
-                <div className='absolute right-0 mt-2 w-56 bg-primary border-2 border-accent rounded-lg shadow-xl py-2 z-50'>
+                <div className='absolute right-0 mt-2 w-56 bg-primary border-2 border-accent rounded-lg shadow-xl py-2 z-50 max-h-[80vh] overflow-y-auto overscroll-contain'>
                     {/* User info */}
                     <div className='px-4 py-3 border-b border-accent'>
                         <p className='text-sm font-medium text-foreground'>{user.fullName || user.email}</p>

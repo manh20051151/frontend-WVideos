@@ -12,17 +12,11 @@ interface LocalNavItem {
 }
 
 // Danh sách mặc định (fallback khi chưa có dữ liệu hoặc gọi API lỗi)
+// Giữ tối giản để không làm tràn layout mobile khi API tạm lỗi
 const DEFAULT_NAV_ITEMS: LocalNavItem[] = [
-    { href: '/news', label: 'Tin tức' },
+    { href: '/news', label: 'Tin Tức' },
     { href: '/shorts', label: 'Shorts' },
-    { href: '/kenh-da-dang-ky', label: 'Kênh Đã Đăng Ký' },
-    { href: '/clip-sao-tao-noi-dung', label: 'Clip Sao Tạo Nội Dung' },
-    { href: '/clip-sao-hat-nhep', label: 'Clip Sao Hát Nhép' },
-    { href: '/anh-sao', label: 'Ảnh Sao' },
-    { href: '/the-loai', label: 'Thể Loại' },
-    { href: '/khac', label: 'Khác' },
-    { href: '/dong-gop', label: 'Đóng Góp' },
-    { href: '/thong-bao', label: 'Thông báo' },
+    { href: '/kenh-da-dang-ky', label: 'Video Kênh Đã Đăng Ký' },
 ];
 
 interface NavLinksProps {
