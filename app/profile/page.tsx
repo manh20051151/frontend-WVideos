@@ -462,11 +462,66 @@ function ProfileContent() {
   return (
     <div className="min-h-screen bg-primary">
       {deleteModal}
-      <div className="px-10 py-12 w-full">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-12 w-full">
         <div className="w-full">
+          {/* Mobile: menu chip cuộn ngang */}
+          <div className="lg:hidden mb-5 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 w-max">
+              {MENU_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleMenuClick(item.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                    selectedMenu === item.id
+                      ? 'bg-accent text-white shadow-md shadow-accent/25'
+                      : 'bg-secondary text-foreground/70 border border-accent/25 hover:text-foreground hover:bg-primary'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                  </svg>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile: card thông tin user compact */}
+          <div className="lg:hidden mb-6">
+            <div className={`rounded-2xl shadow-lg border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              <div className="p-4 flex items-center gap-3">
+                {formData.avatar && !avatarError ? (
+                  <img src={formData.avatar} alt="Avatar" className="w-14 h-14 rounded-full object-cover border-2 border-accent flex-shrink-0" onError={() => setAvatarError(true)} />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                    {user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-foreground truncate">{user.fullName || user.email}</h3>
+                  <p className="text-sm text-foreground opacity-60 truncate">{user.email}</p>
+                </div>
+              </div>
+              <div className="px-4 pb-4 grid grid-cols-3 gap-2">
+                <div className={`rounded-xl p-2.5 text-center ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <p className="text-[11px] text-foreground opacity-60">Số dư</p>
+                  <p className="text-sm font-semibold text-green-600 truncate">{formatCurrency(user.balance)}</p>
+                </div>
+                <div className={`rounded-xl p-2.5 text-center ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <p className="text-[11px] text-foreground opacity-60">Doanh thu</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{formatCurrency(user.revenue)}</p>
+                </div>
+                <div className={`rounded-xl p-2.5 text-center ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <p className="text-[11px] text-foreground opacity-60">Đăng ký</p>
+                  <p className="text-sm font-semibold text-foreground">{(user.subscriberCount ?? 0).toLocaleString('vi-VN')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Left Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
+            {/* Left Sidebar - chỉ hiển thị trên desktop */}
+            <div className="hidden lg:block lg:col-span-1 space-y-6">
               {/* User Info Card */}
               <div className={`rounded-2xl shadow-lg border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                 <div className={`p-6 text-center border-b ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
@@ -871,7 +926,7 @@ function ProfileContent() {
                   {selectedMenu === 'my-videos' && (
                     <div>
                       {myVideosLoading ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {[...Array(5)].map((_, i) => (
                             <div key={i} className="animate-pulse">
                               <div className="aspect-video bg-gray-300 rounded-lg mb-2"></div>
@@ -880,14 +935,15 @@ function ProfileContent() {
                           ))}
                         </div>
                       ) : myVideosData?.content && myVideosData.content.length > 0 ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {myVideosData.content.map((video: VideoResponse) => (
-                            <VideoCard
-                              key={video.id}
-                              video={video}
-                              onEdit={handleEditVideo}
-                              onDelete={handleDeleteVideo}
-                            />
+                            <div key={video.id} className="min-w-0">
+                              <VideoCard
+                                video={video}
+                                onEdit={handleEditVideo}
+                                onDelete={handleDeleteVideo}
+                              />
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -913,7 +969,7 @@ function ProfileContent() {
                   {selectedMenu === 'liked' && (
                     <div>
                       {likedVideosLoading ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {[...Array(5)].map((_, i) => (
                             <div key={i} className="animate-pulse">
                               <div className="aspect-video bg-gray-300 rounded-lg mb-2"></div>
@@ -922,7 +978,7 @@ function ProfileContent() {
                           ))}
                         </div>
                       ) : likedVideosData?.content && likedVideosData.content.length > 0 ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {likedVideosData.content.map((video: VideoResponse) => (
                             <VideoCardLite key={video.id} video={video} />
                           ))}
@@ -950,7 +1006,7 @@ function ProfileContent() {
                   {selectedMenu === 'purchased' && (
                     <div>
                       {purchasedLoading ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {[...Array(5)].map((_, i) => (
                             <div key={i} className="animate-pulse">
                               <div className="aspect-video bg-gray-300 rounded-lg mb-2"></div>
@@ -959,7 +1015,7 @@ function ProfileContent() {
                           ))}
                         </div>
                       ) : purchasedData?.content && purchasedData.content.length > 0 ? (
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {purchasedData.content.map((video: VideoResponse) => (
                             <VideoCardLite key={video.id} video={video} />
                           ))}
@@ -1126,7 +1182,7 @@ function ProfileLoading() {
   const { isDark } = useDarkMode();
   return (
     <div className="min-h-screen bg-primary">
-      <div className="px-40 py-12 w-full">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-40 lg:py-12 w-full">
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-1 space-y-6">

@@ -242,7 +242,7 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
           <h3 className="text-sm font-semibold text-foreground">
             Xu hướng {trend === 'all' ? 'toàn bộ thời gian' : `${trend} ngày gần nhất`}
           </h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className={`flex gap-1 p-1 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
               {([
                 { key: 'views', label: 'Lượt xem' },
@@ -356,30 +356,40 @@ export default function AnalyticsTab({ isDark }: { isDark?: boolean }) {
                       <img
                         src={v.thumbnailUrl}
                         alt=""
-                        className="w-24 aspect-video rounded-lg object-cover bg-secondary flex-shrink-0"
+                        className="w-20 sm:w-24 aspect-video rounded-lg object-cover bg-secondary flex-shrink-0"
                       />
                     ) : (
-                      <span className="w-24 aspect-video rounded-lg bg-secondary flex-shrink-0" />
+                      <span className="w-20 sm:w-24 aspect-video rounded-lg bg-secondary flex-shrink-0" />
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">{v.title}</p>
                       <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {v.publishedAt ? `Đăng ngày ${v.publishedAt.split('-').reverse().join('/')}` : ''}
                       </p>
+                      {/* Stats - mobile: nằm dưới tiêu đề */}
+                      <div className="flex items-center gap-3 mt-1.5 text-xs tabular-nums md:hidden">
+                        <span className="text-foreground/80 font-semibold" title="Lượt xem">{fmtShort(v.views)}</span>
+                        <span className={isDark ? 'text-gray-300' : 'text-gray-600'} title="Lượt thích">
+                          {fmtShort(v.likes)}
+                          <ChipIcon path="M14 10h4.745M12 21.375 4.128 13.5a5.35 5.35 0 0 1-.037-7.6l.03-.03a5.351 5.351 0 0 1 7.552 0L12 6.198l.327-.328a5.351 5.351 0 0 1 7.552 0l.03.03a5.35 5.35 0 0 1-.037 7.6L12 21.375Z" className="w-3 h-3 inline ml-1 -mt-0.5" />
+                        </span>
+                        <span className={isDark ? 'text-gray-300' : 'text-gray-600'} title="Bình luận">
+                          {fmtShort(v.comments)}
+                          <ChipIcon path="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" className="w-3 h-3 inline ml-1 -mt-0.5" />
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs tabular-nums flex-shrink-0">
+                    {/* Stats - desktop: nằm bên phải */}
+                    <div className="hidden md:flex items-center gap-4 text-xs tabular-nums flex-shrink-0">
                       <span className="text-foreground/80 font-semibold" title="Lượt xem">
-                        <span className="hidden md:inline">{formatNumber(v.views)} lượt xem</span>
-                        <span className="md:hidden">{fmtShort(v.views)}</span>
+                        {formatNumber(v.views)} lượt xem
                       </span>
                       <span className={isDark ? 'text-gray-300' : 'text-gray-600'} title="Lượt thích">
-                        <span className="hidden md:inline">{formatNumber(v.likes)}</span>
-                        <span className="md:hidden">{fmtShort(v.likes)}</span>
+                        {formatNumber(v.likes)}
                         <ChipIcon path="M14 10h4.745M12 21.375 4.128 13.5a5.35 5.35 0 0 1-.037-7.6l.03-.03a5.351 5.351 0 0 1 7.552 0L12 6.198l.327-.328a5.351 5.351 0 0 1 7.552 0l.03.03a5.35 5.35 0 0 1-.037 7.6L12 21.375Z" className="w-3 h-3 inline ml-1 -mt-0.5" />
                       </span>
                       <span className={isDark ? 'text-gray-300' : 'text-gray-600'} title="Bình luận">
-                        <span className="hidden md:inline">{formatNumber(v.comments)}</span>
-                        <span className="md:hidden">{fmtShort(v.comments)}</span>
+                        {formatNumber(v.comments)}
                         <ChipIcon path="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" className="w-3 h-3 inline ml-1 -mt-0.5" />
                       </span>
                     </div>
