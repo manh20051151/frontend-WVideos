@@ -106,7 +106,7 @@ function NotificationThumb({ n }: { n: AppNotification }) {
       src={n.thumbnailUrl}
       alt=''
       onError={() => setThumbError(true)}
-      className='w-[100px] h-[56px] rounded-lg object-cover bg-secondary shrink-0'
+      className='hidden sm:block w-[100px] h-[56px] rounded-lg object-cover bg-secondary shrink-0'
     />
   );
 }
@@ -173,41 +173,72 @@ export default function NotificationBell() {
       {open && (
         <>
           <div className='fixed inset-0 z-40' onClick={() => closePopup()} />
-          <div className='absolute right-0 mt-3 w-[400px] bg-primary border border-secondary rounded-2xl shadow-2xl z-50 overflow-hidden'>
+          <div className='fixed inset-x-2 top-14 z-50 bg-primary border border-secondary rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-72px)] supports-[height:100dvh]:max-h-[calc(100dvh-72px)] sm:absolute sm:inset-x-auto sm:right-0 sm:mt-3 sm:w-[400px]'>
             {/* Header */}
-            <div className='flex items-center justify-between px-4 py-3'>
-              <h3 className='text-xl font-bold text-foreground'>Thông báo</h3>
-              {unreadCount > 0 && (
+            <div className='flex items-center justify-between px-4 py-3.5'>
+              <div className='flex items-center gap-2.5'>
+                <span className='flex items-center justify-center w-8 h-8 rounded-xl bg-accent/10 text-accent'>
+                  <svg className='w-4.5 h-4.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.8} d='M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0' />
+                  </svg>
+                </span>
+                <div>
+                  <h3 className='text-base font-bold text-foreground leading-tight'>Thông báo</h3>
+                  {unreadCount > 0 && (
+                    <p className='text-xs text-foreground/50'>{unreadCount} chưa đọc</p>
+                  )}
+                </div>
+              </div>
+              <div className='flex items-center gap-1'>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAllAsRead()}
+                    className='text-xs text-accent hover:underline font-medium px-3 py-1.5 rounded-full hover:bg-secondary/60 transition-colors'
+                  >
+                    Đánh dấu đã đọc
+                  </button>
+                )}
                 <button
-                  onClick={() => markAllAsRead()}
-                  className='text-sm text-accent hover:underline'
+                  onClick={() => closePopup()}
+                  className='p-2 rounded-full text-foreground/70 hover:text-foreground hover:bg-secondary/70 transition-colors'
+                  aria-label='Đóng thông báo'
                 >
-                  Đánh dấu tất cả đã đọc
+                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                  </svg>
                 </button>
-              )}
+              </div>
             </div>
 
             {/* Tabs */}
             <div className='flex gap-2 px-4 pb-3'>
               <button
                 onClick={() => setFilter('all')}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   filter === 'all'
-                    ? 'bg-secondary text-foreground font-medium'
-                    : 'text-gray-500 hover:bg-secondary/60'
+                    ? 'bg-accent text-white shadow-sm shadow-accent/25'
+                    : 'text-foreground/60 hover:bg-secondary/70 hover:text-foreground'
                 }`}
               >
                 Tất cả
+                {notifications.length > 0 && (
+                  <span className='ml-1.5 text-xs opacity-80'>{notifications.length}</span>
+                )}
               </button>
               <button
                 onClick={() => setFilter('unread')}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   filter === 'unread'
-                    ? 'bg-secondary text-foreground font-medium'
-                    : 'text-gray-500 hover:bg-secondary/60'
+                    ? 'bg-accent text-white shadow-sm shadow-accent/25'
+                    : 'text-foreground/60 hover:bg-secondary/70 hover:text-foreground'
                 }`}
               >
                 Chưa đọc
+                {unreadCount > 0 && (
+                  <span className='ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-[#cc0000] text-white rounded-full'>
+                    {unreadCount}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -220,13 +251,15 @@ export default function NotificationBell() {
                 Không có thông báo nào
               </div>
             ) : (
-              <ul className='max-h-[70vh] overflow-y-auto scrollbar-thin pr-1'>
+              <ul className='flex-1 min-h-0 overflow-y-auto scrollbar-thin pr-1'>
                 {visible.map((n) => (
                   <li
                     key={n.id}
                     onClick={() => handleClick(n)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                      n.read ? 'hover:bg-secondary/50' : 'bg-secondary/30 hover:bg-secondary/50'
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-l-2 ${
+                      n.read
+                        ? 'hover:bg-secondary/50 border-transparent'
+                        : 'bg-secondary/30 hover:bg-secondary/50 border-accent'
                     }`}
                   >
                     <NotificationMenu
@@ -242,12 +275,12 @@ export default function NotificationBell() {
                     <div className='min-w-0 flex-1'>
                       <p
                         className={`text-sm leading-snug line-clamp-2 ${
-                          n.read ? 'text-gray-500' : 'text-foreground font-medium'
+                          n.read ? 'text-foreground/70' : 'text-foreground font-medium'
                         }`}
                       >
                         {n.content}
                       </p>
-                      <p className='text-xs text-gray-500 mt-1'>
+                      <p className='text-xs text-foreground/50 mt-1'>
                         {formatRelativeTime(n.createdAt)}
                       </p>
                     </div>

@@ -34,7 +34,7 @@ export default function ShortsPage() {
   const [lastCreatedAt, setLastCreatedAt] = useState<string | undefined>(undefined);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const activeId = activeIndex != null ? (videos[activeIndex]?.id ?? null) : null;
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false); // Auto mở tiếng khi xem shorts
   const [paused, setPaused] = useState(false);
   const [guestId, setGuestId] = useState<string | undefined>(undefined);
   const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
@@ -311,13 +311,13 @@ export default function ShortsPage() {
   };
 
   return (
-    <div className='h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide' ref={containerRef}>
+    <div className='h-screen supports-[height:100dvh]:h-[100dvh] w-full bg-black overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-hide' ref={containerRef}>
       {videos.map((v, index) => (
         <section
           key={`${v.id}-${index}`}
           data-id={v.id}
           data-index={index}
-          className='relative h-[100dvh] w-full snap-start flex items-center justify-center bg-black'
+          className='relative h-screen supports-[height:100dvh]:h-[100dvh] w-full snap-start flex items-center justify-center bg-black overflow-hidden'
         >
           {v.isPaid && !v.purchased && !v.isOwner ? (
             <>
@@ -478,7 +478,17 @@ export default function ShortsPage() {
             className='absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center'
             title={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
           >
-            {muted ? '🔇' : '🔊'}
+            {muted ? (
+              <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636' />
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M11 5L6 9H2v6h4l5 4V5z' />
+              </svg>
+            ) : (
+              <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M11 5L6 9H2v6h4l5 4V5z' />
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.536 8.464a5 5 0 010 7.072M19.07 4.93a10 10 0 010 14.14' />
+              </svg>
+            )}
           </button>
 
           {/* Thoát về trang chủ */}
@@ -486,19 +496,21 @@ export default function ShortsPage() {
             href='/'
             className='absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center'
           >
-            ✕
+            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+            </svg>
           </Link>
         </section>
       ))}
 
       {loading && (
-        <div className='h-[100dvh] w-full flex items-center justify-center bg-black'>
+        <div className='h-screen supports-[height:100dvh]:h-[100dvh] w-full flex items-center justify-center bg-black'>
           <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-accent' />
         </div>
       )}
 
       {!loading && videos.length === 0 && loopMode && (
-        <div className='h-[100dvh] w-full flex flex-col items-center justify-center bg-black text-white gap-3'>
+        <div className='h-screen supports-[height:100dvh]:h-[100dvh] w-full flex flex-col items-center justify-center bg-black text-white gap-3'>
           <p className='opacity-70'>Chưa có video nào</p>
           <Link href='/' className='px-4 py-2 rounded-full bg-accent text-white'>
             Về trang chủ
@@ -508,7 +520,7 @@ export default function ShortsPage() {
 
       {/* Panel bình luận bên phải */}
       {commentVideoId && (
-        <div className='fixed top-0 right-0 z-50 h-[100dvh] w-full sm:w-[400px] bg-primary border-l border-accent shadow-2xl flex flex-col'>
+        <div className='fixed top-0 right-0 z-50 h-screen supports-[height:100dvh]:h-[100dvh] w-full sm:w-[400px] bg-primary border-l border-accent shadow-2xl flex flex-col'>
           <div className='flex items-center justify-between p-4 border-b border-accent shrink-0'>
             <h3 className='font-semibold text-foreground'>Bình luận</h3>
             <button
