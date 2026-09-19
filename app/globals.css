@@ -436,3 +436,25 @@ iframe .own-file {
   .text-2xl { font-size: 1.25rem; }  /* 24px  -> 20px */
   .text-xl  { font-size: 1.125rem; } /* 20px  -> 18px */
 }
+
+/* Plyr: đảm bảo player luôn giãn đầy container và controls hiển thị đúng */
+.plyr,
+.plyr__video-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.plyr video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Mobile: thu gọn controls để không tràn/che */
+@media (max-width: 639px) {
+  .plyr__controls .plyr__volume,
+  .plyr__controls .plyr__pip,
+  .plyr__controls .plyr__airplay {
+    display: none !important;
+  }
+}

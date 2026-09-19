@@ -352,6 +352,30 @@ export default function ShortsPage() {
                 )}
               </div>
             </>
+          ) : v.requireLogin ? (
+            <>
+              <img
+                src={v.thumbnailUrl || v.splashImageUrl}
+                alt=''
+                className='absolute inset-0 w-full h-full object-cover blur-lg scale-110 opacity-60'
+              />
+              <div className='relative z-10 flex flex-col items-center justify-center text-white px-6 text-center'>
+                <div className='w-16 h-16 rounded-full bg-black/50 flex items-center justify-center mb-4'>
+                  <svg width='30' height='30' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='2'>
+                    <rect x='5' y='11' width='14' height='9' rx='2' />
+                    <path d='M8 11V8a4 4 0 0 1 8 0v3' />
+                  </svg>
+                </div>
+                <p className='text-lg font-semibold'>Video riêng tư</p>
+                <p className='opacity-80 mt-1'>Đăng nhập để xem video này</p>
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className='mt-4 px-6 py-2 rounded-full bg-accent text-white font-medium hover:opacity-90 transition-opacity'
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            </>
           ) : v.streamUrl ? (
             <>
               <video

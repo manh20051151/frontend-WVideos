@@ -35,6 +35,8 @@ export interface ShortsResponse {
     isPaid?: boolean;
     purchased?: boolean;
     isOwner?: boolean;
+    isPublic?: boolean; // false = video riêng tư
+    requireLogin?: boolean; // true = phải đăng nhập mới xem được (video riêng tư + chưa đăng nhập)
     createdAt: string;
 }
 

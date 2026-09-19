@@ -90,13 +90,15 @@ export default function VideoPlayer({
   }, [src, poster, title]);
 
   return (
-    <video
-      ref={videoRef}
-      className={className}
-      playsInline
-      poster={poster}
-      title={title}
-      onError={onError}
-    />
+    <div className='w-full h-full'>
+      <video
+        ref={videoRef}
+        className='w-full h-full object-contain'
+        playsInline
+        poster={poster}
+        title={title}
+        onError={onError}
+      />
+    </div>
   );
 }

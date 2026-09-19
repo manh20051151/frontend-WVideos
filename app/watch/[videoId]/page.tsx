@@ -438,7 +438,7 @@ export default function WatchVideoPage() {
     <>
       <Header />
       <div className='min-h-screen bg-primary'>
-        <div className='px-10 py-6'>
+        <div className='px-4 py-6 sm:px-6 lg:px-10'>
           <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
             {/* Left Column - Video + Info */}
             <div className='lg:col-span-4 space-y-4'>
@@ -536,19 +536,19 @@ export default function WatchVideoPage() {
               </div>
 
               {/* Action Bar */}
-              <div className='flex items-center justify-between border-b border-accent border-opacity-20 pb-4'>
+              <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-accent border-opacity-20 pb-4'>
                 <div className='text-foreground opacity-70'>
                   <span>{formatViews(video.views)}</span>
                   <span className='mx-2'>•</span>
                   <span>{formatDate(video.createdAt)}</span>
                 </div>
                 
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1 sm:gap-2 flex-wrap'>
                   <button 
                     onClick={() => handleReaction('LIKE')}
                     disabled={reacting || (currentUser?.id === video.userId)}
                     title={currentUser?.id === video.userId ? 'Không thể tự thích video của mình' : ''}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
                       currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
                       userReaction === 'LIKE' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-foreground'
                     }`}
@@ -563,7 +563,7 @@ export default function WatchVideoPage() {
                     onClick={() => handleReaction('DISLIKE')}
                     disabled={reacting || (currentUser?.id === video.userId)}
                     title={currentUser?.id === video.userId ? 'Không thể tự dislike video của mình' : ''}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
                       currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
                       userReaction === 'DISLIKE' ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-foreground'
                     }`}
@@ -576,7 +576,7 @@ export default function WatchVideoPage() {
 
                   <button 
                     onClick={handleShare}
-                    className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
+                    className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
                   >
                     <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                       <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z' />
@@ -589,7 +589,7 @@ export default function WatchVideoPage() {
                       href={video.downloadUrl}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='flex items-center gap-2 px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
+                      className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
                     >
                       <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
@@ -601,7 +601,7 @@ export default function WatchVideoPage() {
               </div>
 
               {/* Channel Bar */}
-              <div className='flex items-center justify-between py-4 border-b border-accent border-opacity-20'>
+              <div className='flex items-center justify-between gap-3 py-4 border-b border-accent border-opacity-20 flex-wrap'>
                 <Link href={`/channel/${video.userSlug || video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
                   {video.userAvatar ? (
                     <img
