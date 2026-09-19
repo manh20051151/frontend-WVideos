@@ -390,7 +390,7 @@ export default function TopUpPage() {
                     <button
                       onClick={() => handleAmountAdjust(-10000)}
                       disabled={parseInt(amount || '0') <= 0}
-                      className='px-4 py-3 text-foreground opacity-70 hover:opacity-100 disabled:opacity-30 transition-opacity'
+                      className='px-3 sm:px-4 py-3 text-foreground opacity-70 hover:opacity-100 disabled:opacity-30 transition-opacity flex-shrink-0'
                     >
                       <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M20 12H4' />
@@ -401,17 +401,18 @@ export default function TopUpPage() {
                       value={amount}
                       onChange={handleAmountChange}
                       placeholder='0'
-                      className={`flex-1 text-center text-xl font-semibold py-3 bg-transparent outline-none ${isDark ? 'text-white' : 'text-gray-900'}`}
+                      inputMode='numeric'
+                      className={`flex-1 min-w-0 text-center text-lg sm:text-xl font-semibold py-3 bg-transparent outline-none ${isDark ? 'text-white' : 'text-gray-900'}`}
                     />
                     <button
                       onClick={() => handleAmountAdjust(10000)}
-                      className='px-4 py-3 text-foreground opacity-70 hover:opacity-100 transition-opacity'
+                      className='px-3 sm:px-4 py-3 text-foreground opacity-70 hover:opacity-100 transition-opacity flex-shrink-0'
                     >
                       <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                         <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
                       </svg>
                     </button>
-                    <span className='px-4 text-foreground opacity-60'>VNĐ</span>
+                    <span className='hidden sm:inline px-4 text-foreground opacity-60 flex-shrink-0'>VNĐ</span>
                   </div>
                   {error && <p className='mt-2 text-sm text-red-500'>{error}</p>}
                   {amount && (
@@ -537,10 +538,10 @@ export default function TopUpPage() {
         </div>
 
         {showQRDialog && (
-          <div className='fixed inset-0 z-50 flex items-center justify-center p-4 overflow-x-hidden' onClick={handleCloseQRDialog}>
+          <div className='fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto overflow-x-hidden' onClick={handleCloseQRDialog}>
             <div className='absolute inset-0 bg-black/70 backdrop-blur-sm' />
             <div
-              className={`relative rounded-2xl shadow-2xl w-full max-w-lg sm:max-w-xl md:max-w-2xl border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+              className={`relative rounded-2xl shadow-2xl w-full max-w-lg sm:max-w-xl md:max-w-2xl border my-auto max-h-[calc(100vh-32px)] supports-[height:100dvh]:max-h-[calc(100dvh-32px)] overflow-y-auto ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className={`flex items-center justify-between px-6 py-4 border-b rounded-t-2xl ${
@@ -598,7 +599,7 @@ export default function TopUpPage() {
                       <img
                         src={qrCode}
                         alt='QR Code'
-                        className='w-64 h-64 mx-auto border rounded-xl'
+                        className='w-56 h-56 sm:w-64 sm:h-64 mx-auto border rounded-xl'
                         style={{ borderColor: isDark ? '#374151' : '#e0e0e0' }}
                       />
                     </div>
@@ -622,15 +623,18 @@ export default function TopUpPage() {
                           <span className='text-foreground opacity-70'>Số tiền:</span>
                           <span className='font-semibold text-teal-500'>{formatCurrency(parseInt(amount))}</span>
                         </div>
-                        <div className='flex justify-between items-center'>
-                          <span className='text-foreground opacity-70'>Nội dung:</span>
-                          <div className='flex items-center gap-1'>
-                            <span className='font-semibold text-foreground'>
+                        <div className='flex justify-between items-center gap-2'>
+                          <span className='text-foreground opacity-70 flex-shrink-0'>Nội dung:</span>
+                          <div className='flex items-center gap-1 min-w-0'>
+                            <span
+                              className='font-semibold text-foreground truncate'
+                              title={`NAPTIEN${transactionId}${getUserId()}`}
+                            >
                               NAPTIEN{transactionId}{getUserId()}
                             </span>
                             <button
                               onClick={handleCopyTransactionId}
-                              className='p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors'
+                              className='p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors flex-shrink-0'
                             >
                               <svg className='w-4 h-4 text-foreground opacity-70' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z' />
@@ -638,20 +642,6 @@ export default function TopUpPage() {
                             </button>
                           </div>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className={`p-3 mb-3 rounded-xl ${isDark ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
-                      <div className='flex items-start gap-2'>
-                        <svg className='w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
-                        </svg>
-                        <p className='text-sm text-blue-600 text-left'>
-                          1. Mở ứng dụng ngân hàng của bạn<br/>
-                          2. Quét mã QR hoặc chuyển khoản thủ công<br/>
-                          3. Kiểm tra thông tin và xác nhận thanh toán<br/>
-                          4. Tiền sẽ được nạp vào tài khoản sau khi thanh toán thành công
-                        </p>
                       </div>
                     </div>
 
