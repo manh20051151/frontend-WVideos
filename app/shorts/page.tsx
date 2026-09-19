@@ -13,6 +13,19 @@ import type { ShortsResponse } from '@/types';
 const PAGE_SIZE = 10;
 const MARK_WATCHED_DELAY = 3000; // ms: đánh dấu đã xem sau khi xem 3s
 
+// Sinh guest id: ưu tiên crypto.randomUUID (chỉ có trong secure context HTTPS),
+// fallback UUID v4 thủ công cho trình duyệt cũ / truy cập qua HTTP (VD: IP LAN)
+const generateGuestId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 export default function ShortsPage() {
   const [videos, setVideos] = useState<ShortsResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +63,7 @@ export default function ShortsPage() {
     if (typeof window === 'undefined') return;
     let id = localStorage.getItem('guestId');
     if (!id) {
-      id = crypto.randomUUID();
+      id = generateGuestId();
       localStorage.setItem('guestId', id);
     }
     setGuestId(id);
