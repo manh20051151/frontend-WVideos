@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import searchApi, { ChannelSearchResult } from '@/lib/apis/search.api';
 import { useAuth } from '@/lib/hooks/useAuth';
+import VideoCardLite from '@/components/video/VideoCardLite';
 import type { VideoResponse } from '@/types';
 import type { NewsResponse } from '@/lib/apis/news.api';
 
@@ -17,21 +18,6 @@ import type { NewsResponse } from '@/lib/apis/news.api';
 type Tab = 'video' | 'channel' | 'news';
 
 const PAGE_SIZE = 12;
-
-function formatViews(views?: number): string {
-  if (!views) return '0 lượt xem';
-  if (views >= 1_000_000_000) return `${(views / 1_000_000_000).toFixed(1)} tỷ lượt xem`;
-  if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)} tr lượt xem`;
-  if (views >= 1_000) return `${(views / 1_000).toFixed(1)}N lượt xem`;
-  return `${views} lượt xem`;
-}
-
-function formatDuration(seconds?: number): string {
-  if (!seconds || seconds < 0) return '';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 function SearchPageContent() {
   const router = useRouter();
@@ -138,14 +124,15 @@ function SearchPageContent() {
       <Header />
       <div className='min-h-screen bg-primary'>
         <div className='container mx-auto px-4 py-6'>
-          {/* Ô tìm kiếm lại trên trang kết quả */}
+          {/* Ô tìm kiếm lại trên trang kết quả - chỉ hiện trên mobile
+              (desktop đã có sẵn ô search trên header) */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
               const value = queryInput.trim();
               if (value) router.push(`/search?q=${encodeURIComponent(value)}`);
             }}
-            className='max-w-2xl mx-auto'
+            className='lg:hidden max-w-2xl mx-auto'
           >
             <div className='relative'>
               <input
@@ -170,7 +157,7 @@ function SearchPageContent() {
           {/* Từ khóa + tabs */}
           {q ? (
             <>
-              <p className='max-w-2xl mx-auto mt-6 text-sm text-foreground opacity-70'>
+              <p className='max-w-2xl mx-auto mt-6 lg:mt-2 text-sm text-foreground opacity-70'>
                 Kết quả tìm kiếm cho <span className='font-semibold text-foreground'>&quot;{q}&quot;</span>
               </p>
               <div className='max-w-2xl mx-auto mt-3 flex items-center gap-2 border-b border-secondary overflow-x-auto scrollbar-hide'>
@@ -205,33 +192,9 @@ function SearchPageContent() {
 
             {!loading && q && tab === 'video' && (
               videos.length > 0 ? (
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+                <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
                   {videos.map((v) => (
-                    <Link key={v.id} href={`/watch/${v.slug || v.id}`} className='group'>
-                      <div className='relative rounded-lg overflow-hidden bg-secondary aspect-video'>
-                        <img
-                          src={v.thumbnailUrl || v.splashImageUrl}
-                          alt={v.title}
-                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-                        />
-                        {v.duration ? (
-                          <span className='absolute bottom-1.5 right-1.5 px-1.5 py-0.5 text-xs bg-black/80 text-white rounded'>
-                            {formatDuration(v.duration)}
-                          </span>
-                        ) : null}
-                        {v.price ? (
-                          <span className='absolute top-1.5 left-1.5 px-1.5 py-0.5 text-xs bg-accent text-white rounded font-medium'>
-                            {v.price.toLocaleString('vi-VN')}đ
-                          </span>
-                        ) : null}
-                      </div>
-                      <p className='mt-2 text-sm font-medium text-foreground truncate group-hover:text-accent transition-colors'>
-                        {v.title}
-                      </p>
-                      <p className='text-xs text-foreground opacity-60 truncate'>
-                        {v.userFullName} • {formatViews(v.views)}
-                      </p>
-                    </Link>
+                    <VideoCardLite key={v.id} video={v} />
                   ))}
                 </div>
               ) : (
