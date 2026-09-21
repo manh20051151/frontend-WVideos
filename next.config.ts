@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Standalone output cho Docker image (chỉ bundle những gì cần chạy)
+  output: "standalone",
   /* config options here */
   reactStrictMode: true,
   images: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -82,7 +82,7 @@ const getSortLabel = (key: SortOption): string => {
   return labels[key];
 };
 
-export default function Home() {
+function HomeContent() {
   const { isDark } = useDarkMode();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -261,5 +261,14 @@ export default function Home() {
       </main>
       <Footer />
     </>
+  );
+}
+
+// useSearchParams() cần bọc Suspense để build production không lỗi prerender
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }

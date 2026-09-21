@@ -1,0 +1,29 @@
+# Git / IDE
+.git
+.gitignore
+.idea
+.vscode
+
+# Kilo/Kiro/Claude config
+.kilo
+.kiro
+.claude
+.agents
+
+# Build cache
+.next
+node_modules
+tsconfig.tsbuildinfo
+
+# Environment - KHÔNG đưa vào image
+# (NEXT_PUBLIC_API_URL truyền qua build arg lúc docker build)
+.env
+.env.*
+
+# Docs
+docs
+*.md
+
+# OS
+.DS_Store
+Thumbs.db

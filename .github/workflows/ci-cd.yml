@@ -1,0 +1,112 @@
+# CI/CD frontend WVideos (Next.js + Docker + self-hosted runner)
+#
+# Luồng:
+#   1. CI (mọi push + pull request, chạy trên GitHub): lint + build production
+#   2. Docker (chỉ push nhánh master): build image (nhúng NEXT_PUBLIC_API_URL
+#      từ repository variable), đẩy Docker Hub tag `latest` + mã commit
+#   3. Deploy (chỉ push nhánh master): chạy TRỰC TIẾP trên máy chủ 24/7 qua
+#      self-hosted runner (label "wvideos") - pull image + restart compose
+#
+# Secrets / variables cần cấu hình trong GitHub repo
+# (Settings > Secrets and variables > Actions):
+#   Secrets:
+#     DOCKERHUB_USERNAME  - tài khoản Docker Hub
+#     DOCKERHUB_TOKEN     - access token Docker Hub
+#     DEPLOY_PATH         - thư mục deploy TRÊN MÁY CHỦ (VD: E:\deploy\wvideos)
+#   Variables (tab Variables):
+#     NEXT_PUBLIC_API_URL - URL API public trỏ tới backend (VD: http://192.168.2.55:8081/api)
+#
+# Máy chủ 24/7 cần (xem docs/CI-CD.md):
+#   - Docker Desktop chạy nền
+#   - GitHub Actions self-hosted runner với label "wvideos" (cài 1 lần)
+
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/wvideos-frontend
+  API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api' }}
+
+jobs:
+  # ===== Giai đoạn CI: lint + build =====
+  build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Cài dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build production
+        env:
+          NEXT_PUBLIC_API_URL: ${{ env.API_URL }}
+        run: npm run build
+
+  # ===== Giai đoạn CD: build image + đẩy Docker Hub =====
+  docker:
+    name: Docker Build & Push
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Đăng nhập Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.API_URL }}
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===== Giai đoạn CD: deploy chạy trực tiếp trên máy chủ 24/7 =====
+  # (nhờ self-hosted runner với label "wvideos")
+  deploy:
+    name: Deploy trên máy chủ
+    needs: docker
+    runs-on: [self-hosted, wvideos]
+    steps:
+      - name: Pull image mới + restart
+        shell: pwsh
+        run: |
+          Set-Location "${{ secrets.DEPLOY_PATH }}\frontend"
+          $env:IMAGE = "${{ secrets.DOCKERHUB_USERNAME }}/wvideos-frontend:latest"
+          Write-Host "🔄 Pulling image mới..."
+          docker compose -f docker-compose.prod.yml pull
+          Write-Host "🚀 Restarting container..."
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker image prune -f
+          Write-Host "✅ Deploy xong!"
+          docker compose -f docker-compose.prod.yml ps
