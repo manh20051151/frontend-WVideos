@@ -102,7 +102,7 @@ jobs:
     runs-on: [self-hosted, wvideos]
     steps:
       - name: Pull image mới + restart
-        shell: pwsh
+        shell: powershell
         run: |
           Set-Location "${{ secrets.DEPLOY_PATH }}\frontend"
           $env:IMAGE = "${{ secrets.DOCKERHUB_USERNAME }}/wvideos-frontend:latest"
