@@ -89,13 +89,22 @@ export default function NewsListPage() {
             <main>
               <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6'>
                 <div>
-                  <h1 className='text-3xl font-bold text-foreground'>📰 {activeCategoryName}</h1>
+                  <h1 className='text-3xl font-bold text-foreground flex items-center gap-2.5'>
+                    <svg className='w-7 h-7 text-accent flex-shrink-0' fill='none' stroke='currentColor' strokeWidth={2} viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m0 0h2a2 2 0 012 2v1m-4-3v9a2 2 0 002 2h0a2 2 0 002-2v-5.34a2 2 0 00-.3-1.07l-1.83-3A2 2 0 0018.6 10H16zM7 9h6M7 13h6' />
+                    </svg>
+                    <span>{activeCategoryName}</span>
+                  </h1>
                   <p className='text-sm text-foreground opacity-60 mt-1'>
                     {loading ? 'Đang tải...' : `${totalElements} bài viết`}
                   </p>
                 </div>
                 <div className='relative w-full sm:w-72'>
-                  <span className='absolute left-3 top-1/2 -translate-y-1/2 text-foreground opacity-40'>🔍</span>
+                  <span className='absolute left-3 top-1/2 -translate-y-1/2 text-foreground opacity-40'>
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' strokeWidth={2} viewBox='0 0 24 24'>
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+                    </svg>
+                  </span>
                   <input
                     type='text'
                     value={search}
