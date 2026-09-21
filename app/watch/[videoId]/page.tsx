@@ -16,6 +16,7 @@ import LoginRequiredModal from '@/components/common/LoginRequiredModal';
 import CommentSection from '@/components/video/CommentSection';
 import RelatedVideosSection from '@/components/video/RelatedVideosSection';
 import VideoPlayer from '@/components/common/VideoPlayer';
+import ReportVideoModal from '@/components/video/ReportVideoModal';
 import { ChannelNotificationBell } from '@/components/channel';
 
 export default function WatchVideoPage() {
@@ -44,6 +45,7 @@ export default function WatchVideoPage() {
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -584,6 +586,20 @@ export default function WatchVideoPage() {
                     <span className='font-medium'>Chia sẻ</span>
                   </button>
 
+                  {/* Báo cáo vi phạm - ẩn với chủ video */}
+                  {currentUser && currentUser.id !== video.userId && (
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
+                      title='Báo cáo video này'
+                    >
+                      <svg className='w-6 h-6' fill='none' stroke='currentColor' strokeWidth={2} viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5' />
+                      </svg>
+                      <span className='font-medium'>Báo cáo</span>
+                    </button>
+                  )}
+
                   {video.downloadUrl && (
                     <a
                       href={video.downloadUrl}
@@ -737,6 +753,15 @@ export default function WatchVideoPage() {
           window.location.reload();
         }}
       />
+
+      {/* Modal báo cáo vi phạm video */}
+      {showReportModal && video && (
+        <ReportVideoModal
+          videoId={video.id || videoId}
+          videoTitle={video.title}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
 
       {/* Toast thông báo chia sẻ */}
       {shareFeedback && (

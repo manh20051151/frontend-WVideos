@@ -245,6 +245,22 @@ export default function AdminDashboardPage() {
               </button>
 
               <button
+                onClick={() => router.push('/admin/reports')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors relative'
+              >
+                <span className='text-xl'>🚩</span>
+                <span className='font-medium text-foreground'>Báo cáo video</span>
+              </button>
+
+              <button
+                onClick={() => router.push('/admin/report-reasons')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
+              >
+                <span className='text-xl'>📋</span>
+                <span className='font-medium text-foreground'>Lý do báo cáo</span>
+              </button>
+
+              <button
                 onClick={() => router.push('/admin/withdrawals')}
                 className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
               >
