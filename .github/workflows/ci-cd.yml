@@ -104,12 +104,14 @@ jobs:
       - name: Pull image mới + restart
         shell: powershell
         run: |
-          Set-Location "${{ secrets.DEPLOY_PATH }}\frontend"
+          Set-Location "${{ secrets.DEPLOY_PATH }}\frontend" -ErrorAction Stop
           $env:IMAGE = "${{ secrets.DOCKERHUB_USERNAME }}/wvideos-frontend:latest"
           Write-Host "🔄 Pulling image mới..."
           docker compose -f docker-compose.prod.yml pull
+          if ($LASTEXITCODE -ne 0) { Write-Host "##vso[task.logissue type=error]❌ Pull image thất bại (exit $LASTEXITCODE)"; exit 1 }
           Write-Host "🚀 Restarting container..."
           docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          if ($LASTEXITCODE -ne 0) { Write-Host "##vso[task.logissue type=error]❌ Up container thất bại (exit $LASTEXITCODE)"; exit 1 }
           docker image prune -f
           Write-Host "✅ Deploy xong!"
           docker compose -f docker-compose.prod.yml ps
