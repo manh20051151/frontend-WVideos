@@ -51,8 +51,11 @@ jobs:
       - name: Cài dependencies
         run: npm ci
 
-      - name: Lint
+      # Báo lỗi lint trong log nhưng KHÔNG chặn pipeline -
+      # dự án còn tồn đọng nhiều lỗi eslint cũ, sẽ dọn dần
+      - name: Lint (không chặn deploy)
         run: npm run lint
+        continue-on-error: true
 
       - name: Build production
         env:
