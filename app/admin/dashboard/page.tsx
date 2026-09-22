@@ -323,6 +323,14 @@ export default function AdminDashboardPage() {
                 <span className='text-xl'>✉️</span>
                 <span className='font-medium text-foreground'>Nội dung email</span>
               </button>
+
+              <button
+                onClick={() => router.push('/admin/site-settings')}
+                className='flex items-center space-x-2 p-3 bg-primary rounded-lg border border-accent hover:bg-accent hover:bg-opacity-20 transition-colors'
+              >
+                <span className='text-xl'>🎨</span>
+                <span className='font-medium text-foreground'>Logo & Favicon</span>
+              </button>
             </div>
           </div>
         </div>

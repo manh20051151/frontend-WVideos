@@ -4,5 +4,7 @@ export * from './video.api';
 export { userApi } from './user.api';
 export { emailTemplateApi, EMAIL_TEMPLATE_LABELS, EMAIL_TEMPLATE_PLACEHOLDERS, renderPreview } from './email-template.api';
 export type { EmailTemplateInfo, EmailTemplateUpdateRequest } from './email-template.api';
+export { siteSettingApi, SITE_SETTING_LABELS } from './site-setting.api';
+export type { SiteSettingInfo } from './site-setting.api';
 export { default as axiosClient } from './axiosClient';
 export { subscriptionApi } from './subscription.api';

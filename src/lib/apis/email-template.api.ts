@@ -33,6 +33,7 @@ export const EMAIL_TEMPLATE_PLACEHOLDERS = [
   { key: '{{email}}', label: 'Email người nhận' },
   { key: '{{name}}', label: 'Tên hiển thị người nhận' },
   { key: '{{minutes}}', label: 'Thời hạn token (phút)' },
+  { key: '{{logo_block}}', label: 'Khối logo - tự cập nhật theo logo đã cấu hình' },
 ];
 
 // API functions
@@ -62,5 +63,9 @@ export const renderPreview = (
     .replace(/\{\{url\}\}/g, sample.url)
     .replace(/\{\{email\}\}/g, sample.email)
     .replace(/\{\{name\}\}/g, sample.name)
-    .replace(/\{\{minutes\}\}/g, sample.minutes);
+    .replace(/\{\{minutes\}\}/g, sample.minutes)
+    .replace(
+      /\{\{logo_block\}\}/g,
+      '<span style="display:inline-block;background-color:#ffffff;color:#009688;font-size:22px;font-weight:bold;padding:4px 10px;border-radius:8px;">wd</span><span style="color:#ffffff;font-size:22px;font-weight:bold;">video</span>'
+    );
 };

@@ -3,6 +3,7 @@ import { Roboto } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import DynamicFavicon from '@/components/layout/SiteBranding';
 
 // Font chuẩn YouTube - Roboto, hỗ trợ tiếng Việt
 const roboto = Roboto({
@@ -94,6 +95,7 @@ export default function RootLayout({
       <body className={`${roboto.className} antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
+            <DynamicFavicon />
             {children}
           </AuthProvider>
         </QueryProvider>

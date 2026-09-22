@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useDarkMode } from '@/lib/hooks/useDarkMode';
+import { useSiteBranding } from './SiteBranding';
 import AuthModal from '@/components/auth/AuthModal';
 import UserDropdown from './UserDropdown';
 import NavLinks from './NavLinks';
@@ -15,6 +16,7 @@ type AuthTab = 'login' | 'register';
 export default function Header() {
   const { user, logout, mounted, refreshProfile } = useAuth();
   const { isDark, toggleDarkMode, mounted: darkModeReady } = useDarkMode();
+  const branding = useSiteBranding();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -68,8 +70,15 @@ export default function Header() {
               </svg>
             </button>
             <Link href='/' className='flex items-center gap-2'>
-              <span className='text-accent text-2xl font-bold'>wd</span>
-              <span className='text-foreground text-2xl font-bold'>video</span>
+              {branding.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={branding.logoUrl} alt='WVideos' className='h-9 w-auto max-w-[140px] object-contain' />
+              ) : (
+                <>
+                  <span className='text-accent text-2xl font-bold'>wd</span>
+                  <span className='text-foreground text-2xl font-bold'>video</span>
+                </>
+              )}
             </Link>
           </div>
 
@@ -216,8 +225,15 @@ export default function Header() {
             {/* Drawer header */}
             <div className='flex items-center justify-between px-4 py-3 border-b border-secondary'>
               <Link href='/' onClick={closeDrawer} className='flex items-center gap-2'>
-                <span className='text-accent text-xl font-bold'>wd</span>
-                <span className='text-foreground text-xl font-bold'>video</span>
+                {branding.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={branding.logoUrl} alt='WVideos' className='h-8 w-auto max-w-[120px] object-contain' />
+                ) : (
+                  <>
+                    <span className='text-accent text-xl font-bold'>wd</span>
+                    <span className='text-foreground text-xl font-bold'>video</span>
+                  </>
+                )}
               </Link>
               <button
                 onClick={closeDrawer}
