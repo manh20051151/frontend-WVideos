@@ -50,6 +50,11 @@ export const authApi = {
     return axiosClient.post('/users/forgot-password', { email });
   },
 
+  // Đặt lại mật khẩu bằng token từ email
+  resetPassword: (token: string, password: string): Promise<ApiResponse<void>> => {
+    return axiosClient.post('/users/reset-password', { token, password });
+  },
+
   // Đổi mật khẩu
   changePassword: (data: {
     passwordOld: string;

@@ -37,9 +37,30 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [forgotSending, setForgotSending] = useState(false);
 
     const handleGoogleLogin = () => {
         window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/oauth2/authorization/google`;
+    };
+
+    const handleForgotPassword = async () => {
+        if (!formData.email) {
+            setError('Vui lòng nhập email của bạn trước, sau đó nhấn "Quên mật khẩu?"');
+            return;
+        }
+
+        setError('');
+        setSuccess('');
+        setForgotSending(true);
+        try {
+            await authApi.forgotPassword(formData.email);
+            setSuccess('Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.');
+        } catch (err: unknown) {
+            const e = err as { response?: { data?: { message?: string } }; message?: string };
+            setError(e.response?.data?.message || e.message || 'Không thể gửi yêu cầu khôi phục mật khẩu, vui lòng thử lại!');
+        } finally {
+            setForgotSending(false);
+        }
     };
 
     const handleChange = (field: keyof LoginRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,9 +164,14 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
             </div>
 
             <div className='text-right'>
-                <a href='#' className='text-accent text-sm hover:underline'>
-                    Quên mật khẩu?
-                </a>
+                <button
+                    type='button'
+                    onClick={handleForgotPassword}
+                    disabled={forgotSending}
+                    className='text-accent text-sm hover:underline disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                    {forgotSending ? 'Đang gửi...' : 'Quên mật khẩu?'}
+                </button>
             </div>
 
             <button
