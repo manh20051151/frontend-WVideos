@@ -529,7 +529,7 @@ export default function WatchVideoPage() {
                 <h1 className='text-xl font-bold text-foreground'>
                   {video.title}
                 </h1>
-                {video.price && video.price > 0 && (
+                {!!video.price && video.price > 0 && (
                   <span className='px-3 py-1 rounded-full bg-accent text-white text-sm font-semibold'>
                     {formatPrice(video.price)}
                     {video.isPurchased ? ' • Đã mua' : ''}
