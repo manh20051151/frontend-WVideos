@@ -12,9 +12,27 @@ const roboto = Roboto({
   display: 'swap',
 });
 
+// SEO: URL gốc dùng cho canonical/Open Graph/sitemap, đổi qua env NEXT_PUBLIC_SITE_URL
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://snha.dpdns.org';
+
 export const metadata: Metadata = {
-  title: 'WVideos - Nền tảng chia sẻ video',
-  description: 'Nền tảng chia sẻ video hàng đầu Việt Nam',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'WVideos - Nền tảng chia sẻ video',
+    template: '%s | WVideos',
+  },
+  description: 'Nền tảng chia sẻ video hàng đầu Việt Nam. Xem shorts, tin tức, clip sao và nhiều nội dung sáng tạo mỗi ngày.',
+  alternates: {
+    canonical: './',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'vi_VN',
+    siteName: 'WVideos',
+    url: SITE_URL,
+    title: 'WVideos - Nền tảng chia sẻ video',
+    description: 'Nền tảng chia sẻ video hàng đầu Việt Nam. Xem shorts, tin tức, clip sao và nhiều nội dung sáng tạo mỗi ngày.',
+  },
 };
 
 export default function RootLayout({
