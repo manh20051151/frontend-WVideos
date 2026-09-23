@@ -47,7 +47,6 @@ export default function TopUpPage() {
         return userId.replace(/-/g, '');
       }
     } catch (error) {
-      console.error('Error getting user ID:', error);
     }
     return '';
   }, []);
@@ -102,7 +101,6 @@ export default function TopUpPage() {
       }
       setBalance(balanceValue);
     } catch (error: any) {
-      console.error('Error loading financial info:', error);
       setBalance(0);
       if (error.response?.status === 401) {
         setBalanceError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
@@ -128,7 +126,6 @@ export default function TopUpPage() {
       }
       setBalance(balanceValue);
     } catch (error: any) {
-      console.error('Error refreshing balance:', error);
       if (error.response?.status === 401) {
         setBalanceError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       } else {
@@ -216,7 +213,6 @@ export default function TopUpPage() {
         await refreshBalance();
       }
     } catch (error) {
-      console.error('Error checking transaction:', error);
     }
   };
 
@@ -294,7 +290,6 @@ export default function TopUpPage() {
         document.body.removeChild(textArea);
       }
     } catch (err) {
-      console.error('Failed to copy:', err);
     }
   };
 

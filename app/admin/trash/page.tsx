@@ -33,7 +33,6 @@ export default function AdminTrashPage() {
       setTotalPages(response.totalPages || 0);
       setPage(pageNum);
     } catch (err: any) {
-      console.error('Error loading deleted videos:', err);
       alert('Lỗi khi tải danh sách video đã xóa');
     } finally {
       setLoading(false);
@@ -56,7 +55,6 @@ export default function AdminTrashPage() {
       alert('Khôi phục video thành công!');
       loadDeletedVideos(page);
     } catch (err: any) {
-      console.error('Error restoring video:', err);
       alert('Khôi phục video thất bại');
     }
   }, [page, loadDeletedVideos]);

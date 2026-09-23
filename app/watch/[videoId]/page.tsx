@@ -72,8 +72,6 @@ export default function WatchVideoPage() {
           setUserReaction(videoData.userReaction);
         }
       } catch (error: any) {
-        console.error('Error fetching video:', error);
-        console.log('Error response:', error?.response?.data);
         if (error?.response?.status === 401 || error?.response?.status === 403) {
           // Luôn hiện modal đăng nhập cho video riêng tư
           setShowLoginModal(true);
@@ -96,7 +94,6 @@ export default function WatchVideoPage() {
         try {
           await videoApi.incrementViews(videoId);
         } catch (error) {
-          console.error('Lỗi khi tăng lượt xem:', error);
         }
       }, 2000);
       return () => clearTimeout(timer);
@@ -123,7 +120,6 @@ export default function WatchVideoPage() {
           setStreamFailed(true);
         }
       } catch (e) {
-        console.error('❌ Lỗi lấy direct URL Streamtape:', e);
         if (!cancelled) setStreamFailed(true);
       }
     };
@@ -251,7 +247,6 @@ export default function WatchVideoPage() {
         setSubscriberCount(prev => prev + 1);
       }
     } catch (error) {
-      console.error('Subscription error:', error);
     } finally {
       setSubscribing(false);
     }
@@ -276,7 +271,6 @@ export default function WatchVideoPage() {
       setDislikeCount(response.dislikeCount);
       setUserReaction(response.userReaction);
     } catch (error) {
-      console.error('Reaction error:', error);
     } finally {
       setReacting(false);
     }

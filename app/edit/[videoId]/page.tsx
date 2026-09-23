@@ -205,7 +205,6 @@ export default function EditVideoPage() {
           setCustomPrice('');
         }
       } catch (err) {
-        console.error('Failed to load video:', err);
         router.push('/profile?tab=my-videos');
       } finally {
         setLoading(false);
@@ -228,7 +227,6 @@ export default function EditVideoPage() {
       const data = await categoryApi.getActiveCategories();
       setCategories(data);
     } catch (error) {
-      console.error('Lỗi khi tải danh sách thể loại:', error);
     } finally {
       setLoadingCategories(false);
     }
@@ -334,7 +332,6 @@ export default function EditVideoPage() {
 
       router.push('/profile?tab=my-videos');
     } catch (err) {
-      console.error('Update error:', err);
       setError(err instanceof Error ? err.message : 'Cập nhật thất bại. Vui lòng thử lại.');
     } finally {
       setSaving(false);

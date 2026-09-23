@@ -55,7 +55,6 @@ export const videoApi = {
       data
     );
 
-    console.log('Init upload result:', result);
 
     if (!result) {
       throw new Error('Empty response from server');
@@ -87,7 +86,6 @@ export const videoApi = {
       const token = url.pathname.split('/').pop(); // "01"
       const finalUrl = `${url.origin}${url.pathname}?${token}`;
 
-      console.log('[DIRECT UPLOAD] Upload URL:', finalUrl);
 
       const xhr = new XMLHttpRequest();
 
@@ -104,12 +102,10 @@ export const videoApi = {
       xhr.addEventListener('load', () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           const responseText = xhr.responseText;
-          console.log('[DIRECT UPLOAD] Raw response:', responseText.substring(0, 500));
           
           try {
             // Try to parse as JSON first
             const jsonResponse = JSON.parse(responseText);
-            console.log('[DIRECT UPLOAD] JSON response:', jsonResponse);
             resolve(jsonResponse);
           } catch (e) {
             // Parse HTML form response from DoodStream
@@ -119,26 +115,21 @@ export const videoApi = {
             
             if (opMatch && opMatch[1] === 'upload_result') {
               // Upload thành công, cần lấy fileCode từ backend
-              console.log('[DIRECT UPLOAD] Upload success (form), filename:', fnMatch?.[1] || 'unknown');
               resolve({ 
                 status: 'success', 
                 filename: fnMatch?.[1] || 'unknown',
                 source: 'html_form'
               });
             } else {
-              console.log('[DIRECT UPLOAD] Response (text):', responseText.substring(0, 200));
               resolve({ rawResponse: responseText });
             }
           }
         } else {
-          console.error('[DIRECT UPLOAD] Upload failed:', xhr.status, xhr.statusText);
-          console.error('[DIRECT UPLOAD] Response:', xhr.responseText.substring(0, 500));
           reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
         }
       });
 
       xhr.addEventListener('error', () => {
-        console.error('[DIRECT UPLOAD] Network error');
         reject(new Error('Network error during upload'));
       });
 

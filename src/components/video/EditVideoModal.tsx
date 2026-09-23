@@ -104,7 +104,6 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       const data = await categoryApi.getActiveCategories();
       setCategories(data);
     } catch (error) {
-      console.error('Lỗi khi tải danh sách thể loại:', error);
     } finally {
       setLoadingCategories(false);
     }
@@ -152,7 +151,6 @@ export default function EditVideoModal({ isOpen, onClose, video, onSave }: EditV
       });
       onClose();
     } catch (error) {
-      console.error('Error saving video:', error);
       alert('Lỗi khi lưu video: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setSaving(false);

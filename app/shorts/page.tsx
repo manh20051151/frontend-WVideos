@@ -90,7 +90,6 @@ export default function ShortsPage() {
       }
       setVideos((prev) => [...prev, ...data]);
     } catch (e) {
-      console.error('Lỗi tải shorts:', e);
     } finally {
       setLoading(false);
     }
@@ -189,7 +188,6 @@ export default function ShortsPage() {
     } catch (e) {
       const res = (e as { response?: { data?: { message?: string } } })?.response;
       setPurchaseError(res?.data?.message || 'Mua video thất bại, vui lòng thử lại');
-      console.error('Lỗi mua video:', e);
     }
   };
 
@@ -240,7 +238,6 @@ export default function ShortsPage() {
     } catch (e) {
       // Hoàn tác nếu lỗi
       setLikeState((prev) => ({ ...prev, [id]: base }));
-      console.error('Lỗi thích video:', e);
     }
   };
 
@@ -279,7 +276,6 @@ export default function ShortsPage() {
     } catch (e) {
       // Hoàn tác nếu lỗi
       setFollowState((prev) => ({ ...prev, [channelId]: currentlyFollowing }));
-      console.error('Lỗi theo dõi kênh:', e);
     }
   };
 

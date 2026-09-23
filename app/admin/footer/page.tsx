@@ -120,7 +120,6 @@ export default function AdminFooterPage() {
       setTotalElements(data.totalElements);
       setTotalPages(data.totalPages);
     } catch (err: any) {
-      console.error('Error loading footer links:', err);
       setError(err.response?.data?.message || 'Lỗi khi tải danh sách liên kết footer');
     } finally {
       setLoadingLinks(false);
@@ -135,7 +134,6 @@ export default function AdminFooterPage() {
       const data = await footerApi.getAllFooterSettings();
       setFooterSettings(data);
     } catch (err: any) {
-      console.error('Error loading footer settings:', err);
       setError(err.response?.data?.message || 'Lỗi khi tải cấu hình footer');
     } finally {
       setLoadingSettings(false);
@@ -186,7 +184,6 @@ export default function AdminFooterPage() {
       setEditingLink(null);
       loadFooterLinks();
     } catch (err: any) {
-      console.error('Error saving footer link:', err);
       alert(err.response?.data?.message || 'Lỗi khi lưu liên kết footer');
     }
   };
@@ -198,7 +195,6 @@ export default function AdminFooterPage() {
       await footerApi.deleteFooterLink(link.id);
       setFooterLinks(prev => prev.filter(item => item.id !== link.id));
     } catch (err: any) {
-      console.error('Error deleting footer link:', err);
       alert(err.response?.data?.message || 'Lỗi khi xóa liên kết footer');
     }
   };
@@ -238,7 +234,6 @@ export default function AdminFooterPage() {
       setIsSettingModalOpen(false);
       setEditingSetting(null);
     } catch (err: any) {
-      console.error('Error saving footer setting:', err);
       alert(err.response?.data?.message || 'Lỗi khi lưu cấu hình footer');
     }
   };
@@ -250,7 +245,6 @@ export default function AdminFooterPage() {
       await footerApi.deleteFooterSetting(setting.id);
       setFooterSettings(prev => prev.filter(item => item.id !== setting.id));
     } catch (err: any) {
-      console.error('Error deleting footer setting:', err);
       alert(err.response?.data?.message || 'Lỗi khi xóa cấu hình footer');
     }
   };

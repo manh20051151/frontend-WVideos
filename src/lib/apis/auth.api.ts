@@ -82,7 +82,6 @@ export const authApi = {
       const response = await fetch('https://api.vietqr.io/v2/banks');
       return await response.json();
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách ngân hàng:', error);
       return { code: 'ERROR', data: [] };
     }
   },

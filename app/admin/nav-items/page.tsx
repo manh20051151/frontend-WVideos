@@ -64,7 +64,6 @@ export default function AdminNavItemsPage() {
       setTotalElements(data.totalElements);
       setTotalPages(data.totalPages);
     } catch (err: any) {
-      console.error('Error loading nav items:', err);
       setError(err.response?.data?.message || 'Lỗi khi tải danh sách menu');
     } finally {
       setLoading(false);
@@ -114,7 +113,6 @@ export default function AdminNavItemsPage() {
       setIsModalOpen(false);
       setEditingNavItem(null);
     } catch (err: any) {
-      console.error('Error saving nav item:', err);
       alert(err.response?.data?.message || 'Lỗi khi lưu mục menu');
     }
   };
@@ -126,7 +124,6 @@ export default function AdminNavItemsPage() {
       await navItemApi.deleteNavItem(navItem.id);
       setNavItems(prev => prev.filter(item => item.id !== navItem.id));
     } catch (err: any) {
-      console.error('Error deleting nav item:', err);
       alert(err.response?.data?.message || 'Lỗi khi xóa mục menu');
     }
   };

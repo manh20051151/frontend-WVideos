@@ -51,7 +51,6 @@ const ThumbnailSelector = memo(function ThumbnailSelector({
         onThumbnailChange(localPreview);
       }
     } catch (err) {
-      console.error('Upload error:', err);
       setError('Có lỗi xảy ra khi upload ảnh');
       onThumbnailChange(localPreview);
     } finally {

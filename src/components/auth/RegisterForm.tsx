@@ -74,7 +74,6 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             setFormData(INITIAL_FORM);
             onSuccess?.(message);
         } catch (err: any) {
-            console.error('Register error:', err);
             setError(err.response?.data?.message || err.message || 'Có lỗi xảy ra, vui lòng thử lại!');
         } finally {
             setLoading(false);

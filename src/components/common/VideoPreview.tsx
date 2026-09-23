@@ -63,7 +63,6 @@ export default function VideoPreview({
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          console.log('Video autoplay failed:', error);
         });
       }
     }
@@ -99,7 +98,6 @@ export default function VideoPreview({
             preload='metadata'
             onLoadedData={() => setVideoLoaded(true)}
             onError={(e) => {
-              console.log('Video preview error:', e);
               setShowPreview(false);
             }}
           >

@@ -128,7 +128,6 @@ export default function AdminNotificationsPage() {
       setSearchText('');
       setTargetMode('ALL');
     } catch (err: unknown) {
-      console.error('Lỗi gửi thông báo:', err);
       const message = err instanceof Error ? err.message : 'Gửi thông báo thất bại. Vui lòng thử lại.';
       setError(message);
     } finally {

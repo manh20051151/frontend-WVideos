@@ -64,7 +64,6 @@ export default function AdminCategoriesPage() {
       setTotalElements(data.totalElements);
       setTotalPages(data.totalPages);
     } catch (err: any) {
-      console.error('Error loading categories:', err);
       setError(err.response?.data?.message || 'Lỗi khi tải danh sách thể loại');
     } finally {
       setLoading(false);
@@ -114,7 +113,6 @@ export default function AdminCategoriesPage() {
       setIsModalOpen(false);
       setEditingCategory(null);
     } catch (err: any) {
-      console.error('Error saving category:', err);
       alert(err.response?.data?.message || 'Lỗi khi lưu thể loại');
     }
   };
@@ -126,7 +124,6 @@ export default function AdminCategoriesPage() {
       await categoryApi.deleteCategory(category.id);
       setCategories(prev => prev.filter(cat => cat.id !== category.id));
     } catch (err: any) {
-      console.error('Error deleting category:', err);
       alert(err.response?.data?.message || 'Lỗi khi xóa thể loại');
     }
   };

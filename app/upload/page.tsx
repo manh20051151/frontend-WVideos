@@ -213,7 +213,6 @@ export default function UploadVideoPage() {
       const data = await categoryApi.getActiveCategories();
       setCategories(data);
     } catch (error) {
-      console.error('Lỗi khi tải danh sách thể loại:', error);
     } finally {
       setLoadingCategories(false);
     }
@@ -339,7 +338,6 @@ export default function UploadVideoPage() {
       setProgress(10);
       setError('');
 
-      console.log('[UPLOAD] Bắt đầu upload video');
       const startApiTime = Date.now();
 
       // Chạy progress bar trong khi đợi API
@@ -356,7 +354,6 @@ export default function UploadVideoPage() {
 
       clearInterval(progressInterval);
       const apiDuration = Date.now() - startApiTime;
-      console.log(`[UPLOAD] API trả về sau ${apiDuration}ms`, result);
       setProgress(100);
 
       // Redirect to profile page with my-videos tab
@@ -364,7 +361,6 @@ export default function UploadVideoPage() {
         router.push('/profile?tab=my-videos');
       }, 1000);
     } catch (err: any) {
-      console.error('Upload error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Upload thất bại. Vui lòng thử lại';
       setError(errorMessage);
       setProgress(0);

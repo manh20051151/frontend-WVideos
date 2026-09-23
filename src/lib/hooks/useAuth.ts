@@ -28,7 +28,6 @@ export const useAuth = () => {
           };
           setUser(userWithAvatar);
         } catch (e) {
-          console.error('Failed to parse saved user:', e);
         }
       }
       fetchProfile();
@@ -40,7 +39,6 @@ export const useAuth = () => {
   const fetchProfile = async () => {
     try {
       const userData = await authApi.getMyInfo();
-      console.log('🔍 fetchProfile - raw userData received:', userData);
       
       if (userData && userData.id) {
         // Xử lý avatar từ Google - backend có thể trả về picture thay vì avatar
@@ -48,13 +46,11 @@ export const useAuth = () => {
           ...userData,
           avatar: userData.avatar || (userData as unknown as { picture?: string }).picture || (userData as unknown as { imageUrl?: string }).imageUrl || (userData as unknown as { photoURL?: string }).photoURL || ''
         };
-        console.log('🔍 fetchProfile - processed user with avatar:', processedUser.avatar);
         
         setUser(processedUser);
         localStorage.setItem('user', JSON.stringify(processedUser));
       }
     } catch (error: unknown) {
-      console.error('Failed to fetch profile:', error);
       // Chỉ logout khi lỗi xác thực (401/403). Không xóa token khi gặp lỗi
       // mạng/server tạm thời (timeout, 5xx, backend đang restart) để tránh
       // mất trạng thái đăng nhập âm thầm khi reload -> mất highlight like/dislike.
@@ -88,7 +84,6 @@ export const useAuth = () => {
       
       throw new Error('Login failed');
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
     }
   };
@@ -100,7 +95,6 @@ export const useAuth = () => {
         await authApi.logout(token);
       }
     } catch (error) {
-      console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

@@ -45,41 +45,21 @@ export default function ThumbnailImage({
   // Sử dụng src trực tiếp, fallback nếu src chính lỗi
   const displaySrc = currentSrc || fallbackSrc;
 
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const imgElement = e.currentTarget;
-    console.log('❌ Thumbnail error details:', {
-      currentSrc: currentSrc,
-      fallbackSrc: fallbackSrc,
-      imgSrc: imgElement.src,
-      naturalWidth: imgElement.naturalWidth,
-      naturalHeight: imgElement.naturalHeight,
-      complete: imgElement.complete
-    });
-    
+  const handleError = () => {
     // Nếu đang dùng src chính và có fallback, thử fallback
     if (currentSrc === src && fallbackSrc && fallbackSrc !== src) {
-      console.log('🔄 Trying fallback URL:', fallbackSrc);
       setCurrentSrc(fallbackSrc);
       setIsLoading(true);
       return;
     }
-    
+
     // Nếu không có fallback hoặc fallback cũng lỗi
     setImageError(true);
     setIsLoading(false);
     onError?.();
   };
 
-  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const imgElement = e.currentTarget;
-    console.log('✅ Thumbnail loaded details:', {
-      currentSrc: currentSrc,
-      imgSrc: imgElement.src,
-      naturalWidth: imgElement.naturalWidth,
-      naturalHeight: imgElement.naturalHeight,
-      complete: imgElement.complete
-    });
-    
+  const handleLoad = () => {
     setImageLoaded(true);
     setIsLoading(false);
     onLoad?.();

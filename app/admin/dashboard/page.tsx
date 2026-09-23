@@ -41,7 +41,6 @@ export default function AdminDashboardPage() {
       const data = await dashboardApi.getDashboardStats();
       setStats(data);
     } catch (err: any) {
-      console.error('Error loading dashboard stats:', err);
       setError(err.response?.data?.message || 'Lỗi khi tải thống kê dashboard');
     } finally {
       setLoading(false);

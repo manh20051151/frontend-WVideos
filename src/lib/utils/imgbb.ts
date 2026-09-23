@@ -113,7 +113,6 @@ export async function uploadImageToImgbb(
     // Resize ảnh nếu quá lớn
     let fileToUpload: Blob = file;
     if (file.size > MAX_FILE_SIZE) {
-      console.log('Resizing image before upload...');
       fileToUpload = await resizeImage(file);
     }
 
@@ -122,7 +121,6 @@ export async function uploadImageToImgbb(
 
     return await uploadBase64ToImgbb(base64Image, name || file.name);
   } catch (error) {
-    console.error('Error preparing image for imgbb:', error);
     return {
       success: false,
       error: 'Có lỗi xảy ra khi xử lý ảnh',
@@ -153,7 +151,6 @@ export async function uploadImageToImgbbFromBlob(
     const base64Image = await fileToBase64(blobToUpload);
     return await uploadBase64ToImgbb(base64Image, name);
   } catch (error) {
-    console.error('Error uploading blob to imgbb:', error);
     return {
       success: false,
       error: 'Có lỗi xảy ra khi xử lý ảnh',
@@ -208,7 +205,6 @@ async function uploadBase64ToImgbb(
       };
     }
   } catch (error) {
-    console.error('Error uploading to imgbb:', error);
     
     if (error instanceof Error) {
       if (error.name === 'AbortError') {

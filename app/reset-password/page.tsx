@@ -58,7 +58,6 @@ function ResetPasswordContent() {
         router.push('/');
       }, 3000);
     } catch (error: unknown) {
-      console.error('Reset password error:', error);
       setStatus('error');
       const err = error as { response?: { data?: { message?: string } } };
       setMessage(err.response?.data?.message || 'Đặt lại mật khẩu thất bại. Token có thể đã hết hạn hoặc đã được sử dụng.');

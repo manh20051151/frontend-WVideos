@@ -105,7 +105,6 @@ export default function ChannelNotificationBell({
         await subscriptionApi.unmuteChannel(channelId);
       }
     } catch (err) {
-      console.error('Lỗi cập nhật cài đặt thông báo kênh:', err);
       // Rollback nếu gọi API thất bại
       setPreference(preference);
       onPreferenceChange?.(preference, preference === 'NONE');

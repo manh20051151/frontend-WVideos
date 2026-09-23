@@ -62,7 +62,6 @@ axiosClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('❌ Axios Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -78,13 +77,11 @@ axiosClient.interceptors.response.use(
     const originalRequest = error.config;
     const hasToken = !!localStorage.getItem('token');
 
-    console.log('❌ Response error:', error.response?.status, error.response?.data);
     
     // Chỉ refresh khi: lỗi 401 + code 5002 (TOKEN_EXPIRED) + chưa retry + không phải request refresh
     const isTokenExpired = error.response?.status === 401 && 
                            error.response?.data?.code === 5002;
     
-    console.log('🔍 isTokenExpired:', isTokenExpired, 'status:', error.response?.status, 'code:', error.response?.data?.code);
     
     // Nếu lỗi 401 nhưng KHÔNG phải token expired -> logout ngay (token invalid, revoked,...)
     // CHỈ hiển thị modal nếu có token (người dùng đã đăng nhập trước đó)
@@ -107,7 +104,6 @@ axiosClient.interceptors.response.use(
       !originalRequest._retry &&
       !originalRequest.url?.includes('/auth/refresh')
     ) {
-      console.log('🔄 Token expired detected, isRefreshing=', isRefreshing);
       
       if (isRefreshing) {
         // Nếu đang refresh, đợi trong queue
@@ -127,7 +123,6 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       const oldToken = localStorage.getItem('token');
-      console.log('🔄 Calling refresh with token:', oldToken?.substring(0, 20) + '...');
       
       if (!oldToken) {
         // Không có token -> logout
@@ -149,10 +144,8 @@ axiosClient.interceptors.response.use(
           }
         );
 
-        console.log('✅ Refresh response:', response.data);
         const newToken = response.data.result.token;
         localStorage.setItem('token', newToken);
-        console.log('💾 Token saved to localStorage:', newToken.substring(0, 20) + '...');
 
         // Process queue với token mới
         processQueue(null, newToken);
@@ -161,7 +154,6 @@ axiosClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
-        console.error('❌ Refresh failed:', refreshError);
         // Refresh thất bại -> logout
         processQueue(refreshError, null);
         localStorage.removeItem('token');

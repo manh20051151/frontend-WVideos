@@ -34,7 +34,6 @@ function ConfirmRegistrationContent() {
         router.push('/');
       }, 3000);
     } catch (error: any) {
-      console.error('Confirmation error:', error);
       setStatus('error');
       setMessage(error.response?.data?.message || 'Xác nhận đăng ký thất bại. Token có thể đã hết hạn hoặc không hợp lệ.');
     }

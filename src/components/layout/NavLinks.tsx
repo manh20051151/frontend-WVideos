@@ -46,7 +46,6 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
                 }
             } catch (err) {
                 // Giữ nguyên danh sách mặc định nếu gọi API thất bại
-                console.error('Lỗi tải menu điều hướng:', err);
             }
         };
         loadNavItems();

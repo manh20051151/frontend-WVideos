@@ -36,7 +36,6 @@ export default function ChannelPage() {
         const data = await userApi.getUserProfile(userId);
         setProfile(data);
       } catch (err: any) {
-        console.error('Error fetching profile:', err);
         setError('Không thể tải thông tin kênh');
       } finally {
         setLoading(false);
@@ -57,7 +56,6 @@ export default function ChannelPage() {
       setHasMoreVideos(pageToLoad + 1 < data.totalPages);
       setVideoPage(pageToLoad);
     } catch (err) {
-      console.error('Lỗi tải video kênh:', err);
     } finally {
       setLoadingVideos(false);
     }
@@ -85,7 +83,6 @@ export default function ChannelPage() {
         setProfile(prev => prev ? { ...prev, isSubscribed: true, subscriberCount: prev.subscriberCount + 1 } : null);
       }
     } catch (err) {
-      console.error('Subscription error:', err);
     } finally {
       setSubscribing(false);
     }

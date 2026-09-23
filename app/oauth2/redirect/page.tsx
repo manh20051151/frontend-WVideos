@@ -61,7 +61,6 @@ function OAuth2RedirectContent() {
           window.location.href = '/';
         }, 1000);
       } catch (err) {
-        console.error('Error fetching user info:', err);
         setStatus('error');
         setMessage('Đăng nhập thành công nhưng không thể lấy thông tin người dùng. Vui lòng thử đăng nhập lại.');
         localStorage.removeItem('token');
