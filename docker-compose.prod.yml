@@ -15,7 +15,9 @@ services:
     container_name: wvideos-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Chỉ mở trên localhost: Cloudflare Tunnel (cloudflared) vào được,
+      # máy ngoài LAN/internet không truy cập trực tiếp được port này
+      - "127.0.0.1:3000:3000"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s

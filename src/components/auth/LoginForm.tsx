@@ -53,8 +53,11 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
         setSuccess('');
         setForgotSending(true);
         try {
-            await authApi.forgotPassword(formData.email);
-            setSuccess('Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.');
+            const response = await authApi.forgotPassword(formData.email);
+            setSuccess(
+                response.message ||
+                'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra cả mục Thư rác (Spam) nếu không thấy email trong hộp thư đến.'
+            );
         } catch (err: unknown) {
             const e = err as { response?: { data?: { message?: string } }; message?: string };
             setError(e.response?.data?.message || e.message || 'Không thể gửi yêu cầu khôi phục mật khẩu, vui lòng thử lại!');
