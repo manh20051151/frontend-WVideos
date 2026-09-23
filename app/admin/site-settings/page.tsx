@@ -5,11 +5,11 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { siteSettingApi, SITE_SETTING_LABELS, type SiteSettingInfo } from '@/lib/apis';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { uploadImageToImgbb } from '@/lib/utils/imgbb';
+import { uploadImageToCloudinary } from '@/lib/utils/cloudinary';
 
 /**
  * Trang quản trị: cấu hình logo site + favicon
- * - Upload ảnh (qua ImgBB) rồi lưu URL vào site settings
+ * - Upload ảnh (qua Cloudinary) rồi lưu URL vào site settings
  * - Logo hiển thị trên header website và trong email hệ thống
  * - Favicon hiển thị trên tab trình duyệt
  * - Xóa cấu hình = quay về mặc định (logo chữ wd video / không favicon)
@@ -53,12 +53,12 @@ export default function AdminSiteSettingsPage() {
   const handleUpload = useCallback(
     async (key: string, file: File) => {
       setError(null);
-      const result = await uploadImageToImgbb(file);
-      if (!result.success || !result.data?.url) {
+      const result = await uploadImageToCloudinary(file);
+      if (!result.success || !result.url) {
         setError(result.error || 'Upload ảnh thất bại');
         return;
       }
-      setPendingPreview((prev) => ({ ...prev, [key]: result.data!.url! }));
+      setPendingPreview((prev) => ({ ...prev, [key]: result.url! }));
     },
     []
   );

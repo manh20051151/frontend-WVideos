@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SiteLogo from './SiteLogo';
 
 const QUICK_LINKS = [
   { label: 'Trang chủ', href: '/' },
@@ -78,8 +79,15 @@ export default function Footer() {
           {/* Brand */}
           <div className='sm:col-span-2 lg:col-span-1'>
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
-              <span className='text-accent text-2xl font-extrabold'>w</span>
-              <span className='text-highlight text-2xl font-extrabold'>video</span>
+              <SiteLogo
+                imgClassName='h-9 w-auto max-w-[140px] object-contain'
+                fallback={
+                  <>
+                    <span className='text-accent text-2xl font-extrabold'>w</span>
+                    <span className='text-highlight text-2xl font-extrabold'>video</span>
+                  </>
+                }
+              />
             </Link>
             <p className='text-sm text-foreground/70 leading-relaxed max-w-xs'>
               Nền tảng chia sẻ video hàng đầu Việt Nam. Khám phá hàng triệu
