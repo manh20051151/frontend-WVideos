@@ -523,8 +523,7 @@ export default function TopUpPage() {
                   <h3 className='text-base font-semibold text-foreground'>Hỗ trợ</h3>
                 </div>
                 <div className='space-y-2 text-sm text-foreground'>
-                  <p>Hotline/Zalo: 0375000169</p>
-                  <p>Email: admin@wvideos.com</p>
+                  <p>Telegram: @snha149</p>
                   <p>Thời gian: 8:00 - 22:00 hàng ngày</p>
                 </div>
               </div>
