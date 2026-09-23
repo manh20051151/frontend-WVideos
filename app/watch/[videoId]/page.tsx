@@ -1,768 +1,110 @@
-'use client';
+import type { Metadata } from 'next';
+import WatchView from './WatchView';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
-import { subscriptionApi } from '@/lib/apis/subscription.api';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import ClientOnly from '@/components/common/ClientOnly';
-import AuthModal from '@/components/auth/AuthModal';
-import LoginRequiredModal from '@/components/common/LoginRequiredModal';
-import CommentSection from '@/components/video/CommentSection';
-import RelatedVideosSection from '@/components/video/RelatedVideosSection';
-import VideoPlayer from '@/components/common/VideoPlayer';
-import ReportVideoModal from '@/components/video/ReportVideoModal';
-import { ChannelNotificationBell } from '@/components/channel';
+/**
+ * Server component cho trang /watch/{videoId}:
+ * - generateMetadata: title/mô tả/OG theo video thật (title template %s | WVideos ở layout).
+ * - JSON-LD VideoObject để Google hiện rich result (thumbnail, ngày đăng).
+ * - UI interactive nằm ở WatchView (client).
+ */
 
-export default function WatchVideoPage() {
-  const params = useParams();
-  const videoId = params.videoId as string;
-  const { user: currentUser } = useAuth();
-  
-  const [video, setVideo] = useState<VideoResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showLoginRequired, setShowLoginRequired] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
-  const [subscriberCount, setSubscriberCount] = useState<number>(0);
-  const [subscribing, setSubscribing] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [dislikeCount, setDislikeCount] = useState(0);
-  const [userReaction, setUserReaction] = useState<'LIKE' | 'DISLIKE' | null>(null);
-  const [reacting, setReacting] = useState(false);
-  const [streamUrl, setStreamUrl] = useState<string | null>(null);
-  const [streamFailed, setStreamFailed] = useState(false);
-  const [streamRetry, setStreamRetry] = useState(0);
-  const STREAM_MAX_RETRY = 1;
-  const [purchasing, setPurchasing] = useState(false);
-  const [purchaseError, setPurchaseError] = useState<string | null>(null);
-  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
-  const [showReportModal, setShowReportModal] = useState(false);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://snha.dpdns.org';
 
-  useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        setLoading(true);
-        const videoData = await videoApi.getVideoById(videoId);
-        setVideo(videoData);
-        
-        // Set subscription info từ video response
-        if (videoData.subscriberCount !== undefined) {
-          setSubscriberCount(videoData.subscriberCount);
-        }
-        if (videoData.isSubscribed !== undefined) {
-          setIsSubscribed(videoData.isSubscribed);
-        }
-        // Set reaction info
-        if (videoData.likeCount !== undefined) {
-          setLikeCount(videoData.likeCount);
-        }
-        if (videoData.dislikeCount !== undefined) {
-          setDislikeCount(videoData.dislikeCount);
-        }
-        if (videoData.userReaction !== undefined) {
-          setUserReaction(videoData.userReaction);
-        }
-      } catch (error: any) {
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          // Luôn hiện modal đăng nhập cho video riêng tư
-          setShowLoginModal(true);
-        } else {
-          setError('Không thể tải video');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+interface SeoVideo {
+  id: string;
+  title?: string | null;
+  slug?: string | null;
+  description?: string | null;
+  thumbnailUrl?: string | null;
+  splashImageUrl?: string | null;
+  embedUrl?: string | null;
+  createdAt?: string | null;
+  status?: string;
+}
 
-    if (videoId) {
-      fetchVideo();
-    }
-  }, [videoId]);
-
-  useEffect(() => {
-    if (video && video.status === 'READY') {
-      const timer = setTimeout(async () => {
-        try {
-          await videoApi.incrementViews(videoId);
-        } catch (error) {
-        }
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [video, videoId]);
-
-  // Với Streamtape: lấy direct mp4 URL để phát trực tiếp qua <video> (fallback iframe nếu fail)
-  useEffect(() => {
-    let cancelled = false;
-    // Reset mỗi lần đổi video: ẩn iframe cho tới khi resolve xong
-    setStreamUrl(null);
-    setStreamFailed(false);
-    setStreamRetry(0);
-
-    const resolve = async () => {
-      if (!video || video.status !== 'READY' || !video.embedUrl.includes('streamtape.com')) return;
-      try {
-        const url = await videoApi.getStreamtapeStreamUrl(video.embedUrl);
-        if (cancelled) return;
-        if (url) {
-          setStreamUrl(url);
-          setStreamFailed(false);
-        } else {
-          setStreamFailed(true);
-        }
-      } catch (e) {
-        if (!cancelled) setStreamFailed(true);
-      }
-    };
-
-    resolve();
-    return () => { cancelled = true; };
-  }, [video]);
-
-  // Khi link direct hết hạn giữa chừng: tự lấy link mới thay vì nhảy sang iframe
-  const handleVideoError = () => {
-    if (streamRetry < STREAM_MAX_RETRY && video?.embedUrl.includes('streamtape.com')) {
-      setStreamRetry((prev) => prev + 1);
-      setStreamUrl(null);
-      videoApi.getStreamtapeStreamUrl(video.embedUrl)
-        .then((url) => {
-          if (url) {
-            setStreamUrl(url);
-            setStreamFailed(false);
-          } else {
-            setStreamFailed(true);
-          }
-        })
-        .catch(() => setStreamFailed(true));
-    } else {
-      setStreamFailed(true);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+// Fetch cho metadata/JSON-LD. Video riêng tư -> 401/403 -> trả null (không index).
+// Next cache theo revalidate nên generateMetadata + render chỉ đi API 1 lần.
+async function getVideoForSeo(videoId: string): Promise<SeoVideo | null> {
+  try {
+    const res = await fetch(`${API_URL}/videos/${videoId}`, {
+      next: { revalidate: 300 },
     });
-  };
+    if (!res.ok) return null;
+    const body = await res.json();
+    const video = body?.result ?? body;
+    return video?.id ? (video as SeoVideo) : null;
+  } catch {
+    return null;
+  }
+}
 
-  const formatViews = (views: number | null | undefined) => {
-    const viewCount = views || 0;
-    if (viewCount >= 1000000) {
-      return `${(viewCount / 1000000).toFixed(1)}M lượt xem`;
-    }
-    if (viewCount >= 1000) {
-      return `${(viewCount / 1000).toFixed(1)}N lượt xem`;
-    }
-    return `${viewCount} lượt xem`;
-  };
+interface WatchPageProps {
+  params: Promise<{ videoId: string }>;
+}
 
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+export async function generateMetadata({ params }: WatchPageProps): Promise<Metadata> {
+  const { videoId } = await params;
+  const video = await getVideoForSeo(videoId);
 
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleShare = async () => {
-    const shareUrl = window.location.href;
-    const shareData = {
-      title: video?.title || 'Xem video trên WVideos',
-      text: video?.title || '',
-      url: shareUrl,
+  if (!video) {
+    return {
+      title: 'Video không tồn tại',
+      robots: { index: false },
     };
-
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch {
-        // Người dùng huỷ hoặc không hỗ trợ -> fallback copy link
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShareFeedback('Đã sao chép link chia sẻ!');
-    } catch {
-      setShareFeedback('Không thể sao chép link');
-    }
-    setTimeout(() => setShareFeedback(null), 2000);
-  };
-
-  const formatPrice = (price?: number) => {
-    if (!price) return 'Miễn phí';
-    return `${new Intl.NumberFormat('vi-VN').format(price)} VNĐ`;
-  };
-
-  const handlePurchase = async () => {
-    if (!currentUser) {
-      setShowLoginRequired(true);
-      return;
-    }
-    try {
-      setPurchasing(true);
-      setPurchaseError(null);
-      const updated = await videoApi.purchaseVideo(videoId);
-      setVideo(updated);
-    } catch (err) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      const msg = axiosErr.response?.data?.message || 'Mua video thất bại. Vui lòng thử lại';
-      setPurchaseError(msg);
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
-  const handleSubscribe = async () => {
-    if (!currentUser) {
-      setShowLoginRequired(true);
-      return;
-    }
-    if (!video) return;
-
-    try {
-      setSubscribing(true);
-      if (isSubscribed) {
-        await subscriptionApi.unsubscribe(video.userId);
-        setIsSubscribed(false);
-        setSubscriberCount(prev => prev - 1);
-      } else {
-        await subscriptionApi.subscribe(video.userId);
-        setIsSubscribed(true);
-        setSubscriberCount(prev => prev + 1);
-      }
-    } catch (error) {
-    } finally {
-      setSubscribing(false);
-    }
-  };
-
-  const handleReaction = async (reactionType: 'LIKE' | 'DISLIKE') => {
-    if (!currentUser) {
-      setShowLoginRequired(true);
-      return;
-    }
-
-    // Không cho phép tự react video của mình
-    if (currentUser.id === video?.userId) {
-      return;
-    }
-    if (!video) return;
-
-    try {
-      setReacting(true);
-      const response = await videoApi.toggleReaction(video.id, reactionType);
-      setLikeCount(response.likeCount);
-      setDislikeCount(response.dislikeCount);
-      setUserReaction(response.userReaction);
-    } catch (error) {
-    } finally {
-      setReacting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <ClientOnly fallback={
-        <>
-          <Header />
-          <div className='min-h-screen bg-primary py-12 px-4'>
-            <div className='max-w-6xl mx-auto'>
-              <div className='animate-pulse'>
-                <div className='w-full h-[500px] bg-secondary rounded-lg mb-6'></div>
-                <div className='h-8 bg-secondary rounded w-3/4 mb-4'></div>
-                <div className='h-4 bg-secondary rounded w-1/2'></div>
-              </div>
-            </div>
-          </div>
-          <Footer />
-        </>
-      }>
-        <div className='min-h-screen bg-primary flex items-center justify-center'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-accent'></div>
-        </div>
-      </ClientOnly>
-    );
   }
 
-  // Login Modal for private videos - ƯU TIÊN HƠN
-  if (showLoginModal) {
-    return (
-      <>
-        <Header />
-        <div className='min-h-screen bg-primary py-12 px-4'>
-          <div className='max-w-md mx-auto text-center'>
-            <div className='bg-secondary rounded-lg p-8'>
-              <div className='w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center'>
-                <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
-                </svg>
-              </div>
-              <h2 className='text-xl font-bold text-foreground mb-2'>
-                Video riêng tư
-              </h2>
-              <p className='text-foreground opacity-70 mb-6'>
-                Đây là video riêng tư. Bạn cần đăng nhập để xem video này.
-              </p>
-              <div className='flex gap-3 justify-center'>
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-                >
-                  Đăng nhập / Đăng ký
-                </button>
-                <Link
-                  href='/'
-                  className='bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-medium py-2 px-6 rounded-lg transition-colors text-foreground'
-                >
-                  Về trang chủ
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => {
-            setShowAuthModal(false);
-          }}
-          onLoginSuccess={() => {
-            setShowAuthModal(false);
-            setShowLoginModal(false);
-            window.location.reload();
-          }} 
-        />
-      </>
-    );
-  }
+  const canonicalPath = `/watch/${video.slug || video.id}`;
+  const description = (video.description || '').slice(0, 160) || 'Xem video trên WVideos';
+  const image = video.splashImageUrl || video.thumbnailUrl || undefined;
 
-  if (error || !video) {
-    return (
-      <>
-        <Header />
-        <div className='min-h-screen bg-primary py-12 px-4'>
-          <div className='max-w-md mx-auto text-center'>
-            <div className='bg-secondary rounded-lg p-8'>
-              <div className='w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center'>
-                <svg className='w-8 h-8 text-red-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
-                </svg>
-              </div>
-              <h1 className='text-xl font-bold text-foreground mb-2'>
-                Video không tồn tại
-              </h1>
-              <p className='text-foreground opacity-70 mb-6'>
-                Video này có thể đã bị xóa hoặc không tồn tại
-              </p>
-              <div className='flex gap-3 justify-center'>
-                <Link
-                  href='/'
-                  className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-                >
-                  Về trang chủ
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+  return {
+    title: video.title || 'Video',
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: 'video.other',
+      title: video.title || 'Video',
+      description,
+      url: `${SITE_URL}${canonicalPath}`,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: video.title || 'Video',
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
-  // Chặn truy cập nếu video chưa sẵn sàng (chưa READY)
-  if (video && video.status !== 'READY') {
-    const isFailed = video.status === 'FAILED';
-    return (
-      <>
-        <Header />
-        <div className='min-h-screen bg-primary flex items-center justify-center px-4'>
-          <div className='max-w-md w-full text-center'>
-            <div className='bg-secondary rounded-lg p-8'>
-              <div className='w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center'>
-                <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
-                </svg>
-              </div>
-              <h1 className='text-xl font-bold text-foreground mb-2'>
-                {isFailed ? 'Video xử lý thất bại' : 'Video đang được xử lý'}
-              </h1>
-              <p className='text-foreground opacity-70 mb-6'>
-                {isFailed
-                  ? 'Video này xử lý không thành công. Vui lòng thử upload lại.'
-                  : 'Video của bạn đang được tải lên và chuyển đổi. Vui lòng quay lại sau ít phút.'}
-              </p>
-              <Link
-                href='/'
-                className='btn-accent font-medium py-2 px-6 rounded-lg transition-colors'
-              >
-                Về trang chủ
-              </Link>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+export default async function WatchPage({ params }: WatchPageProps) {
+  const { videoId } = await params;
+  const video = await getVideoForSeo(videoId);
 
-  const isLocked = !!video.price && video.price > 0 && !video.hasAccess;
-
-  const descriptionPreview = video.description && video.description.length > 200 
-    ? video.description.slice(0, 200) + '...' 
-    : video.description;
-
-  const isStreamtape = !!video?.embedUrl?.includes('streamtape.com');
+  const jsonLd =
+    video && video.title
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'VideoObject',
+          name: video.title,
+          description: (video.description || '').slice(0, 500) || video.title,
+          thumbnailUrl: [video.splashImageUrl, video.thumbnailUrl].filter(Boolean),
+          uploadDate: video.createdAt || undefined,
+          embedUrl: video.embedUrl || undefined,
+          url: `${SITE_URL}/watch/${video.slug || video.id}`,
+        }
+      : null;
 
   return (
     <>
-      <Header />
-      <div className='min-h-screen bg-primary'>
-        <div className='px-4 py-6 sm:px-6 lg:px-10'>
-          <div className='grid grid-cols-1 lg:grid-cols-5 gap-6'>
-            {/* Left Column - Video + Info */}
-            <div className='lg:col-span-4 space-y-4'>
-              {/* Video Player */}
-              <div className='bg-black rounded-lg overflow-hidden'>
-                <div className='relative aspect-video'>
-                  {isLocked ? (
-                    <>
-                      {/* Thumbnail mờ + overlay mua video */}
-                      <img
-                        src={video.thumbnailUrl || video.splashImageUrl || undefined}
-                        alt={video.title}
-                        className='absolute inset-0 w-full h-full object-cover blur-md scale-105'
-                      />
-                      <div className='absolute inset-0 bg-black/50 flex items-center justify-center px-4'>
-                        <div className='relative max-w-sm w-full text-center bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl'>
-                          <div className='mx-auto mb-5 w-16 h-16 rounded-2xl bg-accent/25 flex items-center justify-center'>
-                            <svg className='w-8 h-8 text-accent' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
-                            </svg>
-                          </div>
-                          <h1 className='text-xl font-bold text-white mb-1'>Video có phí</h1>
-                          <p className='text-sm text-white/70 mb-5'>Video này yêu cầu thanh toán để xem.</p>
-                          <p className='text-3xl font-extrabold text-accent mb-6'>{formatPrice(video.price)}</p>
-                          {purchaseError && (
-                            <p className='text-sm text-red-400 mb-4'>{purchaseError}</p>
-                          )}
-                          <button
-                            onClick={handlePurchase}
-                            disabled={purchasing}
-                            className='w-full btn-accent font-semibold py-3 px-6 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-                          >
-                            {purchasing ? 'Đang xử lý...' : `Mua để xem - ${formatPrice(video.price)}`}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  ) : streamUrl ? (
-                    <VideoPlayer
-                      src={streamUrl}
-                      poster={video.splashImageUrl || video.thumbnailUrl || undefined}
-                      title={video.title}
-                      onError={handleVideoError}
-                      className='w-full h-full'
-                    />
-                  ) : isStreamtape && !streamFailed ? (
-                    <div className='w-full h-full flex items-center justify-center text-white bg-black'>
-                      <div className='text-center'>
-                        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4'></div>
-                        <p className='text-lg'>Đang tải video...</p>
-                      </div>
-                    </div>
-                  ) : video.embedUrl ? (
-                    <iframe
-                      src={video.embedUrl}
-                      className='w-full h-full'
-                      allowFullScreen
-                      allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
-                      frameBorder='0'
-                      title={video.title}
-                    />
-                  ) : video.status === 'READY' ? (
-                    <div className='w-full h-full flex items-center justify-center text-white'>
-                      <div className='text-center'>
-                        <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                          <path d='M8 5v14l11-7z'/>
-                        </svg>
-                        <p className='text-lg'>Không có nguồn video</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className='w-full h-full flex items-center justify-center text-white'>
-                      <div className='text-center'>
-                        <svg className='w-16 h-16 mx-auto mb-4 opacity-50' fill='currentColor' viewBox='0 0 24 24'>
-                          <path d='M8 5v14l11-7z'/>
-                        </svg>
-                        <p className='text-lg'>Video đang được xử lý</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Video Title */}
-              <div className='flex items-center justify-between gap-3 flex-wrap'>
-                <h1 className='text-xl font-bold text-foreground'>
-                  {video.title}
-                </h1>
-                {!!video.price && video.price > 0 && (
-                  <span className='px-3 py-1 rounded-full bg-accent text-white text-sm font-semibold'>
-                    {formatPrice(video.price)}
-                    {video.isPurchased ? ' • Đã mua' : ''}
-                  </span>
-                )}
-              </div>
-
-              {/* Action Bar */}
-              <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-accent border-opacity-20 pb-4'>
-                <div className='text-foreground opacity-70'>
-                  <span>{formatViews(video.views)}</span>
-                  <span className='mx-2'>•</span>
-                  <span>{formatDate(video.createdAt)}</span>
-                </div>
-                
-                <div className='flex items-center gap-1 sm:gap-2 flex-wrap'>
-                  <button 
-                    onClick={() => handleReaction('LIKE')}
-                    disabled={reacting || (currentUser?.id === video.userId)}
-                    title={currentUser?.id === video.userId ? 'Không thể tự thích video của mình' : ''}
-                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
-                      currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
-                      userReaction === 'LIKE' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-foreground'
-                    }`}
-                  >
-                    <svg className='w-6 h-6' fill={userReaction === 'LIKE' ? 'currentColor' : 'none'} stroke='currentColor' viewBox='0 0 24 24'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5' />
-                    </svg>
-                    <span className='font-medium'>{likeCount.toLocaleString('vi-VN')}</span>
-                  </button>
-
-                  <button 
-                    onClick={() => handleReaction('DISLIKE')}
-                    disabled={reacting || (currentUser?.id === video.userId)}
-                    title={currentUser?.id === video.userId ? 'Không thể tự dislike video của mình' : ''}
-                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors ${
-                      currentUser?.id === video.userId ? 'opacity-50 cursor-not-allowed' :
-                      userReaction === 'DISLIKE' ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : 'text-foreground'
-                    }`}
-                  >
-                    <svg className='w-6 h-6' fill={userReaction === 'DISLIKE' ? 'currentColor' : 'none'} stroke='currentColor' viewBox='0 0 24 24'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5' />
-                    </svg>
-                    <span className='font-medium'>{dislikeCount.toLocaleString('vi-VN')}</span>
-                  </button>
-
-                  <button 
-                    onClick={handleShare}
-                    className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
-                  >
-                    <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z' />
-                    </svg>
-                    <span className='font-medium'>Chia sẻ</span>
-                  </button>
-
-                  {/* Báo cáo vi phạm - ẩn với chủ video */}
-                  {currentUser && currentUser.id !== video.userId && (
-                    <button
-                      onClick={() => setShowReportModal(true)}
-                      className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
-                      title='Báo cáo video này'
-                    >
-                      <svg className='w-6 h-6' fill='none' stroke='currentColor' strokeWidth={2} viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5' />
-                      </svg>
-                      <span className='font-medium'>Báo cáo</span>
-                    </button>
-                  )}
-
-                  {video.downloadUrl && (
-                    <a
-                      href={video.downloadUrl}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full hover:bg-secondary transition-colors text-foreground'
-                    >
-                      <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
-                      </svg>
-                      <span className='font-medium'>Tải xuống</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {/* Channel Bar */}
-              <div className='flex items-center justify-between gap-3 py-4 border-b border-accent border-opacity-20 flex-wrap'>
-                <Link href={`/channel/${video.userSlug || video.userId}`} className='flex items-center gap-4 hover:opacity-80 transition-opacity'>
-                  {video.userAvatar ? (
-                    <img
-                      src={video.userAvatar}
-                      alt={video.userFullName || 'Kênh'}
-                      className='w-12 h-12 rounded-full object-cover'
-                    />
-                  ) : (
-                    <div className='w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white font-bold text-lg'>
-                      {video.userFullName?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                  )}
-                  <div>
-                    <h3 className='font-semibold text-foreground'>{video.userFullName}</h3>
-                    <p className='text-sm text-foreground opacity-60'>
-                      {subscriberCount > 0 
-                        ? `${subscriberCount.toLocaleString('vi-VN')} người đăng ký`
-                        : (currentUser && currentUser.id === video.userId ? 'Kênh của bạn' : 'Kênh')
-                      }
-                    </p>
-                  </div>
-                </Link>
-                <div className='flex items-center gap-2'>
-                  <ChannelNotificationBell
-                    channelId={video.userId}
-                    channelName={video.userFullName || 'Kênh'}
-                    isSubscribed={!!isSubscribed}
-                  />
-
-                  {currentUser && currentUser.id !== video.userId && (
-                    <button 
-                      onClick={handleSubscribe}
-                      disabled={subscribing}
-                      className={`font-medium py-2 px-6 rounded-full transition-colors ${
-                        isSubscribed 
-                          ? 'bg-gray-500 hover:bg-gray-600 text-white' 
-                          : 'bg-red-600 hover:bg-red-700 text-white'
-                      }`}
-                    >
-                      {subscribing ? 'Đang xử lý...' : (isSubscribed ? 'Đã đăng ký' : 'Đăng ký')}
-                    </button>
-                  )}
-                  {currentUser && currentUser.id === video.userId && (
-                    <button className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'>
-                      Kênh của bạn
-                    </button>
-                  )}
-                  {!currentUser && (
-                    <button 
-                      onClick={() => setShowLoginRequired(true)}
-                      className='bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition-colors'
-                    >
-                      Đăng ký
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              {video.description && (
-                <div className='bg-secondary rounded-xl p-4'>
-                  <div className='text-foreground'>
-                    <p className='whitespace-pre-wrap'>
-                      {showFullDescription ? video.description : descriptionPreview}
-                    </p>
-                    {video.description.length > 200 && (
-                      <button
-                        onClick={() => setShowFullDescription(!showFullDescription)}
-                        className='text-blue-500 font-medium mt-2 hover:underline'
-                      >
-                        {showFullDescription ? 'Thu gọn' : 'Xem thêm'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Categories & Tags */}
-              {((video.categories?.length ?? 0) > 0 || (video.tags?.length ?? 0) > 0) && (
-                <div className='flex flex-wrap gap-2'>
-                  {video.categories?.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.slug}`}
-                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground hover:bg-accent hover:text-white transition-colors'
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                  {video.tags?.map((tag, index) => (
-                    <span
-                      key={index}
-                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground opacity-70'
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Comments Section */}
-              <div className='bg-secondary rounded-xl p-6'>
-                <CommentSection videoId={video?.id || videoId} />
-              </div>
-            </div>
-
-            {/* Right Column - Related Videos */}
-            <div className='space-y-4'>
-              <h3 className='font-bold text-lg text-foreground'>Video liên quan</h3>
-
-              {video && (
-                <RelatedVideosSection currentVideoId={video.id || videoId} />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      <Footer />
-
-      {/* Popup yêu cầu đăng nhập (thích/dislike/đăng ký khi chưa login) */}
-      <LoginRequiredModal
-        isOpen={showLoginRequired}
-        onClose={() => setShowLoginRequired(false)}
-        onLogin={() => setShowAuthModal(true)}
-      />
-
-      {/* Modal đăng nhập / đăng ký thực tế */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onLoginSuccess={() => {
-          setShowAuthModal(false);
-          window.location.reload();
-        }}
-      />
-
-      {/* Modal báo cáo vi phạm video */}
-      {showReportModal && video && (
-        <ReportVideoModal
-          videoId={video.id || videoId}
-          videoTitle={video.title}
-          onClose={() => setShowReportModal(false)}
+      {jsonLd && (
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-
-      {/* Toast thông báo chia sẻ */}
-      {shareFeedback && (
-        <div className='fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-black/85 text-white px-5 py-2.5 rounded-full text-sm shadow-lg'>
-          {shareFeedback}
-        </div>
-      )}
+      <WatchView />
     </>
   );
 }

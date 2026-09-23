@@ -15,6 +15,22 @@ const roboto = Roboto({
 // SEO: URL gốc dùng cho canonical/Open Graph/sitemap, đổi qua env NEXT_PUBLIC_SITE_URL
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://snha.dpdns.org';
 
+// JSON-LD WebSite + SearchAction: Google gắn hộp tìm kiếm vào kết quả tìm kiếm WVideos
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'WVideos',
+  url: SITE_URL,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -43,6 +59,10 @@ export default function RootLayout({
   return (
     <html lang='vi' suppressHydrationWarning>
       <head>
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
