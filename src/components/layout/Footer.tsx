@@ -80,7 +80,7 @@ export default function Footer() {
           <div className='sm:col-span-2 lg:col-span-1'>
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
               <SiteLogo
-                imgClassName='h-9 w-auto max-w-[140px] object-contain'
+                imgClassName='h-16 w-auto max-w-[240px] object-contain'
                 fallback={
                   <>
                     <span className='text-accent text-2xl font-extrabold'>w</span>

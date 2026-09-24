@@ -326,6 +326,7 @@ export default function EditVideoPage() {
         description: formData.description?.trim() || '',
         isPublic: formData.isPublic,
         categoryIds: formData.categoryIds,
+        tags: formData.tags || [],
         thumbnailUrl: formData.thumbnailUrl,
         price,
       });

@@ -70,7 +70,7 @@ export default function Header() {
             </button>
             <Link href='/' className='flex items-center gap-2'>
               <SiteLogo
-                imgClassName='h-9 w-auto max-w-[140px] object-contain'
+                imgClassName='h-16 w-auto max-w-[240px] object-contain'
                 fallback={
                   <>
                     <span className='text-accent text-2xl font-bold'>wd</span>
@@ -225,7 +225,7 @@ export default function Header() {
             <div className='flex items-center justify-between px-4 py-3 border-b border-secondary'>
               <Link href='/' onClick={closeDrawer} className='flex items-center gap-2'>
                 <SiteLogo
-                  imgClassName='h-8 w-auto max-w-[120px] object-contain'
+                  imgClassName='h-12 w-auto max-w-[180px] object-contain'
                   fallback={
                     <>
                       <span className='text-accent text-xl font-bold'>wd</span>
