@@ -57,10 +57,10 @@ const videoApi = {
     return await axiosClient.post(`/videos/${videoId}/restore`);
   },
 
-  // Get public videos (sorted)
-  getPublicVideos: async (page = 0, size = 10, sort = 'newest'): Promise<PageResponse<VideoResponse>> => {
+  // Get public videos (sorted), lọc thêm theo slug category nếu có
+  getPublicVideos: async (page = 0, size = 10, sort = 'newest', categorySlug?: string): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get('/videos/public', {
-      params: { page, size, sort },
+      params: { page, size, sort, ...(categorySlug ? { categorySlug } : {}) },
     });
   },
 

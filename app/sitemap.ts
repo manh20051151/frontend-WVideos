@@ -24,6 +24,36 @@ interface SitemapNews {
   updatedAt?: string | null;
 }
 
+interface SitemapCategory {
+  id: string;
+  slug: string;
+  updatedAt?: string | null;
+}
+
+async function fetchCategoryEntries(): Promise<MetadataRoute.Sitemap> {
+  const entries: MetadataRoute.Sitemap = [];
+  try {
+    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const body = await res.json();
+      const list: SitemapCategory[] = body?.result ?? body;
+      for (const c of Array.isArray(list) ? list : []) {
+        if (c.slug) {
+          entries.push({
+            url: `${SITE_URL}/category/${c.slug}`,
+            lastModified: c.updatedAt ? new Date(c.updatedAt) : undefined,
+            changeFrequency: 'weekly',
+            priority: 0.5,
+          });
+        }
+      }
+    }
+  } catch {
+    // bỏ qua nếu API lỗi
+  }
+  return entries;
+}
+
 async function fetchPagedEntries(
   path: string,
   toEntry: (item: Record<string, unknown>, index: number) => { url: string; lastModified?: Date }
@@ -100,6 +130,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Sitemap không được fail vì API lỗi — vẫn trả trang tĩnh
   let videoEntries: MetadataRoute.Sitemap = [];
   let newsEntries: MetadataRoute.Sitemap = [];
+  let categoryEntries: MetadataRoute.Sitemap = [];
   try {
     videoEntries = await fetchPublicVideoEntries();
   } catch {
@@ -110,6 +141,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // backend chưa sẵn sàng: bỏ qua phần tin tức
   }
+  try {
+    categoryEntries = await fetchCategoryEntries();
+  } catch {
+    // backend chưa sẵn sàng: bỏ qua phần thể loại
+  }
 
-  return [...staticPages, ...videoEntries, ...newsEntries];
+  return [...staticPages, ...categoryEntries, ...videoEntries, ...newsEntries];
 }
