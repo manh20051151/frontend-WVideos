@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VideoCard from '@/components/video/VideoCard';
 import Pagination from '@/components/common/Pagination';
+import videoApi from '@/lib/apis/video.api';
 import { userApi, type UserProfileResponse } from '@/lib/apis/user.api';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -15,6 +16,8 @@ import { ChannelNotificationBell } from '@/components/channel';
 import type { VideoResponse, PageResponse } from '@/types';
 
 const PAGE_SIZE = 12;
+
+type ChannelTab = 'videos' | 'liked';
 
 export default function ChannelView() {
   const params = useParams();
@@ -34,6 +37,14 @@ export default function ChannelView() {
   const [videoPage, setVideoPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loadingVideos, setLoadingVideos] = useState(false);
+
+  // Tab "Video đã thích" của kênh
+  const [activeTab, setActiveTab] = useState<ChannelTab>('videos');
+  const [likedVideos, setLikedVideos] = useState<VideoResponse[]>([]);
+  const [likedPage, setLikedPage] = useState(0);
+  const [likedTotalPages, setLikedTotalPages] = useState(0);
+  const [loadingLiked, setLoadingLiked] = useState(false);
+  const [likedLoaded, setLikedLoaded] = useState(false);
 
   // Ref tới đầu lưới video để cuộn mượt khi đổi trang
   const gridTopRef = useRef<HTMLDivElement>(null);
@@ -82,6 +93,12 @@ export default function ChannelView() {
     if (userId) {
       setVideos([]);
       setVideoPage(0);
+      // Reset tab đã thích khi đổi kênh
+      setActiveTab('videos');
+      setLikedVideos([]);
+      setLikedPage(0);
+      setLikedTotalPages(0);
+      setLikedLoaded(false);
       fetchChannelVideos(initialPageRef.current);
     }
   }, [userId]);
@@ -100,6 +117,45 @@ export default function ChannelView() {
     const target = Math.max(0, Math.min(p, totalPages - 1));
     if (target === videoPage) return;
     fetchChannelVideos(target);
+    gridTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Tab "Video đã thích": nạp lần đầu khi bật tab, sau đó phân trang
+  // Dùng profile.id (UUID thật) thay vì userId từ URL (có thể là slug)
+  const fetchLikedVideos = async (pageToLoad: number) => {
+    if (!profile?.id) return;
+    setLoadingLiked(true);
+    try {
+      const data = await videoApi.getPublicLikedVideos(profile.id, pageToLoad, PAGE_SIZE);
+
+      if (data.totalPages > 0 && pageToLoad > data.totalPages - 1) {
+        fetchLikedVideos(data.totalPages - 1);
+        return;
+      }
+
+      setLikedVideos(data.content);
+      setLikedTotalPages(data.totalPages);
+      setLikedPage(pageToLoad);
+      setLikedLoaded(true);
+    } catch (err) {
+      setLikedLoaded(true);
+    } finally {
+      setLoadingLiked(false);
+    }
+  };
+
+  const handleTabChange = (tab: ChannelTab) => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    if (tab === 'liked' && !likedLoaded) {
+      fetchLikedVideos(0);
+    }
+  };
+
+  const goToLikedPage = (p: number) => {
+    const target = Math.max(0, Math.min(p, likedTotalPages - 1));
+    if (target === likedPage) return;
+    fetchLikedVideos(target);
     gridTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   
@@ -245,57 +301,121 @@ export default function ChannelView() {
         <div className="container mx-auto px-4">
           <div className="border-b border-accent/20 mb-6">
             <nav className="flex gap-8">
-              <button className="py-4 border-b-2 border-red-600 text-red-600 font-medium">
+              <button
+                onClick={() => handleTabChange('videos')}
+                className={`py-4 border-b-2 font-medium transition-colors ${
+                  activeTab === 'videos'
+                    ? 'border-red-600 text-red-600'
+                    : 'border-transparent text-foreground/60 hover:text-foreground'
+                }`}
+              >
                 Video
+              </button>
+              <button
+                onClick={() => handleTabChange('liked')}
+                className={`py-4 border-b-2 font-medium transition-colors ${
+                  activeTab === 'liked'
+                    ? 'border-red-600 text-red-600'
+                    : 'border-transparent text-foreground/60 hover:text-foreground'
+                }`}
+              >
+                Video đã thích
               </button>
             </nav>
           </div>
-          
-          {/* Video Grid */}
-          {videos.length > 0 ? (
+
+          {/* Tab: Video của kênh */}
+          {activeTab === 'videos' && (
             <>
-              <div ref={gridTopRef} className='scroll-mt-20' />
+              {videos.length > 0 ? (
+                <>
+                  <div ref={gridTopRef} className='scroll-mt-20' />
 
-              <div
-                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8 transition-opacity duration-200 ${
-                  loadingVideos ? 'opacity-50 pointer-events-none' : 'opacity-100'
-                }`}
-              >
-                {videos.map((video) => (
-                  <VideoCard
-                    key={video.id}
-                    video={video}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
-                    showActions={false}
-                    showStatus={false}
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8 transition-opacity duration-200 ${
+                      loadingVideos ? 'opacity-50 pointer-events-none' : 'opacity-100'
+                    }`}
+                  >
+                    {videos.map((video) => (
+                      <VideoCard
+                        key={video.id}
+                        video={video}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        showActions={false}
+                        showStatus={false}
+                      />
+                    ))}
+                  </div>
+
+                  <Pagination
+                    currentPage={videoPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    className='pb-8'
                   />
-                ))}
-              </div>
-
-              <Pagination
-                currentPage={videoPage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-                className='pb-8'
-              />
-            </>
-          ) : !loadingVideos ? (
-            <div className="text-center py-12 text-foreground/60">
-              <p className="text-lg">Chưa có video nào</p>
-              {isOwnChannel && (
-                <Link 
-                  href="/upload"
-                  className="inline-block mt-4 px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90"
-                >
-                  Tải video lên
-                </Link>
+                </>
+              ) : !loadingVideos ? (
+                <div className="text-center py-12 text-foreground/60">
+                  <p className="text-lg">Chưa có video nào</p>
+                  {isOwnChannel && (
+                    <Link
+                      href="/upload"
+                      className="inline-block mt-4 px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90"
+                    >
+                      Tải video lên
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+                </div>
               )}
-            </div>
-          ) : (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
-            </div>
+            </>
+          )}
+
+          {/* Tab: Video đã thích của kênh */}
+          {activeTab === 'liked' && (
+            <>
+              {likedVideos.length > 0 ? (
+                <>
+                  <div ref={gridTopRef} className='scroll-mt-20' />
+
+                  <div
+                    className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8 transition-opacity duration-200 ${
+                      loadingLiked ? 'opacity-50 pointer-events-none' : 'opacity-100'
+                    }`}
+                  >
+                    {likedVideos.map((video) => (
+                      <VideoCard
+                        key={video.id}
+                        video={video}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        showActions={false}
+                        showStatus={false}
+                      />
+                    ))}
+                  </div>
+
+                  <Pagination
+                    currentPage={likedPage}
+                    totalPages={likedTotalPages}
+                    onPageChange={goToLikedPage}
+                    className='pb-8'
+                  />
+                </>
+              ) : !loadingLiked ? (
+                <div className="text-center py-12 text-foreground/60">
+                  <p className="text-lg">Kênh này chưa thích video công khai nào</p>
+                </div>
+              ) : (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
+                </div>
+              )}
+            </>
           )}
         </div>
         

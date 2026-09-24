@@ -130,6 +130,13 @@ const videoApi = {
     return axiosClient.get(`/videos/${videoId}/reactions`);
   },
 
+  // Video công khai đã thích bởi user chỉ định (tab trang kênh)
+  getPublicLikedVideos: async (userId: string, page = 0, size = 12): Promise<PageResponse<VideoResponse>> => {
+    return await axiosClient.get(`/videos/liked/${userId}`, {
+      params: { page, size },
+    });
+  },
+
   // Get related videos
   getRelatedVideos: async (videoId: string, page: number = 0, size: number = 6): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get(`/videos/${videoId}/related`, {
