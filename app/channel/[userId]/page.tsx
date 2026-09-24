@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ChannelView from './ChannelView';
 
 /**
@@ -89,7 +90,9 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <ChannelView />
+            <Suspense>
+                <ChannelView />
+            </Suspense>
     </>
   );
 }

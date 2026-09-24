@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VideoCard from '@/components/video/VideoCard';
+import Pagination from '@/components/common/Pagination';
 import { userApi, type UserProfileResponse } from '@/lib/apis/user.api';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -13,11 +14,16 @@ import ClientOnly from '@/components/common/ClientOnly';
 import { ChannelNotificationBell } from '@/components/channel';
 import type { VideoResponse, PageResponse } from '@/types';
 
+const PAGE_SIZE = 12;
+
 export default function ChannelView() {
   const params = useParams();
   const userId = params.userId as string;
   const { user: currentUser } = useAuth();
-  
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,8 +32,13 @@ export default function ChannelView() {
 
   const [videos, setVideos] = useState<VideoResponse[]>([]);
   const [videoPage, setVideoPage] = useState(0);
-  const [hasMoreVideos, setHasMoreVideos] = useState(true);
+  const [totalPages, setTotalPages] = useState(0);
   const [loadingVideos, setLoadingVideos] = useState(false);
+
+  // Ref tới đầu lưới video để cuộn mượt khi đổi trang
+  const gridTopRef = useRef<HTMLDivElement>(null);
+  // Trang ban đầu từ URL ?page= (1-based như trang chủ), chỉ đọc 1 lần
+  const initialPageRef = useRef(Math.max(1, parseInt(searchParams.get('page') || '1', 10)) - 1);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -48,12 +59,18 @@ export default function ChannelView() {
   }, [userId]);
 
   const fetchChannelVideos = async (pageToLoad: number) => {
-    if (loadingVideos) return;
     setLoadingVideos(true);
     try {
-      const data = await userApi.getVideos(userId, { page: pageToLoad, size: 12 }) as unknown as PageResponse<VideoResponse>;
-      setVideos((prev) => (pageToLoad === 0 ? data.content : [...prev, ...data.content]));
-      setHasMoreVideos(pageToLoad + 1 < data.totalPages);
+      const data = await userApi.getVideos(userId, { page: pageToLoad, size: PAGE_SIZE }) as unknown as PageResponse<VideoResponse>;
+
+      // Deep-link vào số trang vượt quá tổng số trang: nạp về trang cuối hợp lệ
+      if (data.totalPages > 0 && pageToLoad > data.totalPages - 1) {
+        fetchChannelVideos(data.totalPages - 1);
+        return;
+      }
+
+      setVideos(data.content);
+      setTotalPages(data.totalPages);
       setVideoPage(pageToLoad);
     } catch (err) {
     } finally {
@@ -65,10 +82,26 @@ export default function ChannelView() {
     if (userId) {
       setVideos([]);
       setVideoPage(0);
-      setHasMoreVideos(true);
-      fetchChannelVideos(0);
+      fetchChannelVideos(initialPageRef.current);
     }
   }, [userId]);
+
+  // Đồng bộ số trang lên URL ?page=N (giống trang chủ) để share/lưu lại được
+  useEffect(() => {
+    const urlParams = new URLSearchParams();
+    if (videoPage > 0) urlParams.set('page', String(videoPage + 1));
+
+    const queryString = urlParams.toString();
+    const url = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(url, { scroll: false });
+  }, [videoPage, pathname, router]);
+
+  const goToPage = (p: number) => {
+    const target = Math.max(0, Math.min(p, totalPages - 1));
+    if (target === videoPage) return;
+    fetchChannelVideos(target);
+    gridTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   
   const handleSubscribe = async () => {
     if (!currentUser) return;
@@ -221,11 +254,17 @@ export default function ChannelView() {
           {/* Video Grid */}
           {videos.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8">
+              <div ref={gridTopRef} className='scroll-mt-20' />
+
+              <div
+                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-8 transition-opacity duration-200 ${
+                  loadingVideos ? 'opacity-50 pointer-events-none' : 'opacity-100'
+                }`}
+              >
                 {videos.map((video) => (
-                  <VideoCard 
-                    key={video.id} 
-                    video={video} 
+                  <VideoCard
+                    key={video.id}
+                    video={video}
                     onEdit={() => {}}
                     onDelete={() => {}}
                     showActions={false}
@@ -234,22 +273,12 @@ export default function ChannelView() {
                 ))}
               </div>
 
-              {loadingVideos && (
-                <div className="flex justify-center py-6">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
-                </div>
-              )}
-
-              {hasMoreVideos && !loadingVideos && (
-                <div className="flex justify-center pb-12">
-                  <button
-                    onClick={() => fetchChannelVideos(videoPage + 1)}
-                    className="px-6 py-2 rounded-full bg-accent/10 text-accent font-medium hover:bg-accent/20 transition-colors"
-                  >
-                    Xem thêm
-                  </button>
-                </div>
-              )}
+              <Pagination
+                currentPage={videoPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+                className='pb-8'
+              />
             </>
           ) : !loadingVideos ? (
             <div className="text-center py-12 text-foreground/60">
