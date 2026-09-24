@@ -71,7 +71,8 @@ function sortVideos(list: VideoResponse[], sortBy: SortOption): VideoResponse[] 
     case 'popular':
       return arr.sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
     case 'favorites':
-      return arr.sort((a, b) => (b.favoritesCount ?? 0) - (a.favoritesCount ?? 0));
+      // likeCount = số LIKE thật (favoritesCount đã được backend đồng bộ vào response)
+      return arr.sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0));
     case 'comments':
       return arr.sort((a, b) => (b.commentsCount ?? 0) - (a.commentsCount ?? 0));
     case 'longest':
@@ -157,21 +158,27 @@ export default function SubscriptionsPage() {
             </h1>
 
             {videos.length > 0 && (
-              <div className='flex items-center gap-1 p-1 rounded-xl bg-secondary w-fit'>
-                {sortOptions.map((option) => (
-                  <button
-                    key={option.key}
-                    onClick={() => { setSortBy(option.key); setPage(0); }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
-                      sortBy === option.key
-                        ? 'bg-accent text-white shadow'
-                        : 'text-foreground opacity-70 hover:opacity-100 hover:bg-accent/10'
-                    }`}
-                  >
-                    {option.icon}
-                    <span className='hidden sm:inline'>{option.label}</span>
-                  </button>
-                ))}
+              <div className='relative -mx-4 px-4 sm:mx-0 sm:px-0'>
+                <div className='overflow-x-auto scrollbar-hide'>
+                  <div className='flex items-center gap-2 w-max sm:w-auto py-0.5'>
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.key}
+                        onClick={() => { setSortBy(option.key); setPage(0); }}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                          sortBy === option.key
+                            ? 'bg-accent text-white shadow-md shadow-accent/25'
+                            : 'bg-secondary text-foreground/70 hover:text-foreground hover:bg-primary border border-accent/25'
+                        }`}
+                      >
+                        {option.icon}
+                        <span>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Mờ mép phải: gợi ý còn chip để lướt ngang */}
+                <div className='pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-primary via-primary/70 to-transparent sm:hidden' />
               </div>
             )}
           </div>
