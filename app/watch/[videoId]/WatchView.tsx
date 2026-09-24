@@ -702,12 +702,13 @@ export default function WatchView() {
                     </Link>
                   ))}
                   {video.tags?.map((tag, index) => (
-                    <span
+                    <Link
                       key={index}
-                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground opacity-70'
+                      href={`/tag/${encodeURIComponent(tag)}`}
+                      className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground opacity-70 hover:bg-accent hover:text-white hover:opacity-100 transition-colors'
                     >
                       #{tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               )}
