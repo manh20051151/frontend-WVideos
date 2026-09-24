@@ -1,4 +1,4 @@
-# Hướng dẫn cài đặt WVideos Frontend
+# Hướng dẫn cài đặt snha Frontend
 
 ## Yêu cầu hệ thống
 

@@ -12,7 +12,7 @@ import { uploadImageToCloudinary } from '@/lib/utils/cloudinary';
  * - Upload ảnh (qua Cloudinary) rồi lưu URL vào site settings
  * - Logo hiển thị trên header website và trong email hệ thống
  * - Favicon hiển thị trên tab trình duyệt
- * - Xóa cấu hình = quay về mặc định (logo chữ wd video / không favicon)
+ * - Xóa cấu hình = quay về mặc định (logo chữ snha / không favicon)
  */
 
 export default function AdminSiteSettingsPage() {
@@ -169,8 +169,7 @@ export default function AdminSiteSettingsPage() {
                           />
                         ) : key === 'SITE_LOGO' ? (
                           <span className='text-lg font-bold'>
-                            <span className='text-accent'>wd</span>
-                            <span className='text-foreground'>video</span>
+                            <span className='text-accent'>snha</span>
                           </span>
                         ) : (
                           <span className='text-xs text-foreground opacity-50'>Chưa có</span>

@@ -283,7 +283,7 @@ export default function ShortsPage() {
   const handleShare = async (video: ShortsResponse) => {
     const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/watch/${video.slug || video.id}`;
     const shareData = {
-      title: video.title || 'Xem video trên WVideos',
+      title: video.title || 'Xem video trên snha',
       text: video.title || '',
       url: shareUrl,
     };

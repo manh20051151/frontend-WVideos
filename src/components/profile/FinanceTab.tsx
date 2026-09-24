@@ -327,7 +327,7 @@ export default function FinanceTab({ isDark }: { isDark?: boolean }) {
           isDark={isDark}
           label="Tổng đã nạp"
           value={formatVnd(data.totalDeposited)}
-          hint="Cộng dồn qua ví WVideos"
+          hint="Cộng dồn qua ví snha"
           icon="M12 19V5m0 0l-6 6m6-6l6 6"
           tone="neutral"
         />

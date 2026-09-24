@@ -1,4 +1,4 @@
-# AGENTS.md - WVideos Frontend
+# AGENTS.md - snha Frontend
 
 ## Commands
 ```bash

@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: NewsDetailPageProps): Promise
   }
 
   const canonicalPath = `/news/${news.slug || news.id}`;
-  const description = (news.summary || '').slice(0, 160) || 'Tin tức trên WVideos';
+  const description = (news.summary || '').slice(0, 160) || 'Tin tức trên snha';
 
   return {
     title: news.title || 'Tin tức',

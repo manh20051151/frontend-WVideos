@@ -1,4 +1,4 @@
-# WVideos Frontend - Steering Rules
+# snha Frontend - Steering Rules
 # My Rules
 
 - Sử dụng model thiên về code.

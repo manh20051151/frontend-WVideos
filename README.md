@@ -1,4 +1,4 @@
-# WVideos Frontend
+# snha Frontend
 
 Nền tảng chia sẻ video được xây dựng với Next.js 16, React 19, TypeScript và Tailwind CSS.
 

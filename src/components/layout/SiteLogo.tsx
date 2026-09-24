@@ -29,7 +29,7 @@ export default function SiteLogo({ imgClassName = 'h-9 w-auto max-w-[140px] obje
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={logoUrl}
-        alt='WVideos'
+        alt='snha'
         className={imgClassName}
         onError={() => setLogoError(true)}
       />

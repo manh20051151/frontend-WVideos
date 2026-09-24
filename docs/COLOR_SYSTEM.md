@@ -1,4 +1,4 @@
-# Color System - WVideos Frontend
+# Color System - snha Frontend
 
 ## Tổng quan
 

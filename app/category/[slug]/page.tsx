@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
         title: category.name,
         description:
             (category.description || '').slice(0, 160) ||
-            `Xem các video thể loại ${category.name} trên WVideos.`,
+            `Xem các video thể loại ${category.name} trên snha.`,
         alternates: { canonical: `/category/${category.slug}` },
         openGraph: {
             type: 'website',

@@ -15,11 +15,11 @@ const roboto = Roboto({
 // SEO: URL gốc dùng cho canonical/Open Graph/sitemap, đổi qua env NEXT_PUBLIC_SITE_URL
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://snha.dpdns.org';
 
-// JSON-LD WebSite + SearchAction: Google gắn hộp tìm kiếm vào kết quả tìm kiếm WVideos
+// JSON-LD WebSite + SearchAction: Google gắn hộp tìm kiếm vào kết quả tìm kiếm snha
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'WVideos',
+  name: 'snha',
   url: SITE_URL,
   potentialAction: {
     '@type': 'SearchAction',
@@ -34,8 +34,8 @@ const websiteJsonLd = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'WVideos - Nền tảng chia sẻ video',
-    template: '%s | WVideos',
+    default: 'snha - Nền tảng chia sẻ video',
+    template: '%s | snha',
   },
   description: 'Nền tảng chia sẻ video hàng đầu Việt Nam. Xem shorts, tin tức, clip sao và nhiều nội dung sáng tạo mỗi ngày.',
   alternates: {
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
-    siteName: 'WVideos',
+    siteName: 'snha',
     url: SITE_URL,
-    title: 'WVideos - Nền tảng chia sẻ video',
+    title: 'snha - Nền tảng chia sẻ video',
     description: 'Nền tảng chia sẻ video hàng đầu Việt Nam. Xem shorts, tin tức, clip sao và nhiều nội dung sáng tạo mỗi ngày.',
   },
 };

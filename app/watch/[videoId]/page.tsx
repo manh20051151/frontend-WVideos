@@ -3,7 +3,7 @@ import WatchView from './WatchView';
 
 /**
  * Server component cho trang /watch/{videoId}:
- * - generateMetadata: title/mô tả/OG theo video thật (title template %s | WVideos ở layout).
+ * - generateMetadata: title/mô tả/OG theo video thật (title template %s | snha ở layout).
  * - JSON-LD VideoObject để Google hiện rich result (thumbnail, ngày đăng).
  * - UI interactive nằm ở WatchView (client).
  */
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: WatchPageProps): Promise<Meta
   }
 
   const canonicalPath = `/watch/${video.slug || video.id}`;
-  const description = (video.description || '').slice(0, 160) || 'Xem video trên WVideos';
+  const description = (video.description || '').slice(0, 160) || 'Xem video trên snha';
   const image = video.splashImageUrl || video.thumbnailUrl || undefined;
 
   return {

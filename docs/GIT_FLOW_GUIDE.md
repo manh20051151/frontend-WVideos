@@ -1,4 +1,4 @@
-# Git Flow Workflow - WVideos Frontend
+# Git Flow Workflow - snha Frontend
 
 ## Tổng quan
 

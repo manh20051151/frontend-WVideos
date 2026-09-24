@@ -181,7 +181,7 @@ export default function WatchView() {
   const handleShare = async () => {
     const shareUrl = window.location.href;
     const shareData = {
-      title: video?.title || 'Xem video trên WVideos',
+      title: video?.title || 'Xem video trên snha',
       text: video?.title || '',
       url: shareUrl,
     };

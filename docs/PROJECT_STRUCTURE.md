@@ -1,4 +1,4 @@
-# Cấu trúc dự án WVideos Frontend
+# Cấu trúc dự án snha Frontend
 
 ## Tổng quan
 

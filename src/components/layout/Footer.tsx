@@ -83,8 +83,7 @@ export default function Footer() {
                 imgClassName='h-16 w-auto max-w-[240px] object-contain'
                 fallback={
                   <>
-                    <span className='text-accent text-2xl font-extrabold'>w</span>
-                    <span className='text-highlight text-2xl font-extrabold'>video</span>
+                    <span className='text-accent text-2xl font-extrabold'>snha</span>
                   </>
                 }
               />
@@ -149,7 +148,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className='mt-10 pt-6 border-t border-accent flex flex-col sm:flex-row items-center justify-between gap-4'>
           <p className='text-sm text-foreground/60'>
-            © {new Date().getFullYear()} WVideos. All rights reserved.
+            © {new Date().getFullYear()} snha. All rights reserved.
           </p>
           <div className='flex items-center gap-5 text-sm text-foreground/60'>
             <a href='#' className='hover:text-accent transition-colors duration-200'>

@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ChannelPageProps): Promise<Me
 
   return {
     title,
-    description: `Xem các video từ ${channel.fullName || 'kênh'} trên WVideos.`,
+    description: `Xem các video từ ${channel.fullName || 'kênh'} trên snha.`,
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: 'profile',

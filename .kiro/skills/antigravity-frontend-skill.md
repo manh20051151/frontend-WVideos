@@ -1,12 +1,12 @@
 ---
-name: Antigravity - WVideos Frontend
-description: Skill tối ưu cho Antigravity IDE khi làm việc với WVideos Frontend Next.js 16 + React 19 project
+name: Antigravity - snha Frontend
+description: Skill tối ưu cho Antigravity IDE khi làm việc với snha Frontend Next.js 16 + React 19 project
 ---
 
-# Antigravity IDE - WVideos Frontend Skill
+# Antigravity IDE - snha Frontend Skill
 
 ## Mục Đích
-Skill này tối ưu hóa cách Antigravity AI làm việc với WVideos Frontend, bao gồm component generation, React hooks, API integration, styling với Tailwind CSS 4, và TypeScript best practices.
+Skill này tối ưu hóa cách Antigravity AI làm việc với snha Frontend, bao gồm component generation, React hooks, API integration, styling với Tailwind CSS 4, và TypeScript best practices.
 
 ## Project Context
 

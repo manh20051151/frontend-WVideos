@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
 
     return {
         title: `#${tag}`,
-        description: `Xem các video có tag #${tag} trên WVideos.`,
+        description: `Xem các video có tag #${tag} trên snha.`,
         alternates: { canonical: `/tag/${rawTag}` },
         openGraph: {
             type: 'website',

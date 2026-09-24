@@ -300,7 +300,7 @@ function SearchPageContent() {
               <div className='w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-6'>
                 <SearchIcon className='w-11 h-11 text-foreground opacity-30' />
               </div>
-              <h1 className='text-xl font-bold text-foreground'>Tìm kiếm trên WVideos</h1>
+              <h1 className='text-xl font-bold text-foreground'>Tìm kiếm trên snha</h1>
               <p className='mt-2 text-sm text-foreground opacity-60 max-w-sm'>
                 Nhập từ khóa ở ô tìm kiếm phía trên để tìm video, kênh hoặc tin tức bạn quan tâm
               </p>

@@ -1,4 +1,4 @@
-# Docker compose chạy frontend WVideos trên server production.
+# Docker compose chạy frontend snha trên server production.
 #
 # Lưu ý: NEXT_PUBLIC_API_URL bị nhúng vào bundle CLIENT lúc build image
 # (không phải biến runtime) -> nếu đổi URL API thì phải build image mới.

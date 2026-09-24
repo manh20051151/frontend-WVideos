@@ -20,7 +20,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
  */
 
 const SAMPLE = {
-  url: 'https://wvideos.vn/reset-password?token=mau-token-abc123',
+  url: 'https://snha.dpdns.org/reset-password?token=mau-token-abc123',
   email: 'nguyenvietmanh1409@gmail.com',
   name: 'Mạnh Nguyễn',
   minutes: '30',

@@ -1,4 +1,4 @@
-// Comment types cho WVideos Frontend
+// Comment types cho snha Frontend
 
 export enum CommentStatus {
   PENDING = 'PENDING',

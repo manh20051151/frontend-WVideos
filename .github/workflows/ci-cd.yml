@@ -1,4 +1,4 @@
-# CI/CD frontend WVideos (Next.js + Docker + self-hosted runner)
+# CI/CD frontend snha (Next.js + Docker + self-hosted runner)
 #
 # Luồng:
 #   1. CI (mọi push + pull request, chạy trên GitHub): lint + build production

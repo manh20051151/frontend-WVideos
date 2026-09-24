@@ -1,12 +1,12 @@
 ---
-name: WVideos Frontend Development
-description: Skill để làm việc với WVideos Frontend - Next.js 16 App Router với React 19, TypeScript, Tailwind CSS 4
+name: snha Frontend Development
+description: Skill để làm việc với snha Frontend - Next.js 16 App Router với React 19, TypeScript, Tailwind CSS 4
 ---
 
-# WVideos Frontend Development Skill
+# snha Frontend Development Skill
 
 ## Mục Đích
-Skill này hướng dẫn AI làm việc hiệu quả với dự án WVideos Frontend - một web application được xây dựng bằng Next.js 16, React 19, TypeScript, và Tailwind CSS 4, tích hợp với WVideos Backend API.
+Skill này hướng dẫn AI làm việc hiệu quả với dự án snha Frontend - một web application được xây dựng bằng Next.js 16, React 19, TypeScript, và Tailwind CSS 4, tích hợp với snha Backend API.
 
 ## Tech Stack
 - **Framework**: Next.js 16.1.6 (App Router)

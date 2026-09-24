@@ -36,8 +36,7 @@ export default function Header() {
         <div className='container mx-auto px-4'>
           <div className='flex items-center justify-between py-3'>
             <Link href='/' className='flex items-center gap-2'>
-              <span className='text-accent text-2xl font-bold'>w</span>
-              <span className='text-highlight text-2xl font-bold'>video</span>
+              <span className='text-accent text-2xl font-bold'>snha</span>
             </Link>
             <div className='hidden lg:block flex-1 max-w-2xl mx-8'>
               <div className='h-10 bg-secondary rounded' />
@@ -73,8 +72,7 @@ export default function Header() {
                 imgClassName='h-16 w-auto max-w-[240px] object-contain'
                 fallback={
                   <>
-                    <span className='text-accent text-2xl font-bold'>wd</span>
-                    <span className='text-foreground text-2xl font-bold'>video</span>
+                    <span className='text-accent text-2xl font-bold'>snha</span>
                   </>
                 }
               />
@@ -228,8 +226,7 @@ export default function Header() {
                   imgClassName='h-12 w-auto max-w-[180px] object-contain'
                   fallback={
                     <>
-                      <span className='text-accent text-xl font-bold'>wd</span>
-                      <span className='text-foreground text-xl font-bold'>video</span>
+                      <span className='text-accent text-xl font-bold'>snha</span>
                     </>
                   }
                 />
