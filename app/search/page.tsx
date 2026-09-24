@@ -430,7 +430,7 @@ function SearchPageContent() {
                       {news.map((n) => (
                         <Link
                           key={n.id}
-                          href={`/news/${n.id}`}
+                          href={`/news/${n.slug || n.id}`}
                           className='group rounded-xl overflow-hidden border border-secondary hover:border-accent hover:shadow-lg transition-all'
                         >
                           <div className='relative aspect-video bg-secondary overflow-hidden'>

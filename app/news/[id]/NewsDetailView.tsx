@@ -137,7 +137,7 @@ export default function NewsDetailView() {
                   <ul className='space-y-4'>
                     {related.map((r) => (
                       <li key={r.id}>
-                        <Link href={`/news/${r.id}`} className='flex gap-3 group'>
+                        <Link href={`/news/${r.slug || r.id}`} className='flex gap-3 group'>
                           <div className='w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-accent/10'>
                             {r.thumbnailUrl ? (
                               <img src={r.thumbnailUrl} alt={r.title} className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300' />

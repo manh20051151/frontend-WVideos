@@ -138,7 +138,7 @@ export default function NewsListPage() {
                   {items.map((n) => (
                     <Link
                       key={n.id}
-                      href={`/news/${n.id}`}
+                      href={`/news/${n.slug || n.id}`}
                       className='group flex flex-col bg-secondary rounded-2xl overflow-hidden border border-accent/15 hover:border-accent/60 hover:-translate-y-1 hover:shadow-xl transition-all duration-200'
                     >
                       <div className='relative overflow-hidden'>

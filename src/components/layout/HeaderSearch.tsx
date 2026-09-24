@@ -168,7 +168,7 @@ export default function HeaderSearch({
     suggest?.channels.forEach((c) =>
       items.push({ type: 'channel', href: `/channel/${c.channelSlug || c.id}`, channel: c })
     );
-    suggest?.news.forEach((n) => items.push({ type: 'news', href: `/news/${n.id}`, news: n }));
+    suggest?.news.forEach((n) => items.push({ type: 'news', href: `/news/${n.slug || n.id}`, news: n }));
   } else {
     historyMatches.forEach((h) =>
       items.push({ type: 'history', href: `/search?q=${encodeURIComponent(h.query)}`, history: h })
@@ -482,7 +482,7 @@ export default function HeaderSearch({
                     return (
                       <Link
                         key={n.id}
-                        href={`/news/${n.id}`}
+                        href={`/news/${n.slug || n.id}`}
                         onClick={() => setShowDropdown(false)}
                         className={highlight(idx)}
                       >
