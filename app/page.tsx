@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 import videoApi from '@/lib/apis/video.api';
 import { useDarkMode } from '@/lib/hooks/useDarkMode';
 import VideoCardLite from '@/components/video/VideoCardLite';
+import TrendingTags from '@/components/video/TrendingTags';
 import Pagination from '@/components/common/Pagination';
 
 const FireIcon = () => (
@@ -148,6 +149,9 @@ function HomeContent() {
       <Header />
       <main className='flex-1 bg-primary'>
         <div className='container mx-auto px-4 py-8'>
+          {/* Đám mây tags thịnh hành */}
+          <TrendingTags />
+
           {/* Section: Đang được xem (Trending) */}
           <div className='mb-12'>
             <div className='flex items-center gap-3 mb-6'>

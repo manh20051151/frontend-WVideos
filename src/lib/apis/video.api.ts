@@ -6,7 +6,13 @@ export type { VideoUploadData, VideoResponse, PageResponse };
 export interface VideoReactionResponse {
   likeCount: number;
   dislikeCount: number;
-  userReaction: VideoReactionType;
+  userReaction?: 'LIKE' | 'DISLIKE' | null;
+}
+
+export interface TrendingTag {
+  tag: string;
+  totalViews: number;
+  videoCount: number;
 }
 
 const videoApi = {
@@ -134,6 +140,13 @@ const videoApi = {
   getPublicLikedVideos: async (userId: string, page = 0, size = 12): Promise<PageResponse<VideoResponse>> => {
     return await axiosClient.get(`/videos/liked/${userId}`, {
       params: { page, size },
+    });
+  },
+
+  // Tag thịnh hành (đám mây tags trang chủ)
+  getTrendingTags: async (limit = 30): Promise<TrendingTag[]> => {
+    return await axiosClient.get('/videos/tags/trending', {
+      params: { limit },
     });
   },
 

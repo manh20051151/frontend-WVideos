@@ -269,7 +269,7 @@ export default function WatchView() {
       const response = await videoApi.toggleReaction(video.id, reactionType);
       setLikeCount(response.likeCount);
       setDislikeCount(response.dislikeCount);
-      setUserReaction(response.userReaction);
+      setUserReaction(response.userReaction ?? null);
     } catch (error) {
     } finally {
       setReacting(false);
