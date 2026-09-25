@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { newsApi, type NewsResponse } from '@/lib/apis/news.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
-const fmtDate = (iso?: string) =>
-  iso ? new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+const fmtDate = (iso?: string, locale = 'vi') =>
+  iso ? new Date(iso).toLocaleDateString(locale === 'vi' ? 'vi-VN' : locale, { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
 export default function NewsDetailView() {
   const params = useParams();
   const id = params.id as string;
+  const locale = useLocale();
   const [news, setNews] = useState<NewsResponse | null>(null);
   const [related, setRelated] = useState<NewsResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export default function NewsDetailView() {
       .then(setNews)
       .catch((err) => setError(err instanceof Error ? err.message : 'Không tìm thấy tin tức'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, locale]);
 
   useEffect(() => {
     if (!news) return;
@@ -95,7 +97,7 @@ export default function NewsDetailView() {
                     <span className='font-medium text-foreground opacity-80'>{news.authorName}</span>
                   </div>
                 )}
-                <span>{fmtDate(news.publishedAt || news.createdAt)}</span>
+                <span>{fmtDate(news.publishedAt || news.createdAt, locale)}</span>
                 <span className='flex items-center gap-1'>
                   <svg className='w-4 h-4' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
                     <path d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z' />
@@ -149,7 +151,7 @@ export default function NewsDetailView() {
                             <p className='text-sm font-medium text-foreground leading-snug line-clamp-2 group-hover:text-accent transition-colors'>
                               {r.title}
                             </p>
-                            <p className='text-xs text-foreground opacity-50 mt-1'>{fmtDate(r.publishedAt || r.createdAt)}</p>
+                            <p className='text-xs text-foreground opacity-50 mt-1'>{fmtDate(r.publishedAt || r.createdAt, locale)}</p>
                           </div>
                         </Link>
                       </li>

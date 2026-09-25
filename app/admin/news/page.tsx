@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { newsApi, type NewsResponse, type NewsCategoryResponse } from '@/lib/apis/news.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import NewsTranslationsModal from '@/components/admin/NewsTranslationsModal';
 import ClientOnly from '@/components/common/ClientOnly';
 import Pagination from '@/components/common/Pagination';
 import RichTextEditor from '@/components/common/RichTextEditor';
@@ -30,6 +31,9 @@ export default function AdminNewsPage() {
   const [error, setError] = useState('');
 
   const [categories, setCategories] = useState<NewsCategoryResponse[]>([]);
+
+  // Bài tin đang mở modal quản lý bản dịch (Gemini dịch tự động)
+  const [translationsNews, setTranslationsNews] = useState<NewsResponse | null>(null);
 
   // form
   const [showForm, setShowForm] = useState(false);
@@ -187,6 +191,13 @@ export default function AdminNewsPage() {
                       </td>
                       <td className='p-3 text-right whitespace-nowrap'>
                         <button onClick={() => openEdit(n)} className='text-accent hover:underline mr-3'>Sửa</button>
+                        <button
+                          onClick={() => setTranslationsNews(n)}
+                          className='text-accent hover:underline mr-3'
+                          title='Quản lý bản dịch bài tin sang các ngôn ngữ'
+                        >
+                          Bản dịch
+                        </button>
                         <button onClick={() => handleDelete(n.id)} className='text-red-600 hover:underline'>Xóa</button>
                       </td>
                     </tr>
@@ -276,6 +287,16 @@ export default function AdminNewsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal quản lý bản dịch bài tin (admin) */}
+      {translationsNews && (
+        <NewsTranslationsModal
+          open={!!translationsNews}
+          onClose={() => setTranslationsNews(null)}
+          title={translationsNews.title}
+          newsId={translationsNews.id}
+        />
       )}
 
       <Footer />

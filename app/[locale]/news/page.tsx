@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { newsApi, type NewsResponse, type NewsCategoryResponse } from '@/lib/apis/news.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Pagination from '@/components/common/Pagination';
 
-const fmtDate = (iso?: string) =>
-  iso ? new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+const fmtDate = (iso?: string, locale = 'vi') =>
+  iso ? new Date(iso).toLocaleDateString(locale === 'vi' ? 'vi-VN' : locale, { day: '2-digit', month: 'short', year: 'numeric' }) : '';
 
 export default function NewsListPage() {
+  const locale = useLocale();
   const [items, setItems] = useState<NewsResponse[]>([]);
   const [categories, setCategories] = useState<NewsCategoryResponse[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -22,7 +24,7 @@ export default function NewsListPage() {
 
   useEffect(() => {
     newsApi.getCategories().then(setCategories).catch(() => {});
-  }, []);
+  }, [locale]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,7 +36,7 @@ export default function NewsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, categoryId, search]);
+  }, [page, categoryId, search, locale]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -167,7 +169,7 @@ export default function NewsListPage() {
                           <p className='text-xs text-foreground opacity-60 line-clamp-2 mt-1.5'>{n.summary}</p>
                         )}
                         <div className='mt-auto pt-3 flex items-center justify-between text-[11px] text-foreground opacity-50 border-t border-accent/10'>
-                          <span>{fmtDate(n.publishedAt || n.createdAt)}</span>
+                          <span>{fmtDate(n.publishedAt || n.createdAt, locale)}</span>
                           <span className='flex items-center gap-1'>
                             <svg className='w-3.5 h-3.5' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
                               <path d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z' />

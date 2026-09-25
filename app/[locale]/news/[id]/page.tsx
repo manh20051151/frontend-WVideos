@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import NewsDetailView from './NewsDetailView';
+import { routing } from '@/i18n/routing';
 
 /**
  * Server component cho trang /news/{id}:
@@ -36,7 +37,7 @@ async function getNewsForSeo(id: string): Promise<SeoNews | null> {
 }
 
 interface NewsDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: NewsDetailPageProps): Promise<Metadata> {
@@ -56,7 +57,16 @@ export async function generateMetadata({ params }: NewsDetailPageProps): Promise
   return {
     title: news.title || 'Tin tức',
     description,
-    alternates: { canonical: canonicalPath },
+    alternates: {
+      canonical: canonicalPath,
+      // hreflang: vi ở root, các locale khác có prefix
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [
+          l,
+          l === routing.defaultLocale ? canonicalPath : `/${l}${canonicalPath}`,
+        ])
+      ),
+    },
     openGraph: {
       type: 'article',
       title: news.title || 'Tin tức',

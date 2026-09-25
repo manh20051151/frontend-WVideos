@@ -60,9 +60,24 @@ export interface NewsPayload {
   slug: string;
   summary?: string;
   content?: string;
-  thumbnailUrl?: string;
   categoryId?: string;
   status: 'DRAFT' | 'PUBLISHED';
+}
+
+// Bản dịch bài tin tức theo ngôn ngữ (admin quản lý bản dịch Gemini)
+export interface NewsTranslation {
+  locale: string;
+  title?: string | null; // null = ngôn ngữ chưa có bản dịch
+  summary?: string | null;
+  content?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface NewsTranslationUpsertItem {
+  locale: string;
+  title: string; // rỗng -> xóa bản dịch ngôn ngữ đó
+  summary?: string;
+  content?: string;
 }
 
 export const newsApi = {
@@ -114,4 +129,15 @@ export const newsApi = {
 
   deleteNews: (id: string): Promise<void> =>
     axiosClient.delete(`/news/${id}`),
+
+  // Lấy mọi bản dịch của 1 bài tin (admin only)
+  getNewsTranslations: (id: string): Promise<NewsTranslation[]> =>
+    axiosClient.get(`/news/${id}/translations`),
+
+  // Admin cập nhật bản dịch bài tin sau khi Gemini dịch
+  updateNewsTranslations: (
+    id: string,
+    translations: NewsTranslationUpsertItem[]
+  ): Promise<NewsTranslation[]> =>
+    axiosClient.put(`/news/${id}/translations`, { translations }),
 };
