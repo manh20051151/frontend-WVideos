@@ -36,6 +36,18 @@ export interface CategoryUpdateRequest {
   sortOrder?: number;
 }
 
+// Bản dịch tên thể loại theo ngôn ngữ (admin quản lý bản dịch Gemini)
+export interface CategoryTranslation {
+  locale: string;
+  name?: string | null; // null = ngôn ngữ chưa có bản dịch
+  updatedAt?: string | null;
+}
+
+export interface CategoryTranslationUpsertItem {
+  locale: string;
+  name: string; // rỗng -> xóa bản dịch ngôn ngữ đó
+}
+
 // API functions
 export const categoryApi = {
   // Lấy tất cả thể loại đang hoạt động (public)
@@ -90,5 +102,18 @@ export const categoryApi = {
   // Xóa thể loại (admin only)
   deleteCategory: async (id: string): Promise<void> => {
     await axiosClient.delete(`/categories/${id}`);
+  },
+
+  // Lấy mọi bản dịch tên của 1 thể loại (admin only)
+  getCategoryTranslations: async (id: string): Promise<CategoryTranslation[]> => {
+    return await axiosClient.get(`/categories/${id}/translations`);
+  },
+
+  // Admin cập nhật bản dịch tên thể loại sau khi Gemini dịch
+  updateCategoryTranslations: async (
+    id: string,
+    translations: CategoryTranslationUpsertItem[]
+  ): Promise<CategoryTranslation[]> => {
+    return await axiosClient.put(`/categories/${id}/translations`, { translations });
   },
 };

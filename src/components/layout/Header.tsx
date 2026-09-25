@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useDarkMode } from '@/lib/hooks/useDarkMode';
@@ -15,6 +16,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 type AuthTab = 'login' | 'register';
 
 export default function Header() {
+  const pathname = usePathname();
   const { user, logout, mounted, refreshProfile } = useAuth();
   const { isDark, toggleDarkMode, mounted: darkModeReady } = useDarkMode();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -117,8 +119,9 @@ export default function Header() {
               </button>
             )}
 
-            {/* Chọn ngôn ngữ toàn trang */}
-            <LanguageSwitcher />
+            {/* Chọn ngôn ngữ toàn trang - ẩn trên /admin (admin giữ 1 ngôn ngữ,
+                 các trang này nằm ngoài app/[locale] nên không có intl context) */}
+            {!pathname.startsWith('/admin') && <LanguageSwitcher />}
 
             {user ? (
               <>

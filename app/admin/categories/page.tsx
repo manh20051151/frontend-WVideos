@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { categoryApi, Category, CategoryCreateRequest, CategoryUpdateRequest } from '@/lib/apis/category.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import TranslationsModal from '@/components/admin/TranslationsModal';
 import ClientOnly from '@/components/common/ClientOnly';
 
 export default function AdminCategoriesPage() {
@@ -21,6 +22,8 @@ export default function AdminCategoriesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Danh mục đang mở modal quản lý bản dịch tên (Gemini dịch tự động)
+  const [translationsCategory, setTranslationsCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryCreateRequest>({
     name: '',
     slug: '',
@@ -389,6 +392,13 @@ export default function AdminCategoriesPage() {
                               ✏️ Sửa
                             </button>
                             <button
+                              onClick={() => setTranslationsCategory(category)}
+                              className='text-accent hover:text-highlight transition-colors'
+                              title='Quản lý bản dịch tên sang các ngôn ngữ'
+                            >
+                              🌐 Bản dịch
+                            </button>
+                            <button
                               onClick={() => handleDelete(category)}
                               className='text-red-600 hover:text-red-800 transition-colors'
                             >
@@ -591,6 +601,17 @@ export default function AdminCategoriesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal quản lý bản dịch tên danh mục (admin) */}
+      {translationsCategory && (
+        <TranslationsModal
+          open={!!translationsCategory}
+          onClose={() => setTranslationsCategory(null)}
+          title={translationsCategory.name}
+          categoryId={translationsCategory.id}
+          api={categoryApi}
+        />
       )}
 
       <Footer />

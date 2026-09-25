@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { newsApi, type NewsCategoryResponse } from '@/lib/apis/news.api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import TranslationsModal from '@/components/admin/TranslationsModal';
 import ClientOnly from '@/components/common/ClientOnly';
 import Pagination from '@/components/common/Pagination';
 
@@ -37,6 +38,8 @@ export default function AdminNewsCategoriesPage() {
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState(0);
   const [saving, setSaving] = useState(false);
+  // Danh mục đang mở modal quản lý bản dịch tên (Gemini dịch tự động)
+  const [translationsCategory, setTranslationsCategory] = useState<NewsCategoryResponse | null>(null);
 
   const isAdmin = !!user?.roles?.some((r) => r.name === 'ADMIN');
 
@@ -167,6 +170,13 @@ export default function AdminNewsCategoriesPage() {
                       </td>
                       <td className='p-3 text-right whitespace-nowrap'>
                         <button onClick={() => openEdit(c)} className='text-accent hover:underline mr-3'>Sửa</button>
+                        <button
+                          onClick={() => setTranslationsCategory(c)}
+                          className='text-accent hover:underline mr-3'
+                          title='Quản lý bản dịch tên sang các ngôn ngữ'
+                        >
+                          Bản dịch
+                        </button>
                         <button onClick={() => handleDelete(c.id)} className='text-red-600 hover:underline'>Xóa</button>
                       </td>
                     </tr>
@@ -224,6 +234,17 @@ export default function AdminNewsCategoriesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal quản lý bản dịch tên danh mục (admin) */}
+      {translationsCategory && (
+        <TranslationsModal
+          open={!!translationsCategory}
+          onClose={() => setTranslationsCategory(null)}
+          title={translationsCategory.name}
+          categoryId={translationsCategory.id}
+          api={newsApi}
+        />
       )}
 
       <Footer />

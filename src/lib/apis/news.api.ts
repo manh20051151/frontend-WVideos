@@ -1,4 +1,7 @@
 import axiosClient from './axiosClient';
+import type { CategoryTranslation, CategoryTranslationUpsertItem } from './category.api';
+
+export type { CategoryTranslation, CategoryTranslationUpsertItem };
 
 export interface NewsCategoryResponse {
   id: string;
@@ -78,6 +81,17 @@ export const newsApi = {
 
   deleteCategory: (id: string): Promise<void> =>
     axiosClient.delete(`/news-categories/${id}`),
+
+  // Lấy mọi bản dịch tên của 1 danh mục tin tức (admin only)
+  getCategoryTranslations: (id: string): Promise<CategoryTranslation[]> =>
+    axiosClient.get(`/news-categories/${id}/translations`),
+
+  // Admin cập nhật bản dịch tên danh mục tin tức sau khi Gemini dịch
+  updateCategoryTranslations: (
+    id: string,
+    translations: CategoryTranslationUpsertItem[]
+  ): Promise<CategoryTranslation[]> =>
+    axiosClient.put(`/news-categories/${id}/translations`, { translations }),
 
   // ===== News =====
   getPublishedNews: (page = 0, size = 10, categoryId?: string, search?: string): Promise<NewsPage> =>
