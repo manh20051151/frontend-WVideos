@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import videoApi, { type VideoResponse, type VideoTranslationResponse } from '@/lib/apis/video.api';
+import { categoryApi } from '@/lib/apis/category.api';
 import { LOCALE_NAMES, CONTENT_LOCALE_MAP } from '@/i18n/routing';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -30,6 +31,7 @@ export default function WatchView() {
 
   const [video, setVideo] = useState<VideoResponse | null>(null);
   const [translations, setTranslations] = useState<VideoTranslationResponse[]>([]);
+  const [localizedCategoryNames, setLocalizedCategoryNames] = useState<Record<string, string>>({});
   const [showOriginalTitle, setShowOriginalTitle] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +105,29 @@ export default function WatchView() {
       fetchVideo();
     }
   }, [videoId, locale]);
+
+  // Lấy tên danh mục bản địa hóa theo locale đang xem (chip category dưới video)
+  useEffect(() => {
+    if (locale === 'vi') {
+      setLocalizedCategoryNames({});
+      return;
+    }
+    let cancelled = false;
+    categoryApi
+      .getActiveCategories()
+      .then((data) => {
+        if (cancelled) return;
+        const map: Record<string, string> = {};
+        for (const c of data ?? []) {
+          map[c.id] = c.name;
+        }
+        setLocalizedCategoryNames(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
 
   useEffect(() => {
     if (video && video.status === 'READY') {
@@ -745,7 +770,7 @@ export default function WatchView() {
                       href={`/category/${cat.slug}`}
                       className='px-3 py-1 bg-secondary rounded-full text-sm text-foreground hover:bg-accent hover:text-white transition-colors'
                     >
-                      {cat.name}
+                      {localizedCategoryNames[cat.id] || cat.name}
                     </Link>
                   ))}
                   {video.tags?.map((tag, index) => (

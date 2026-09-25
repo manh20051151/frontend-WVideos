@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import PublicVideoList from '@/components/video/PublicVideoList';
@@ -15,6 +16,8 @@ import type { Category } from '@/lib/apis/category.api';
 export default function CategoryView() {
     const params = useParams();
     const slug = params.slug as string;
+    const locale = useLocale();
+    const t = useTranslations('Category');
 
     const [category, setCategory] = useState<Category | null>(null);
 
@@ -29,16 +32,16 @@ export default function CategoryView() {
         return () => {
             cancelled = true;
         };
-    }, [slug]);
+    }, [slug, locale]);
 
     return (
         <>
             <Header />
             <div className='min-h-screen bg-primary'>
                 <PublicVideoList
-                    heading={category ? category.name : 'Thể loại'}
+                    heading={category ? category.name : t('title')}
                     categorySlug={slug}
-                    emptyMessage='Chưa có video nào trong thể loại này.'
+                    emptyMessage={t('empty')}
                 />
             </div>
             <Footer />

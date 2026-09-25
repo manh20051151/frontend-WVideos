@@ -11,5 +11,17 @@
   },
   "LanguageSwitcher": {
     "label": "ພາສາ"
+  },
+  "Nav": {
+    "categories": "ໝວດໝູ່",
+    "news": "ຂ່າວ",
+    "shorts": "Shorts",
+    "subscribedVideos": "ວິດີໂອຈາກຊ່ອງທີ່ຕິດຕາມ",
+    "newBadge": "ໃໝ່"
+  },
+  "Category": {
+    "title": "ໝວດໝູ່",
+    "empty": "ຍັງບໍ່ມີວິດີໂອໃນໝວດໝູ່ນີ້.",
+    "metaDescription": "ຮັບຊົມວິດີໂອໝວດໝູ່ {name} ເທິງ snha"
   }
 }

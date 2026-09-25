@@ -28,6 +28,15 @@ const PUBLIC_GET_PATHS = [
 const isPublicPath = (url: string) =>
   PUBLIC_GET_PATHS.some((p) => url === p || url.startsWith(p + '/'));
 
+// Đọc locale người dùng chọn từ cookie NEXT_LOCALE do next-intl ghi
+const readLocaleCookie = (): string | undefined => {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('NEXT_LOCALE='));
+  return match ? decodeURIComponent(match.split('=')[1]) : undefined;
+};
+
 // Flag để tránh multiple refresh requests
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -59,9 +68,14 @@ axiosClient.interceptors.request.use(
     if (token && !isPublicAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Backend trả message lỗi theo ngôn ngữ này (messages_<locale>.properties)
+    // Backend trả message lỗi + tên danh mục theo ngôn ngữ này.
+    // Ưu tiên cookie NEXT_LOCALE do next-intl set khi người dùng đổi ngôn ngữ
+    // (script set <html lang> không chạy lại khi chuyển locale phía client),
+    // fallback về lang của document rồi mặc định vi.
     const locale =
-      (typeof document !== 'undefined' && document.documentElement.lang) || 'vi';
+      (typeof document !== 'undefined' && readLocaleCookie()) ||
+      (typeof document !== 'undefined' && document.documentElement.lang) ||
+      'vi';
     config.headers['Accept-Language'] = locale;
     return config;
   },

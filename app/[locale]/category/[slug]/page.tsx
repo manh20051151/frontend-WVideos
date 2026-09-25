@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 import CategoryView from './CategoryView';
+import { routing } from '@/i18n/routing';
 
 /**
  * Server component cho trang /category/{slug}:
@@ -18,9 +20,12 @@ interface SeoCategory {
     description?: string | null;
 }
 
-async function getCategories(): Promise<SeoCategory[]> {
+async function getCategories(locale: string): Promise<SeoCategory[]> {
     try {
-        const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 600 } });
+        const res = await fetch(`${API_URL}/categories`, {
+            next: { revalidate: 600 },
+            headers: { 'Accept-Language': locale },
+        });
         if (!res.ok) return [];
         const body = await res.json();
         const list = body?.result ?? body;
@@ -31,17 +36,20 @@ async function getCategories(): Promise<SeoCategory[]> {
 }
 
 interface CategoryPageProps {
-    params: Promise<{ slug: string }>;
+    params: Promise<{ slug: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-    const { slug } = await params;
-    const categories = await getCategories();
+    const { slug, locale } = await params;
+    const [categories, t] = await Promise.all([
+        getCategories(locale),
+        getTranslations({ locale, namespace: 'Category' }),
+    ]);
     const category = categories.find((c) => c.slug === slug);
 
     if (!category) {
         return {
-            title: 'Thể loại không tồn tại',
+            title: t('title'),
             robots: { index: false },
         };
     }
@@ -50,8 +58,19 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
         title: category.name,
         description:
             (category.description || '').slice(0, 160) ||
-            `Xem các video thể loại ${category.name} trên snha.`,
-        alternates: { canonical: `/category/${category.slug}` },
+            t('metaDescription', { name: category.name }),
+        alternates: {
+            canonical: `/category/${category.slug}`,
+            // hreflang: vi ở root, các locale khác có prefix
+            languages: Object.fromEntries(
+                routing.locales.map((l) => [
+                    l,
+                    l === routing.defaultLocale
+                        ? `/category/${category.slug}`
+                        : `/${l}/category/${category.slug}`,
+                ])
+            ),
+        },
         openGraph: {
             type: 'website',
             title: category.name,
@@ -61,8 +80,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-    const { slug } = await params;
-    const categories = await getCategories();
+    const { slug, locale } = await params;
+    const categories = await getCategories(locale);
     const category = categories.find((c) => c.slug === slug);
 
     const jsonLd = category

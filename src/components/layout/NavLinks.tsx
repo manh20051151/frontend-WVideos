@@ -2,22 +2,27 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { navItemApi, NavItem } from '@/lib/apis/navitem.api';
 import { categoryApi, type Category } from '@/lib/apis/category.api';
 
 interface LocalNavItem {
     href: string;
-    label: string;
+    /** Nhãn lấy từ API (admin cấu hình) */
+    label?: string;
+    /** Key dịch cho item mặc định khi API lỗi/chưa cấu hình */
+    labelKey?: 'news' | 'shorts' | 'subscribedVideos';
     icon?: string;
     openNewTab?: boolean;
 }
 
-// Danh sách mặc định (fallback khi chưa có dữ liệu hoặc gọi API lỗi)
+// Item mặc định (fallback khi chưa có dữ liệu hoặc gọi API lỗi).
+// Nhãn hiển thị qua next-intl theo ngôn ngữ trang.
 // Giữ tối giản để không làm tràn layout mobile khi API tạm lỗi
 const DEFAULT_NAV_ITEMS: LocalNavItem[] = [
-    { href: '/news', label: 'Tin Tức' },
-    { href: '/shorts', label: 'Shorts' },
-    { href: '/kenh-da-dang-ky', label: 'Video Kênh Đã Đăng Ký' },
+    { href: '/news', labelKey: 'news' },
+    { href: '/shorts', labelKey: 'shorts' },
+    { href: '/kenh-da-dang-ky', labelKey: 'subscribedVideos' },
 ];
 
 interface NavLinksProps {
@@ -32,6 +37,8 @@ interface NavLinksProps {
  * - Panel backdrop-blur, animation fade+scale, mỗi category có chấm màu riêng (nếu cấu hình).
  */
 function CategoryDropdown() {
+    const locale = useLocale();
+    const t = useTranslations('Nav');
     const [categories, setCategories] = useState<Category[]>([]);
     const [open, setOpen] = useState(false);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,7 +54,7 @@ function CategoryDropdown() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [locale]);
 
     // Trễ đóng để chuột kịp di chuyển từ nút sang menu
     const scheduleClose = () => {
@@ -88,7 +95,7 @@ function CategoryDropdown() {
                         d='M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z'
                     />
                 </svg>
-                Thể Loại
+                {t('categories')}
                 <svg
                     className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
                     fill='none'
@@ -133,6 +140,8 @@ function CategoryDropdown() {
 }
 
 export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProps) {
+    const locale = useLocale();
+    const t = useTranslations('Nav');
     const [navItems, setNavItems] = useState<LocalNavItem[]>(DEFAULT_NAV_ITEMS);
     const [categories, setCategories] = useState<Category[]>([]);
 
@@ -175,17 +184,18 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
         return () => {
             cancelled = true;
         };
-    }, [vertical]);
+    }, [vertical, locale]);
 
     const renderLink = (item: LocalNavItem, className: string) => {
         const isShorts = item.href === '/shorts';
+        const label = item.label ?? (item.labelKey ? t(item.labelKey) : '');
         const content = (
             <>
                 {item.icon && <span className='mr-1'>{item.icon}</span>}
-                {item.label}
+                {label}
                 {isShorts && (
                     <span className='ml-1.5 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-white text-accent rounded-full'>
-                        Mới
+                        {t('newBadge')}
                     </span>
                 )}
             </>
@@ -232,7 +242,7 @@ export default function NavLinks({ vertical = false, onLinkClick }: NavLinksProp
                 {categories.length > 0 && (
                     <div className='flex flex-col gap-1 pt-1 border-t border-secondary'>
                         <p className='text-xs font-semibold uppercase tracking-wider text-foreground opacity-50 py-1'>
-                            Thể loại
+                            {t('categories')}
                         </p>
                         {categories.map((c) => (
                             <Link
