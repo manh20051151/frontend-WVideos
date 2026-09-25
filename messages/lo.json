@@ -1,0 +1,15 @@
+{
+  "Metadata": {
+    "title": "snha - ແພລດຟອມແບ່ງປັນວິດີໂອ",
+    "description": "ແພລດຟອມແບ່ງປັນວິດີໂອຊັ້ນນຳຂອງຫວຽດນາມ. ເບິ່ງວິດີໂອສັ້ນ, ຂ່າວ, ຄລິບດາວ ແລະ ເນື້ອຫາສ້າງສັນທຸກມື້."
+  },
+  "Watch": {
+    "autoTranslated": "ການແປອັດຕະໂນມັດ",
+    "translatedTo": "ແປອັດຕະໂນມັດເປັນ{language}",
+    "showOriginal": "ເບິ່ງຕົ້ນສະບັບ",
+    "showTranslated": "ເບິ່ງການແປ"
+  },
+  "LanguageSwitcher": {
+    "label": "ພາສາ"
+  }
+}

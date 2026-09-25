@@ -10,6 +10,7 @@ import UserDropdown from './UserDropdown';
 import NavLinks from './NavLinks';
 import NotificationBell from './NotificationBell';
 import HeaderSearch from './HeaderSearch';
+import LanguageSwitcher from './LanguageSwitcher';
 
 type AuthTab = 'login' | 'register';
 
@@ -115,6 +116,9 @@ export default function Header() {
                 )}
               </button>
             )}
+
+            {/* Chọn ngôn ngữ toàn trang */}
+            <LanguageSwitcher />
 
             {user ? (
               <>

@@ -9,6 +9,12 @@ export interface VideoReactionResponse {
   userReaction?: 'LIKE' | 'DISLIKE' | null;
 }
 
+export interface VideoTranslationResponse {
+  locale: string;
+  title: string;
+  description?: string;
+}
+
 export interface TrendingTag {
   tag: string;
   totalViews: number;
@@ -99,6 +105,16 @@ const videoApi = {
   // Get video by ID
   getVideoById: async (videoId: string): Promise<VideoResponse> => {
     return await axiosClient.get(`/videos/${videoId}`);
+  },
+
+  // Bản dịch tự động (Gemini) của tiêu đề + mô tả video
+  getVideoTranslations: async (videoId: string): Promise<VideoTranslationResponse[]> => {
+    return await axiosClient.get(`/videos/${videoId}/translations`);
+  },
+
+  // Danh sách ngôn ngữ bản dịch hệ thống hỗ trợ
+  getSupportedLocales: async (): Promise<string[]> => {
+    return await axiosClient.get('/videos/locales');
   },
 
   // Mua video có phí

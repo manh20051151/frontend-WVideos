@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import videoApi, { type VideoResponse } from '@/lib/apis/video.api';
+import { useLocale, useTranslations } from 'next-intl';
+import videoApi, { type VideoResponse, type VideoTranslationResponse } from '@/lib/apis/video.api';
+import { LOCALE_NAMES, CONTENT_LOCALE_MAP } from '@/i18n/routing';
 import { subscriptionApi } from '@/lib/apis/subscription.api';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -23,8 +25,12 @@ export default function WatchView() {
   const params = useParams();
   const videoId = params.videoId as string;
   const { user: currentUser } = useAuth();
-  
+  const locale = useLocale();
+  const t = useTranslations('Watch');
+
   const [video, setVideo] = useState<VideoResponse | null>(null);
+  const [translations, setTranslations] = useState<VideoTranslationResponse[]>([]);
+  const [showOriginalTitle, setShowOriginalTitle] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -71,6 +77,16 @@ export default function WatchView() {
         if (videoData.userReaction !== undefined) {
           setUserReaction(videoData.userReaction);
         }
+
+        // Lấy bản dịch tự động (bỏ qua với locale tiếng Việt gốc)
+        if (locale !== 'vi') {
+          try {
+            const trs = await videoApi.getVideoTranslations(videoId);
+            setTranslations(trs ?? []);
+          } catch {
+            // Không có bản dịch thì hiển thị tiêu đề gốc, bỏ qua lỗi
+          }
+        }
       } catch (error: any) {
         if (error?.response?.status === 401 || error?.response?.status === 403) {
           // Luôn hiện modal đăng nhập cho video riêng tư
@@ -86,7 +102,7 @@ export default function WatchView() {
     if (videoId) {
       fetchVideo();
     }
-  }, [videoId]);
+  }, [videoId, locale]);
 
   useEffect(() => {
     if (video && video.status === 'READY') {
@@ -424,9 +440,19 @@ export default function WatchView() {
 
   const isLocked = !!video.price && video.price > 0 && !video.hasAccess;
 
-  const descriptionPreview = video.description && video.description.length > 200 
-    ? video.description.slice(0, 200) + '...' 
-    : video.description;
+  // Bản dịch tương ứng với ngôn ngữ đang xem (map locale UI -> locale bản dịch, vd zh -> zh-CN)
+  const contentLocale = CONTENT_LOCALE_MAP[locale] ?? locale;
+  const translation = locale !== 'vi' ? translations.find((tr) => tr.locale === contentLocale) : undefined;
+  const hasTranslation = !!translation && !!(translation.title || translation.description);
+
+  // Ưu tiên bản dịch; người dùng có thể bấm "Xem bản gốc" để quay lại tiếng Việt
+  const useTranslation = hasTranslation && !showOriginalTitle;
+  const displayTitle = useTranslation && translation!.title ? translation!.title : video.title;
+  const rawDescription = useTranslation && translation!.description ? translation!.description : video.description;
+
+  const descriptionPreview = rawDescription && rawDescription.length > 200
+    ? rawDescription.slice(0, 200) + '...'
+    : rawDescription;
 
   const isStreamtape = !!video?.embedUrl?.includes('streamtape.com');
 
@@ -520,9 +546,30 @@ export default function WatchView() {
 
               {/* Video Title */}
               <div className='flex items-center justify-between gap-3 flex-wrap'>
-                <h1 className='text-xl font-bold text-foreground'>
-                  {video.title}
-                </h1>
+                <div className='min-w-0 flex-1'>
+                  <h1 className='text-xl font-bold text-foreground'>
+                    {displayTitle}
+                  </h1>
+                  {hasTranslation && (
+                    <div className='flex items-center gap-2 mt-1 flex-wrap'>
+                      <span
+                        className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary text-foreground/60 text-xs'
+                        title={t('translatedTo', { language: LOCALE_NAMES[locale as keyof typeof LOCALE_NAMES] ?? locale })}
+                      >
+                        <svg className='w-3 h-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5c0 .743.034 1.48.1 2.206a2 2 0 11-1.9 1.794' />
+                        </svg>
+                        {t('autoTranslated')}
+                      </span>
+                      <button
+                        onClick={() => setShowOriginalTitle(!showOriginalTitle)}
+                        className='text-xs text-blue-500 font-medium hover:underline'
+                      >
+                        {showOriginalTitle ? t('showTranslated') : t('showOriginal')}
+                      </button>
+                    </div>
+                  )}
+                </div>
                 {!!video.price && video.price > 0 && (
                   <span className='px-3 py-1 rounded-full bg-accent text-white text-sm font-semibold'>
                     {formatPrice(video.price)}
@@ -671,13 +718,13 @@ export default function WatchView() {
               </div>
 
               {/* Description */}
-              {video.description && (
+              {rawDescription && (
                 <div className='bg-secondary rounded-xl p-4'>
                   <div className='text-foreground'>
                     <p className='whitespace-pre-wrap'>
-                      {showFullDescription ? video.description : descriptionPreview}
+                      {showFullDescription ? rawDescription : descriptionPreview}
                     </p>
-                    {video.description.length > 200 && (
+                    {rawDescription.length > 200 && (
                       <button
                         onClick={() => setShowFullDescription(!showFullDescription)}
                         className='text-blue-500 font-medium mt-2 hover:underline'

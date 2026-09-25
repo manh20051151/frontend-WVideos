@@ -59,6 +59,10 @@ axiosClient.interceptors.request.use(
     if (token && !isPublicAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Backend trả message lỗi theo ngôn ngữ này (messages_<locale>.properties)
+    const locale =
+      (typeof document !== 'undefined' && document.documentElement.lang) || 'vi';
+    config.headers['Accept-Language'] = locale;
     return config;
   },
   (error) => {
